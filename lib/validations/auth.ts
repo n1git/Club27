@@ -7,7 +7,7 @@ const COMMON_PASSWORDS = new Set([
   "iloveyou12", "iloveyou123", "welcome123", "welcome1234", "admin12345", "admin123456",
   "letmein123", "monkey1234", "dragon1234", "football12", "sunshine12", "princess12",
   "indonesia1", "indonesia123", "jakarta123", "bismillah1", "bismillah123", "rahasia123",
-  "sayang1234", "cintaku123", "katasandi1", "katasandi123", "swimma123", "swimma1234",
+  "sayang1234", "cintaku123", "katasandi1", "katasandi123", "swimma123", "swimma1234", "27club1234", "27club12345",
   "renang1234", "gym1234567", "klub123456", "pelatih123", "anggota123", "admin2024",
   "admin2025", "admin2026", "password2024", "password2025", "password2026",
 ]);

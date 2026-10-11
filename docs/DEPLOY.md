@@ -31,7 +31,7 @@ Migrations are not idempotent; apply each once. Do not edit an applied migration
 | Range | State on the hosted project |
 |---|---|
 | 001-011 | Applied; pgcrypto is back in `extensions` |
-| 012-030 | Applied through the Management API (2026-10-11); the migration history table lists only 001-012, so run `supabase migration repair --status applied` for 013-030 before the next `supabase db push`. Migration 012 ran without its data backfill block because the database was empty. |
+| 012-031 | Applied through the Management API (2026-10-11); the migration history table lists only 001-012, so run `supabase migration repair --status applied` for 013-031 before the next `supabase db push`. Migration 012 ran without its data backfill block because the database was empty. |
 
 Migration 024 sets the privileges of the public schema: no `TRUNCATE`, `REFERENCES` or `TRIGGER` for `anon` and `authenticated`, execute on functions only for `authenticated` and `service_role`, a fixed `search_path` on every function, and no client access to the retired plan tables. New functions follow the same defaults; a helper that row policies call must be granted to `authenticated` explicitly if it was created with a revoke.
 
