@@ -68,3 +68,16 @@ Every edit is an update on the caller's own row, identified by the session id. I
 2. **Top-bar control (visual):** the user's full name as a ghost link with the `UserRound` icon, the name hidden below `sm` (icon only, 44 px target). Or initials in a round badge. I suggest the name with an icon.
 3. **Fill-in trigger:** a null username is filled automatically on insert (point 8 above), as a safety net for direct SQL and old callers. The forms still always send one. OK?
 4. **Session rate:** should a coach see their own `session_rate` on `/profile`? It is their pay rate and is shown to admins today.
+
+### Decisions after review (2026-10-11)
+
+- Approved: `/profile` redirects to `/admin/profile`, `/coach/profile`, `/member/profile`; top bar shows the name with a `UserRound` icon (icon only below `sm`); the fill-in trigger is kept.
+- Coach `session_rate` is shown masked as `***` with an eye button that reveals the amount.
+
+## Phase 1 — database (done)
+
+- `20250101000033_usernames.sql`: `username` columns with a format `CHECK`, unique indexes, `username_reserved`, `username_taken`, `suggest_username` (service role only), `enforce_username` trigger on the four tables (fill-in on insert, lowercase, reserved names refused with `Username tidak tersedia`, shared namespace refused with `23505` / `Username sudah dipakai`, advisory lock on `u:` + username), backfill in creation order, `not null` / `profiles_username_scope` check, `p_username` on `register_organization`, `register_organization_unverified`, `activate_member_account`.
+- Deviation from the plan: the namespace check is a separate `enforce_username` trigger instead of code inside the three email triggers, so the email triggers stay untouched. Reserved names apply only to the shared namespace, so a superadmin can be `superadmin`.
+- Tested on a local database: applies on an empty database and on one with owners, staff, a member account and a superadmin (colliding local parts get `2`, `3`, …). Duplicate across owner/member/staff refused, reserved name refused, bad format refused by the `CHECK`, new rows filled, owner/member profiles keep `username` null.
+- `lib/validations/username.ts`: same regex and reserved list.
+- `docs/DEPLOY.md`: row for 033.
