@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const SUPERADMIN_COOKIE_NAME = "superadmin_session";
-export const SUPERADMIN_AUDIENCE = "27club-superadmin";
+export const SUPERADMIN_AUDIENCE = "club27-superadmin";
 const CHALLENGE_COOKIE_NAME = "superadmin_mfa";
-const CHALLENGE_AUDIENCE = "27club-superadmin-mfa";
+const CHALLENGE_AUDIENCE = "club27-superadmin-mfa";
 const SESSION_SECONDS = 60 * 60 * 12;
 const CHALLENGE_SECONDS = 60 * 10;
 

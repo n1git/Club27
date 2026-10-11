@@ -4,7 +4,7 @@ import path from "node:path";
 import { generateTempPassword, hashPassword } from "../lib/auth/password";
 
 const PREFIX = "[DEMO]";
-const DOMAIN = "demo.27club.test";
+const DOMAIN = "demo.club27.test";
 
 interface Args {
   scale: "demo" | "full";
