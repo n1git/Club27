@@ -29,7 +29,7 @@ export default async function SuperadminPortalLayout({ children }: { children: R
         <div className="flex items-center gap-3">
           <Link
             href="/superadmin/profile"
-            className={buttonVariants({ variant: "ghost", size: "sm", className: "max-w-48" })}
+            className={buttonVariants({ variant: "ghost", size: "sm", className: "min-w-11 max-w-48 sm:min-w-0" })}
             aria-label={`Profil ${superadmin.fullName}`}
           >
             <UserRound className="size-4 shrink-0" aria-hidden="true" />

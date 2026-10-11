@@ -39,7 +39,7 @@ export function AppShell({
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
               <Link
                 href="/profile"
-                className={buttonVariants({ variant: "ghost", size: "sm", className: "max-w-48" })}
+                className={buttonVariants({ variant: "ghost", size: "sm", className: "min-w-11 max-w-48 sm:min-w-0" })}
                 aria-label={`Profil ${fullName}`}
               >
                 <UserRound className="size-4 shrink-0" aria-hidden="true" />

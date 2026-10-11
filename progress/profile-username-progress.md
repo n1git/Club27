@@ -97,3 +97,18 @@ Every edit is an update on the caller's own row, identified by the session id. I
 - `lib/actions/profile.ts`: `updateOwnProfile` takes the account from the session only (owner → `org_owners` + name copied to its admin profiles; staff → own `profiles` row filtered by `owner_id`/`member_account_id` null; member → `member_accounts.username`), `updateSuperadminProfile`. Both write `logAudit("profile.update")` with the changed fields only (no passwords), map namespace errors to `fieldErrors.username`, and re-mint the session when the name changes.
 - UI: `ProfileView` (Akun, Ubah profil, Klub / Klub aktif / Data pelatih, Keamanan with `ChangePasswordForm`), `MaskedAmount` (`***` with an eye toggle for the session rate), `DetailList`. `ActionForm` now exposes its state through `useActionFormState`, which `UsernameField` reads for the inline error.
 - Navigation: `KeyRound` link removed; the header shows a `UserRound` link to `/profile` with the full name (icon only below `sm`), same in the superadmin portal. `/profile` added to `PROTECTED_PREFIXES`, `robots` disallow, and `/admin/profile` to `canAccessPath` for admin, receptionist and finance.
+
+## Phase 4 — final checks (done)
+
+- `npm run lint`: clean. `npm run build`: passes.
+- Local walkthrough (Postgres + PostgREST + `next start`, data seeded before migration 033 so the backfill ran): 36 checks, all pass after two fixes.
+  - Pass: login with username, with email, wrong password and unknown username both give "Username/email atau kata sandi salah"; member and coach username login; superadmin username login, TOTP enrol.
+  - Pass: duplicate username refused across owner ↔ staff, owner ↔ member, staff ↔ member, member ↔ staff; reserved name refused in the club namespace; superadmin may take `root`.
+  - Pass: owner, coach, member, receptionist and superadmin each edit their own profile; other rows unchanged; header name re-minted; session rate masked then revealed; certifications listed.
+  - Pass: password change from `/profile` signs out the other session (`/login?revoked=1`) and keeps the current one.
+  - Pass: forced first-login lands on `/change-password`, `/profile` redirects there too, and the change completes.
+  - Pass: 5 `profile.update` audit rows, none containing a password or hash.
+  - Fixed during the walkthrough: the profile icon on phones was 40 px wide (now 44 px); the automatic breadcrumb pointed at the first menu item (now "Profil Saya"); the Keamanan card's narrow body showed the frame hatch (width limit moved inside).
+- `docs/CHANGELOG.md`: entry for 2026-10-11.
+
+Needs your decision: when to apply migration 033 to production (the three seeded production accounts will get `orgowner`, `coach`, `member`; the superadmin gets `superadmin`).

@@ -47,7 +47,7 @@ function accountItems(data: ProfileData) {
 export function ProfileView({ data }: { data: ProfileData }) {
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Profil Saya" subtitle={data.fullName} />
+      <PageHeader title="Profil Saya" subtitle={data.fullName} breadcrumb={[{ label: "Profil Saya" }]} />
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -150,8 +150,10 @@ export function ProfileView({ data }: { data: ProfileData }) {
             <CardTitle>Keamanan</CardTitle>
             <CardDescription>Mengganti kata sandi mengeluarkan semua sesi lain.</CardDescription>
           </CardHeader>
-          <CardContent className="max-w-sm">
-            <ChangePasswordForm requireCurrent />
+          <CardContent>
+            <div className="max-w-sm">
+              <ChangePasswordForm requireCurrent />
+            </div>
           </CardContent>
         </Card>
       </div>

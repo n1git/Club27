@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-11
+
+- Every account has a username (3–30 characters, lowercase letters, digits, dot, underscore). Owners, staff and member accounts share one namespace; superadmins have their own. Existing accounts get one from their email (migration 033).
+- `/login` and `/superadmin/login` take "Username atau email" with one generic error; lockout and rate limits are unchanged.
+- Registration, staff, coach and member activation forms ask for a username, filled from the email until edited.
+- New profile pages (`/profile`, `/superadmin/profile`) show account details and let each account edit its own name, username and phone (members: username only), with an audit entry per change. Coaches see their certifications and a hidden-by-default session rate.
+- The key icon in the top bar is replaced by a profile link; changing the password now lives on the profile page, and `/change-password` remains for the forced first-login change.
+
 ## 2026-10-10
 
 - Signed-in pages restyled to a framed card layout: hatched card frames with the title on the frame and the content in an inner body, page headers with breadcrumbs, metric cards, framed table cards with filters in the header, and rounded-top bar charts.
