@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { computeQuote, formatRupiah, PERIOD_LABEL, type BillingPeriod, type PlanCode, type PricingPlan } from "@/lib/pricing";
-import { PeriodToggle, PlanCard, UsersInput } from "@/components/pricing/pricing-picker";
+import { PeriodToggle, PlanCard } from "@/components/pricing/pricing-picker";
 import { TurnstileWidget } from "@/components/shared/turnstile-widget";
 import { UsernameField } from "@/components/shared/username-field";
 
@@ -115,10 +115,7 @@ export function RegisterClubForm({
 
       {step === 1 ? (
         <div className="flex flex-col gap-6">
-          <div className="flex flex-wrap items-end gap-6">
-            <PeriodToggle period={period} onChange={setPeriod} freeMonths={Math.max(...plans.map((p) => p.yearlyFreeMonths))} />
-            <UsersInput id="register-users" users={users} onChange={setUsers} />
-          </div>
+          <PeriodToggle period={period} onChange={setPeriod} freeMonths={Math.max(...plans.map((p) => p.yearlyFreeMonths))} />
           <div className="grid gap-4 sm:grid-cols-2">
             {plans.map((p) => (
               <PlanCard
@@ -126,6 +123,7 @@ export function RegisterClubForm({
                 plan={p}
                 period={period}
                 users={users}
+                onUsersChange={setUsers}
                 selected={p.code === plan.code}
                 onSelect={setPlanCode}
               />
@@ -145,7 +143,7 @@ export function RegisterClubForm({
               {plan.name} · {PERIOD_LABEL[period]}
             </p>
             <p className="text-muted-foreground">
-              Perkiraan {formatRupiah(quote.total)}/{period === "yearly" ? "tahun" : "bulan"} untuk {quote.users} pengguna.
+              {formatRupiah(quote.total)}/{period === "yearly" ? "tahun" : "bulan"} untuk {quote.users} pengguna.
               {plan.trialDays > 0
                 ? ` Gratis ${plan.trialDays} hari pertama.`
                 : " Paket aktif setelah pembayaran diterima admin platform."}

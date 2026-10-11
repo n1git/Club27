@@ -5,7 +5,7 @@ import { useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import type { BillingPeriod, PricingPlan } from "@/lib/pricing";
 import type { PlatformModule } from "@/lib/data/platform-pricing";
-import { ModuleList, PeriodToggle, PlanCard, UsersInput } from "./pricing-picker";
+import { ModuleList, PeriodToggle, PlanCard } from "./pricing-picker";
 
 export function LandingPricing({ plans, modules }: { plans: PricingPlan[]; modules: PlatformModule[] }) {
   const [period, setPeriod] = useState<BillingPeriod>("monthly");
@@ -17,10 +17,7 @@ export function LandingPricing({ plans, modules }: { plans: PricingPlan[]; modul
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-end gap-6">
-        <PeriodToggle period={period} onChange={setPeriod} freeMonths={Math.max(...plans.map((p) => p.yearlyFreeMonths))} />
-        <UsersInput id="landing-users" users={users} onChange={setUsers} />
-      </div>
+      <PeriodToggle period={period} onChange={setPeriod} freeMonths={Math.max(...plans.map((p) => p.yearlyFreeMonths))} />
       <div className="grid gap-4 sm:grid-cols-2">
         {plans.map((plan) => (
           <PlanCard
@@ -28,6 +25,7 @@ export function LandingPricing({ plans, modules }: { plans: PricingPlan[]; modul
             plan={plan}
             period={period}
             users={users}
+            onUsersChange={setUsers}
             action={
               <Link
                 href={`/daftar?plan=${plan.code}&period=${period}&users=${users}`}

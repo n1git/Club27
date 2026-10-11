@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,21 +56,48 @@ export function PeriodToggle({
   );
 }
 
-export function UsersInput({ id, users, onChange }: { id: string; users: number; onChange: (users: number) => void }) {
+const clampUsers = (value: number) => Math.min(Math.max(Math.floor(value) || 1, 1), 1000);
+
+export function UsersStepper({ id, users, onChange }: { id: string; users: number; onChange: (users: number) => void }) {
+  const step = "h-11 w-11 shrink-0 sm:h-9 sm:w-9";
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>Perkiraan pengguna internal</Label>
-      <Input
-        id={id}
-        type="number"
-        inputMode="numeric"
-        min={1}
-        max={1000}
-        value={users}
-        onChange={(e) => onChange(Math.min(Math.max(Math.floor(Number(e.target.value)) || 1, 1), 1000))}
-        className="w-28"
-        aria-describedby={`${id}-hint`}
-      />
+      <Label htmlFor={id}>Pengguna internal</Label>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className={step}
+          aria-label="Kurangi pengguna"
+          disabled={users <= 1}
+          onClick={() => onChange(clampUsers(users - 1))}
+        >
+          <Minus className="size-4" aria-hidden />
+        </Button>
+        <Input
+          id={id}
+          type="number"
+          inputMode="numeric"
+          min={1}
+          max={1000}
+          value={users}
+          onChange={(e) => onChange(clampUsers(Number(e.target.value)))}
+          className="h-11 w-16 text-center tabular-nums sm:h-9"
+          aria-describedby={`${id}-hint`}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className={step}
+          aria-label="Tambah pengguna"
+          disabled={users >= 1000}
+          onClick={() => onChange(clampUsers(users + 1))}
+        >
+          <Plus className="size-4" aria-hidden />
+        </Button>
+      </div>
       <p id={`${id}-hint`} className="text-xs text-muted-foreground">
         Pemilik, admin, pelatih, resepsionis, dan keuangan. Anggota tidak dihitung.
       </p>
@@ -84,6 +111,7 @@ export function PlanCard({
   users,
   selected,
   onSelect,
+  onUsersChange,
   action,
 }: {
   plan: PricingPlan;
@@ -91,6 +119,7 @@ export function PlanCard({
   users: number;
   selected?: boolean;
   onSelect?: (code: PlanCode) => void;
+  onUsersChange?: (users: number) => void;
   action?: React.ReactNode;
 }) {
   const quote = computeQuote(plan, period, users);
@@ -115,6 +144,11 @@ export function PlanCard({
         </span>
         <span className="text-sm text-muted-foreground"> /pengguna/bulan</span>
       </p>
+      {onUsersChange ? (
+        <div className="mt-4">
+          <UsersStepper id={`${plan.code}-users`} users={users} onChange={onUsersChange} />
+        </div>
+      ) : null}
       <p className="mt-2 text-sm text-foreground" aria-live="polite">
         {quote.users} pengguna × {quote.months.toLocaleString("id-ID")} bulan ={" "}
         <span className="font-semibold">{formatRupiah(quote.total)}</span>
