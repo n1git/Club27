@@ -5,7 +5,7 @@ Always use the lean-dev skill.
 ## Catatan tim (per 2026-10-01)
 
 Status
-- Production Vercel: READY. Supabase project `swimma` masih kosong; migrasi 001-011 sudah diterapkan, 012-030 belum (butuh `SUPABASE_ACCESS_TOKEN` atau `DATABASE_URL`, lihat `docs/DEPLOY.md`), dan env Supabase di Vercel belum mengarah ke project itu. `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
+- Production Vercel: READY. Supabase project `swimma` masih kosong; migrasi 001-030 sudah diterapkan (riwayat migrasi hosted baru mencatat 001-012, lihat `docs/DEPLOY.md`). Superadmin belum dibuat (`npm run seed:superadmin`). `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
 - Setelah migrasi: `npm run seed:superadmin` untuk akun superadmin pertama. Jangan terapkan migrasi 012-019 sebelum kode versi ini dideploy (pemilik dipindah ke `org_owners`, parent dihapus, langganan pindah ke organisasi). Halaman harga di landing kosong sampai 014 diterapkan (harga hanya ada di tabel). Vercel Authentication masih aktif, situs belum publik. GitHub Pages (`mvp/`) gagal sampai Pages diaktifkan.
 - Dua paket, Standard dan Advanced, semua modul `ready` termasuk di keduanya; yang membedakan hanya batas klub dan trial (`KAJIAN_PAKET.md`). Anggota dan lokasi tidak dibatasi.
 
