@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { UserRound } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { requireSuperadmin } from "@/lib/auth/superadmin";
 import { SuperadminLogoutButton } from "@/components/superadmin/superadmin-logout-button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -24,7 +27,14 @@ export default async function SuperadminPortalLayout({ children }: { children: R
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-muted-foreground sm:inline">{superadmin.fullName}</span>
+          <Link
+            href="/superadmin/profile"
+            className={buttonVariants({ variant: "ghost", size: "sm", className: "max-w-48" })}
+            aria-label={`Profil ${superadmin.fullName}`}
+          >
+            <UserRound className="size-4 shrink-0" aria-hidden="true" />
+            <span className="hidden truncate sm:inline">{superadmin.fullName}</span>
+          </Link>
           <ThemeToggle />
           <SuperadminLogoutButton />
         </div>

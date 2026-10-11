@@ -4,14 +4,26 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { suggestUsername } from "@/lib/validations/username";
+import { useActionFormState } from "./action-form";
 
-export function UsernameField({ emailName, error }: { emailName: string; error?: string }) {
+export function UsernameField({
+  emailName,
+  error: errorProp,
+  defaultValue = "",
+}: {
+  emailName?: string;
+  error?: string;
+  defaultValue?: string;
+}) {
+  const formState = useActionFormState();
+  const error = errorProp ?? formState.fieldErrors?.username;
   const id = useId();
   const ref = useRef<HTMLInputElement>(null);
   const touched = useRef(false);
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
+    if (!emailName) return;
     const email = ref.current?.form?.elements.namedItem(emailName);
     if (!(email instanceof HTMLInputElement)) return;
     const sync = () => {

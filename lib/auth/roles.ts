@@ -31,7 +31,14 @@ export function roleHome(role: AppRole): string {
   }
 }
 
+export function profilePath(role: AppRole): string {
+  if (role === "coach") return "/coach/profile";
+  if (role === "member") return "/member/profile";
+  return "/admin/profile";
+}
+
 const ADMIN_SECTION_ACCESS: { prefix: string; roles: AppRole[] }[] = [
+  { prefix: "/admin/profile", roles: ["admin", "receptionist", "finance"] },
   { prefix: "/admin/members", roles: ["admin", "receptionist"] },
   { prefix: "/admin/kasir", roles: ["admin", "receptionist"] },
   { prefix: "/admin/pesanan", roles: ["admin", "receptionist", "finance"] },

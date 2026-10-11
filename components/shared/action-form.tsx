@@ -1,9 +1,15 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { createContext, useActionState, useContext, useEffect } from "react";
 import { toast } from "sonner";
 import type { ActionState } from "@/lib/actions/types";
 import { useActionToast } from "@/components/shared/use-action-toast";
+
+const ActionFormStateContext = createContext<ActionState>({});
+
+export function useActionFormState() {
+  return useContext(ActionFormStateContext);
+}
 
 export function ActionForm({
   action,
@@ -22,7 +28,7 @@ export function ActionForm({
 
   return (
     <form action={formAction} className={className}>
-      {children}
+      <ActionFormStateContext value={state}>{children}</ActionFormStateContext>
     </form>
   );
 }

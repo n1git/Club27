@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { KeyRound } from "lucide-react";
+import { UserRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { LogoutButton } from "./logout-button";
 import { MobileNav } from "./mobile-nav";
@@ -37,12 +37,15 @@ export function AppShell({
               {tenantSwitcher}
             </div>
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
-              <span className="hidden text-sm text-muted-foreground sm:inline">{fullName}</span>
-              <ThemeToggle />
-              <Link href="/change-password" className={buttonVariants({ variant: "ghost", size: "sm" })}>
-                <KeyRound className="size-4" aria-hidden="true" />
-                <span className="sr-only sm:not-sr-only">Kata sandi</span>
+              <Link
+                href="/profile"
+                className={buttonVariants({ variant: "ghost", size: "sm", className: "max-w-48" })}
+                aria-label={`Profil ${fullName}`}
+              >
+                <UserRound className="size-4 shrink-0" aria-hidden="true" />
+                <span className="hidden truncate sm:inline">{fullName}</span>
               </Link>
+              <ThemeToggle />
               <LogoutButton />
             </div>
           </header>
