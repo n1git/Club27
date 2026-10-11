@@ -3,14 +3,14 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { verifyPasswordOrDummy } from "@/lib/auth/password";
 import { startSuperadminChallenge } from "@/lib/auth/superadmin";
 import { generateTotpSecret, otpauthUri, sealSecret } from "@/lib/auth/totp";
-import { superadminLoginSchema } from "@/lib/validations/auth";
+import { superadminLoginSchema, LOGIN_ERROR } from "@/lib/validations/auth";
 import { clientIp, isKeyLocked, isRateLimited, recordFailure, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { APP_NAME } from "@/lib/config";
 import { isCrossSite, readJsonBody } from "@/lib/auth/request";
 
 const FAIL_LIMIT = 5;
 const FAIL_WINDOW = 900;
-const GENERIC_ERROR = "Email atau kata sandi salah";
+const GENERIC_ERROR = LOGIN_ERROR;
 
 export async function POST(request: Request) {
   if (isCrossSite(request)) {
@@ -25,18 +25,16 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
   }
-  const email = parsed.data.email.trim().toLowerCase();
-  const failKey = `superadmin-fail:${clientIp(request)}:${email}`;
+  const { identifier } = parsed.data;
 
   const supabase = createAdminSupabaseClient();
-  const [{ data: superadmin }, locked] = await Promise.all([
-    supabase
-      .from("superadmins")
-      .select("id, email, password_hash, is_active, totp_enabled_at")
-      .eq("email", email)
-      .maybeSingle(),
-    isKeyLocked(failKey, FAIL_LIMIT, FAIL_WINDOW),
-  ]);
+  const { data: superadmin } = await supabase
+    .from("superadmins")
+    .select("id, email, password_hash, is_active, totp_enabled_at")
+    .eq(identifier.field, identifier.value)
+    .maybeSingle();
+  const failKey = `superadmin-fail:${clientIp(request)}:${superadmin?.email ?? identifier.value}`;
+  const locked = await isKeyLocked(failKey, FAIL_LIMIT, FAIL_WINDOW);
 
   const valid = await verifyPasswordOrDummy(parsed.data.password, superadmin?.password_hash);
   if (!superadmin || !superadmin.is_active || locked || !valid) {

@@ -82,7 +82,7 @@ export function SuperadminLoginForm() {
 
     if (step.name === "password") {
       const { ok, data } = await post("/api/superadmin/login", {
-        email: formData.get("email"),
+        identifier: formData.get("identifier"),
         password: formData.get("password"),
       });
       setLoading(false);
@@ -158,8 +158,8 @@ export function SuperadminLoginForm() {
       {step.name === "password" ? (
         <>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required autoComplete="email" />
+            <Label htmlFor="identifier">Username atau email</Label>
+            <Input id="identifier" name="identifier" type="text" required autoComplete="username" autoCapitalize="none" spellCheck={false} />
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="password">Kata Sandi</Label>

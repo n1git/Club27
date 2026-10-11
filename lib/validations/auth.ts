@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { USERNAME_PATTERN } from "./username";
 
 const COMMON_PASSWORDS = new Set([
   "password1", "password12", "password123", "password1234", "passw0rd123", "p@ssword123",
@@ -12,14 +13,24 @@ const COMMON_PASSWORDS = new Set([
   "admin2025", "admin2026", "password2024", "password2025", "password2026",
 ]);
 
+export const LOGIN_ERROR = "Username/email atau kata sandi salah";
+
 const boundedPassword = z
   .string()
   .min(1, "Kata sandi wajib diisi")
-  .max(128, "Email atau kata sandi salah")
-  .refine((value) => new TextEncoder().encode(value).length <= 72, "Email atau kata sandi salah");
+  .max(128, LOGIN_ERROR)
+  .refine((value) => new TextEncoder().encode(value).length <= 72, LOGIN_ERROR);
+
+const loginIdentifier = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254, LOGIN_ERROR)
+  .refine((value) => (value.includes("@") ? z.email().safeParse(value).success : USERNAME_PATTERN.test(value)), LOGIN_ERROR)
+  .transform((value) => ({ field: value.includes("@") ? ("email" as const) : ("username" as const), value }));
 
 export const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Email tidak valid").max(254),
+  identifier: loginIdentifier,
   password: boundedPassword,
 });
 
@@ -38,6 +49,6 @@ export const changePasswordSchema = z.object({
 });
 
 export const superadminLoginSchema = z.object({
-  email: z.string().email("Email tidak valid").max(254),
+  identifier: loginIdentifier,
   password: boundedPassword,
 });

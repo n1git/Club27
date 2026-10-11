@@ -23,7 +23,7 @@ export function LoginForm({ next }: { next: string | null }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        email: formData.get("email"),
+        identifier: formData.get("identifier"),
         password: formData.get("password"),
       }),
     });
@@ -50,8 +50,8 @@ export function LoginForm({ next }: { next: string | null }) {
         </Alert>
       ) : null}
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" required autoComplete="email" />
+        <Label htmlFor="identifier">Username atau email</Label>
+        <Input id="identifier" name="identifier" type="text" required autoComplete="username" autoCapitalize="none" spellCheck={false} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">Kata Sandi</Label>

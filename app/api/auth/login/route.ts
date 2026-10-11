@@ -3,7 +3,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { verifyPasswordOrDummy } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { roleHome, OWNER_HOME, type AppRole } from "@/lib/auth/roles";
-import { loginSchema } from "@/lib/validations/auth";
+import { loginSchema, LOGIN_ERROR } from "@/lib/validations/auth";
 import { isRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { isCrossSite, readJsonBody } from "@/lib/auth/request";
 import { APP_NAME } from "@/lib/config";
@@ -11,7 +11,7 @@ import { listMemberClubs } from "@/lib/data/member-clubs";
 
 const LOCKOUT_THRESHOLD = 5;
 const LOCKOUT_MINUTES = 15;
-const GENERIC_ERROR = "Email atau kata sandi salah";
+const GENERIC_ERROR = LOGIN_ERROR;
 const UNVERIFIED_ERROR = "Email pendaftaran belum diverifikasi. Buka tautan verifikasi di email Anda.";
 const DEACTIVATED_ERROR = `Akses klub Anda sedang dinonaktifkan. Data klub tetap tersimpan. Hubungi admin platform ${APP_NAME} untuk mengaktifkannya kembali.`;
 
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
   }
-  const { email, password } = parsed.data;
+  const { identifier, password } = parsed.data;
 
   const supabase = createAdminSupabaseClient();
 
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   const { data: owner } = await supabase
     .from("org_owners")
     .select("id, organization_id, is_active, password_hash, failed_login_count, locked_until")
-    .eq("email", email)
+    .eq(identifier.field, identifier.value)
     .maybeSingle();
 
   const { data: memberAccount } = owner
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     : await supabase
         .from("member_accounts")
         .select("id, is_active, password_hash, failed_login_count, locked_until")
-        .eq("email", email)
+        .eq(identifier.field, identifier.value)
         .maybeSingle();
 
   if (owner?.is_active) {
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("id, role, email, full_name, is_active, tenant_id, tenants(is_active, organization_id, created_at)")
-      .eq("email", email)
+      .eq(identifier.field, identifier.value)
       .is("owner_id", null)
       .maybeSingle();
 
