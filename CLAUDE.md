@@ -2,6 +2,13 @@
 
 Always use the lean-dev skill.
 
+## Builder workflow
+- Indonesian UI, no code comments, commit to `main` in small commits, `git pull` before every push.
+- A task prompt names a slug. Keep `progress/<slug>-progress.md`: status, a checkbox per phase, and per phase the files changed, commit hash, check result and blockers. On start, resume from the first unfinished phase; never redo a finished one.
+- After each phase run only `npx next typegen && npx tsc --noEmit`, append to the progress file, commit, and continue without stopping to report. Stop only at "Wait for my OK" or a failure you cannot fix, after writing the blocker to the progress file.
+- Run lint, build or other checks only when the owner asks for them in that task.
+- UI work uses `ui-ux-pro-max`; ask the owner before visual decisions not settled in the task prompt.
+
 ## Catatan tim (per 2026-10-01)
 
 Status
