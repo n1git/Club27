@@ -6,8 +6,8 @@ Always use the lean-dev skill.
 
 Status
 - Nama produk tampil "27 Club" (`NEXT_PUBLIC_APP_NAME`, default di `lib/config.ts`); semua pengenal teknis memakai `club27`: project Vercel dan Supabase (ref Supabase `gmldacyjdbsdofqqaqry`), package, audience JWT `club27-superadmin`, domain seed `demo.club27.test`, setting Postgres `club27.purge`/`club27.late_attendance`/`club27.audit_suppress`; repo GitHub `n1git/Club27` (URL lama `swimma` dialihkan GitHub).
-- Production Vercel: READY. Supabase project `club27` masih kosong; migrasi 001-032 sudah diterapkan (riwayat migrasi hosted baru mencatat 001-012, lihat `docs/DEPLOY.md`). Superadmin belum dibuat (`npm run seed:superadmin`). `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
-- Setelah migrasi: `npm run seed:superadmin` untuk akun superadmin pertama. Jangan terapkan migrasi 012-019 sebelum kode versi ini dideploy (pemilik dipindah ke `org_owners`, parent dihapus, langganan pindah ke organisasi). Halaman harga di landing kosong sampai 014 diterapkan (harga hanya ada di tabel). Vercel Authentication masih aktif, situs belum publik.
+- Production Vercel: READY. Supabase `club27`: skema migrasi 001-032 lengkap (dicek langsung ke produksi 2026-10-11), tapi riwayat migrasi hosted hanya mencatat 001-012 karena sisanya diterapkan manual; pakai `supabase db push --dry-run` dulu. Data masih kosong: 0 organisasi, 0 superadmin, 2 paket harga. `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
+- Langkah berikut: `npm run seed:superadmin` untuk akun superadmin pertama. Vercel Authentication masih aktif, situs belum publik.
 - Dua paket, Standard dan Advanced, semua modul `ready` termasuk di keduanya; yang membedakan hanya batas klub dan trial (`KAJIAN_PAKET.md`). Anggota dan lokasi tidak dibatasi.
 
 Sisa risiko keamanan
