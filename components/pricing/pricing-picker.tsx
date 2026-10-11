@@ -18,21 +18,40 @@ export function PeriodToggle({
   onChange: (period: BillingPeriod) => void;
   freeMonths: number;
 }) {
+  const yearly = period === "yearly";
+  const option = (value: BillingPeriod) =>
+    cn(
+      "min-h-11 cursor-pointer px-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md",
+      period === value ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground"
+    );
   return (
-    <div role="group" aria-label="Periode langganan" className="flex flex-wrap gap-2">
-      {(["monthly", "yearly"] as BillingPeriod[]).map((value) => (
-        <Button
-          key={value}
-          type="button"
-          size="sm"
-          variant={period === value ? "default" : "outline"}
-          aria-pressed={period === value}
-          onClick={() => onChange(value)}
-        >
-          {PERIOD_LABEL[value]}
-          {value === "yearly" && freeMonths > 0 ? ` · gratis ${freeMonths.toLocaleString("id-ID")} bulan` : ""}
-        </Button>
-      ))}
+    <div role="group" aria-label="Periode langganan" className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <button type="button" className={option("monthly")} aria-pressed={!yearly} onClick={() => onChange("monthly")}>
+        {PERIOD_LABEL.monthly}
+      </button>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={yearly}
+        aria-label="Bayar tahunan"
+        onClick={() => onChange(yearly ? "monthly" : "yearly")}
+        className="relative inline-flex h-8 w-14 shrink-0 cursor-pointer items-center rounded-full bg-primary p-1 shadow-inner transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      >
+        <span
+          className={cn(
+            "block h-6 w-8 rounded-full bg-white shadow-md transition-transform duration-200 motion-reduce:transition-none",
+            yearly ? "translate-x-4" : "translate-x-0"
+          )}
+        />
+      </button>
+      <button type="button" className={option("yearly")} aria-pressed={yearly} onClick={() => onChange("yearly")}>
+        {PERIOD_LABEL.yearly}
+      </button>
+      {freeMonths > 0 ? (
+        <Badge variant="secondary" className="whitespace-nowrap">
+          gratis {freeMonths.toLocaleString("id-ID")} bulan
+        </Badge>
+      ) : null}
     </div>
   );
 }
