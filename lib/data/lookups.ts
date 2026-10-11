@@ -28,16 +28,6 @@ export async function getActiveCoaches(): Promise<Lookup[]> {
   return (data ?? []).map((c) => ({ id: c.id, name: c.full_name }));
 }
 
-export async function getActiveMembers(): Promise<Lookup[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("member_names")
-    .select("id, full_name")
-    .eq("is_active", true)
-    .order("full_name");
-  return (data ?? []).map((c) => ({ id: c.id, name: c.full_name }));
-}
-
 export interface PackageOption extends Lookup {
   price: number;
   pricingMode: "cycle" | "session_pack";

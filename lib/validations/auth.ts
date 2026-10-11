@@ -12,8 +12,6 @@ const COMMON_PASSWORDS = new Set([
   "admin2025", "admin2026", "password2024", "password2025", "password2026",
 ]);
 
-export const PASSWORD_HINT = "Minimal 10 karakter, berisi huruf dan angka, dan bukan kata sandi umum.";
-
 const boundedPassword = z
   .string()
   .min(1, "Kata sandi wajib diisi")

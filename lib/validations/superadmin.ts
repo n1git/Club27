@@ -30,8 +30,6 @@ const optionalLimit = z
   .transform((v) => (v?.trim() ? Number(v) : undefined))
   .pipe(z.number("Batas klub tidak valid").int("Batas klub tidak valid").min(1, "Batas klub minimal 1").max(1000, "Batas klub terlalu besar").optional());
 
-export const ORGANIZATION_STATUSES = ["pending", "trial", "active", "suspended", "cancelled"] as const;
-
 export const activateOrganizationSchema = z.object({
   organizationId: z.string().uuid("Organisasi tidak valid"),
   periodStart: optionalDate,

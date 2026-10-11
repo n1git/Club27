@@ -9,6 +9,8 @@ branding. Members (swimmers) have no login.
 Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level
 Security, Tailwind CSS, Vercel deployment.
 
+`trash/` holds the retired Vite prototype (`mvp/`) and its Pages workflow, finished progress logs and unused components. Nothing in the app imports it; it is excluded from TypeScript and ESLint and can be deleted.
+
 ## Multi-tenancy model
 
 Hierarchy: **organization (owner account) → tenants (clubs) → coaches →

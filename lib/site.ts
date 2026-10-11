@@ -14,7 +14,3 @@ export function getContact(): Contact {
   const digits = process.env.NEXT_PUBLIC_CONTACT_WHATSAPP?.replace(/\D/g, "") || null;
   return { email, whatsapp: digits, whatsappUrl: digits ? `https://wa.me/${digits}` : null };
 }
-
-export function hasContact(contact: Contact = getContact()): boolean {
-  return Boolean(contact.email || contact.whatsapp);
-}

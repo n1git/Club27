@@ -46,16 +46,6 @@ export async function getResources(options: { activeOnly?: boolean } = {}): Prom
   return ((data ?? []) as unknown as ResourceRecord[]).map(toResource);
 }
 
-export async function getResourceHours(resourceId: string): Promise<ResourceHour[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from("resource_hours")
-    .select("weekday, opens, closes")
-    .eq("resource_id", resourceId)
-    .order("weekday");
-  return (data ?? []).map((h) => ({ weekday: h.weekday, opens: h.opens.slice(0, 5), closes: h.closes.slice(0, 5) }));
-}
-
 export async function getAllResourceHours(): Promise<Record<string, ResourceHour[]>> {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase.from("resource_hours").select("resource_id, weekday, opens, closes").order("weekday");
