@@ -4,7 +4,7 @@ import path from "node:path";
 import { generateTempPassword, hashPassword } from "../lib/auth/password";
 
 const PREFIX = "[DEMO]";
-const DOMAIN = "demo.swimma.test";
+const DOMAIN = "demo.27club.test";
 
 interface Args {
   scale: "demo" | "full";
@@ -192,7 +192,7 @@ begin
     return;
   end if;
   v_tenants := coalesce(v_tenants, '{}');
-  perform set_config('swimma.purge', 'on', true);
+  perform set_config('club27.purge', 'on', true);
   delete from audit_log where tenant_id = any(v_tenants) or organization_id = any(v_orgs);
   delete from consents where tenant_id = any(v_tenants) or organization_id = any(v_orgs);
   delete from email_verifications where organization_id = any(v_orgs);
