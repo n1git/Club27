@@ -11,6 +11,9 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  outputFileTracingIncludes: {
+    "/api/mcp/*": ["./supabase/migrations/*.sql"],
+  },
   experimental: {
     serverActions: { bodySizeLimit: "2100kb" },
   },

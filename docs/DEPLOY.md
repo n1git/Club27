@@ -67,6 +67,17 @@ Client IP for rate limits is read only from `x-real-ip`, which Vercel sets on ev
 
 Pages send a Content-Security-Policy with a per-request nonce (`script-src 'nonce-…' 'strict-dynamic'`); every page renders dynamically for that reason.
 
+## 2b. Database connector (optional)
+
+`/api/mcp/<MCP_CONNECTOR_KEY>` is an MCP server for claude.ai custom connectors with three tools: `migration_status`, `apply_migration` (runs one file from `supabase/migrations`, in order, in one transaction, then records it) and `mark_migration_applied` (records a migration applied by other means). It cannot run free SQL.
+
+1. Set in Vercel (Production only): `MCP_CONNECTOR_KEY` (random, at least 32 characters, for example `openssl rand -hex 32`) and `DATABASE_URL` (Supabase, Connect, Session pooler string with the database password). Redeploy.
+2. While Vercel Authentication covers the production URL, create a Protection Bypass for Automation secret (Project Settings, Deployment Protection) and append `?x-vercel-protection-bypass=<secret>` to the connector URL.
+3. claude.ai, Settings, Connectors, Add custom connector: `https://<host>/api/mcp/<MCP_CONNECTOR_KEY>` (plus the bypass query if needed).
+4. First run `migration_status`; for migrations already applied through the Management API, call `mark_migration_applied` in order before using `apply_migration`.
+
+The URL is the credential: anyone holding it can apply pending repository migrations. Keep it out of chats, tickets and logs, and rotate `MCP_CONNECTOR_KEY` if it leaks. Unset the key to disable the endpoint.
+
 ## 3. Smoke test
 
 1. Open `/` and confirm the pricing section lists Standard and Advanced (needs migration 014).
