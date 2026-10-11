@@ -2,11 +2,12 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { hashPassword, generateTempPassword } from "@/lib/auth/password";
 import type { AppRole } from "@/lib/auth/roles";
 import { PLAN_LIMIT_CODES, type ActionState } from "@/lib/actions/types";
+import { usernameDbError } from "@/lib/validations/username";
 
 export async function createTenantAccount(
   tenantId: string,
   role: AppRole,
-  input: { fullName: string; email: string; phone?: string },
+  input: { fullName: string; email: string; username: string; phone?: string },
   failureMessage: string
 ): Promise<ActionState> {
   const supabase = createAdminSupabaseClient();
@@ -25,6 +26,7 @@ export async function createTenantAccount(
       role,
       full_name: input.fullName,
       email: input.email,
+      username: input.username,
       phone: input.phone ?? null,
       must_change_password: true,
     })
@@ -32,6 +34,8 @@ export async function createTenantAccount(
     .single();
 
   if (error || !profile) {
+    const usernameError = usernameDbError(error?.message);
+    if (usernameError) return { ok: false, error: usernameError, fieldErrors: { username: usernameError } };
     if (error?.code === "23505") return { ok: false, error: "Email sudah terdaftar" };
     return { ok: false, error: error && PLAN_LIMIT_CODES.has(error.code) ? error.message : failureMessage };
   }

@@ -16,6 +16,7 @@ export async function createCoach(
   const parsed = coachSchema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
+    username: formData.get("username"),
     phone: formData.get("phone") || undefined,
   });
   if (!parsed.success) {

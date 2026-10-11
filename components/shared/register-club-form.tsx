@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { computeQuote, formatRupiah, PERIOD_LABEL, type BillingPeriod, type PlanCode, type PricingPlan } from "@/lib/pricing";
 import { PeriodToggle, PlanCard, UsersInput } from "@/components/pricing/pricing-picker";
 import { TurnstileWidget } from "@/components/shared/turnstile-widget";
+import { UsernameField } from "@/components/shared/username-field";
 
 export function RegisterClubForm({
   plans,
@@ -38,6 +39,7 @@ export function RegisterClubForm({
   const [loading, setLoading] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [usernameError, setUsernameError] = useState<string | undefined>();
   const onCaptcha = useCallback((token: string) => setCaptchaToken(token), []);
 
   const plan = plans.find((p) => p.code === planCode) ?? plans[0];
@@ -59,6 +61,7 @@ export function RegisterClubForm({
         tenantName: formData.get("tenantName"),
         ownerFullName: formData.get("ownerFullName"),
         ownerEmail: formData.get("ownerEmail"),
+        username: formData.get("username"),
         password: formData.get("password"),
         planCode: plan.code,
         billingPeriod: period,
@@ -71,6 +74,7 @@ export function RegisterClubForm({
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      setUsernameError(data.field === "username" ? data.error : undefined);
       setError(data.error ?? "Gagal mendaftarkan klub");
       setLoading(false);
       return;
@@ -183,6 +187,7 @@ export function RegisterClubForm({
             <Label htmlFor="ownerEmail">Email</Label>
             <Input id="ownerEmail" name="ownerEmail" type="email" required autoComplete="email" />
           </div>
+          <UsernameField emailName="ownerEmail" error={usernameError} />
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="password">Kata sandi</Label>
             <Input

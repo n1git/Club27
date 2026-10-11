@@ -13,6 +13,7 @@ export async function createStaff(_prevState: ActionState, formData: FormData): 
   const parsed = staffSchema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
+    username: formData.get("username"),
     phone: formData.get("phone") || undefined,
     role: formData.get("role"),
   });

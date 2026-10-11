@@ -17,7 +17,7 @@ Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Secur
    ```bash
    SEED_TENANT_NAME="My Club" SEED_ADMIN_EMAIL=owner@example.com SEED_ADMIN_PASSWORD=ChangeMe123 npm run seed:admin
    ```
-   Optional: `SEED_ORGANIZATION_NAME`, `SEED_PLAN` (`standard`|`advanced`), `SEED_PERIOD` (`monthly`|`yearly`).
+   Optional: `SEED_ADMIN_USERNAME` (default: from the email), `SEED_ORGANIZATION_NAME`, `SEED_PLAN` (`standard`|`advanced`), `SEED_PERIOD` (`monthly`|`yearly`).
 4. `npm run dev`, then log in at `/login`.
 
 ## Scripts

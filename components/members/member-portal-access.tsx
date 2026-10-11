@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { TempPasswordNotice } from "@/components/shared/temp-password-notice";
+import { UsernameField } from "@/components/shared/username-field";
 
 export function MemberPortalAccess({ memberId, hasAccount }: { memberId: string; hasAccount: boolean }) {
   const [activation, activateAction, activating] = useActionState(activateMemberAccount, {});
@@ -64,6 +65,7 @@ export function MemberPortalAccess({ memberId, hasAccount }: { memberId: string;
               Jika email ini sudah punya akun di klub lain, akun yang sama dipakai dan kata sandinya tidak berubah.
             </p>
           </div>
+          <UsernameField emailName="email" error={activation.fieldErrors?.username} />
           <Button type="submit" disabled={activating} className="w-fit">
             {activating ? "Memproses..." : "Aktifkan akun"}
           </Button>

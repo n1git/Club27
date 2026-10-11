@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useActionToast } from "@/components/shared/use-action-toast";
 import { TempPasswordNotice } from "@/components/shared/temp-password-notice";
+import { UsernameField } from "@/components/shared/username-field";
 import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import type { InternalUserCostChange } from "@/lib/data/platform-pricing";
 
@@ -69,6 +70,7 @@ export function AccountForm({
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" required />
       </div>
+      <UsernameField emailName="email" error={state.fieldErrors?.username} />
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="phone">Telepon</Label>
         <Input id="phone" name="phone" maxLength={30} />

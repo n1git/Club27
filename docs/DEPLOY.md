@@ -43,7 +43,7 @@ Migration 024 sets the privileges of the public schema: no `TRUNCATE`, `REFERENC
 2. Run the Supabase security and performance advisors; expect "extension in public" for `btree_gist` and `pg_trgm` only.
    - Catalog check: no row for `anon` or `authenticated` in `information_schema.role_table_grants` with privilege `TRUNCATE`, `REFERENCES` or `TRIGGER`, and `select count(*) from pg_proc p where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute')` returns only extension functions.
    - Move pgcrypto back to `extensions` if it was moved (see above).
-3. Create the first superadmin: `npm run seed:superadmin` with `SEED_SUPERADMIN_EMAIL` and `SEED_SUPERADMIN_PASSWORD` (12+ characters) and the service role key in the environment. The first login at `/superadmin/login` enrols an authenticator app and shows eight single-use recovery codes once.
+3. Create the first superadmin: `npm run seed:superadmin` with `SEED_SUPERADMIN_EMAIL`, `SEED_SUPERADMIN_PASSWORD` (12+ characters) and optionally `SEED_SUPERADMIN_USERNAME` (default: from the email) and the service role key in the environment. The first login at `/superadmin/login` enrols an authenticator app and shows eight single-use recovery codes once.
 4. Lost authenticator: `npm run superadmin:reset-mfa -- <email>` (service role key in the environment) clears the authenticator and recovery codes and ends every session of that platform admin; enrolment is required at the next login.
 
 ## 2. Environment variables (Vercel)

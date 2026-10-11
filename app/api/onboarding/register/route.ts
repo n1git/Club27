@@ -12,6 +12,7 @@ import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { SITE_URL } from "@/lib/site";
 import { APP_NAME } from "@/lib/config";
 import { PRIVACY_VERSION } from "@/lib/privacy";
+import { usernameDbError } from "@/lib/validations/username";
 
 const GENERIC_ERROR = "Pendaftaran tidak dapat diproses. Periksa data Anda atau masuk jika sudah punya akun.";
 
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  const { tenantName, ownerFullName, ownerEmail, password, planCode, billingPeriod, estimatedUsers, clubType } = parsed.data;
+  const { tenantName, ownerFullName, ownerEmail, username, password, planCode, billingPeriod, estimatedUsers, clubType } = parsed.data;
 
   if (!(await verifyCaptcha((body as { captchaToken?: unknown }).captchaToken, clientIp(request)))) {
     return NextResponse.json({ error: "Verifikasi keamanan gagal. Muat ulang halaman lalu coba lagi." }, { status: 400 });
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
     p_plan: planCode,
     p_period: billingPeriod,
     p_club_type: clubType,
+    p_username: username,
   };
 
   if (isEmailConfigured()) {
@@ -98,6 +100,8 @@ export async function POST(request: Request) {
     if (!error && pending) {
       await recordOwnerConsent(pending);
       await sendEmail({ to: ownerEmail, ...verificationEmail(`${SITE_URL}/api/onboarding/verify?token=${token}`, ownerFullName) });
+    } else if (usernameDbError(error?.message)) {
+      return NextResponse.json({ error: usernameDbError(error?.message), field: "username" }, { status: 409 });
     } else if (error?.code === "23505") {
       await sendEmail({ to: ownerEmail, ...existingAccountEmail() });
     } else if (error?.message.includes("club type not available") || error?.message.includes("plan not available")) {
@@ -111,6 +115,9 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.rpc("register_organization", args);
   const created = (data as Created[] | null)?.[0];
   if (error || !created) {
+    if (usernameDbError(error?.message)) {
+      return NextResponse.json({ error: usernameDbError(error?.message), field: "username" }, { status: 409 });
+    }
     if (error?.message.includes("club type not available") || error?.message.includes("plan not available")) {
       return NextResponse.json({ error: "Paket atau jenis klub tidak tersedia" }, { status: 400 });
     }

@@ -9,6 +9,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hashPassword, generateTempPassword } from "@/lib/auth/password";
 import { isModuleReady } from "@/lib/modules";
 import { type ActionState } from "./types";
+import { usernameDbError, usernameSchema } from "@/lib/validations/username";
 
 const MODULE_ERROR: ActionState = { ok: false, error: "Portal anggota belum tersedia" };
 const MEMBER_ERROR_CODES = new Set(["MP001", "MP002", "MP003", "MP004"]);
@@ -16,6 +17,7 @@ const MEMBER_ERROR_CODES = new Set(["MP001", "MP002", "MP003", "MP004"]);
 const activateSchema = z.object({
   memberId: z.string().uuid("Anggota tidak valid"),
   email: z.string().trim().toLowerCase().email("Email tidak valid").max(254, "Email terlalu panjang"),
+  username: usernameSchema,
 });
 
 const resetSchema = z.object({ memberId: z.string().uuid("Anggota tidak valid") });
@@ -42,7 +44,11 @@ export async function activateMemberAccount(_prevState: ActionState, formData: F
   const session = await requireActionRole(["admin", "coach"]);
   if (!(await isModuleReady("member_portal"))) return MODULE_ERROR;
 
-  const parsed = activateSchema.safeParse({ memberId: formData.get("memberId"), email: formData.get("email") });
+  const parsed = activateSchema.safeParse({
+    memberId: formData.get("memberId"),
+    email: formData.get("email"),
+    username: formData.get("username"),
+  });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
 
   const member = await visibleMember(parsed.data.memberId, session);
@@ -53,8 +59,11 @@ export async function activateMemberAccount(_prevState: ActionState, formData: F
     p_member_id: member.id,
     p_email: parsed.data.email,
     p_password_hash: await hashPassword(tempPassword),
+    p_username: parsed.data.username,
   });
   if (error) {
+    const usernameError = usernameDbError(error.message);
+    if (usernameError) return { ok: false, error: usernameError, fieldErrors: { username: usernameError } };
     if (error.code === "23505") return { ok: false, error: "Email sudah dipakai sebagai pemilik atau staf" };
     return { ok: false, error: MEMBER_ERROR_CODES.has(error.code) ? error.message : "Gagal mengaktifkan akun anggota" };
   }

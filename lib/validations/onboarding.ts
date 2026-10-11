@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { passwordSchema } from "./auth";
+import { usernameSchema } from "./username";
 import { BILLING_PERIODS, PLAN_CODES, type BillingPeriod, type PlanCode } from "@/lib/pricing";
 
 const tenantNameSchema = z.string().trim().min(2, "Nama klub minimal 2 karakter").max(100, "Nama klub terlalu panjang");
@@ -13,6 +14,7 @@ export const registerClubSchema = z.object({
   tenantName: tenantNameSchema,
   ownerFullName: z.string().trim().min(2, "Nama Anda minimal 2 karakter").max(100, "Nama terlalu panjang"),
   ownerEmail: z.string().trim().toLowerCase().email("Email tidak valid").max(254, "Email terlalu panjang"),
+  username: usernameSchema,
   password: passwordSchema,
   clubType: clubTypeSchema,
   planCode: z.enum(PLAN_CODES as [PlanCode, ...PlanCode[]], { message: "Pilih paket" }),

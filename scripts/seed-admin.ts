@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
+import { suggestUsername, usernameSchema } from "../lib/validations/username";
 
 async function main() {
   const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
@@ -11,6 +12,12 @@ async function main() {
 
   if (!email || !password) {
     console.error("Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD environment variables before running this script.");
+    process.exit(1);
+  }
+
+  const username = usernameSchema.safeParse(process.env.SEED_ADMIN_USERNAME ?? suggestUsername(email));
+  if (!username.success) {
+    console.error(`SEED_ADMIN_USERNAME: ${username.error.issues[0]?.message}`);
     process.exit(1);
   }
 
@@ -40,6 +47,7 @@ async function main() {
     p_password_hash: await bcrypt.hash(password, 10),
     p_plan: process.env.SEED_PLAN ?? "standard",
     p_period: process.env.SEED_PERIOD ?? "monthly",
+    p_username: username.data,
   });
 
   if (error) {
@@ -47,7 +55,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Organization "${organizationName}" with owner ${email} and club "${tenantName}" created.`);
+  console.log(`Organization "${organizationName}" with owner ${email} (username ${username.data}) and club "${tenantName}" created.`);
 }
 
 main();

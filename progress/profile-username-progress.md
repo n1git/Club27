@@ -81,3 +81,11 @@ Every edit is an update on the caller's own row, identified by the session id. I
 - Tested on a local database: applies on an empty database and on one with owners, staff, a member account and a superadmin (colliding local parts get `2`, `3`, …). Duplicate across owner/member/staff refused, reserved name refused, bad format refused by the `CHECK`, new rows filled, owner/member profiles keep `username` null.
 - `lib/validations/username.ts`: same regex and reserved list.
 - `docs/DEPLOY.md`: row for 033.
+
+## Phase 2 — login and account creation (done)
+
+- `loginSchema` / `superadminLoginSchema`: one `identifier` field; with `@` it must be an email, otherwise it must match the username pattern; it resolves to `{ field, value }`. Both routes query `.eq(field, value)` with the service role. A single error, `LOGIN_ERROR` ("Username/email atau kata sandi salah"), covers an unknown account, a wrong password and an invalid identifier. Lockout stays per account: the owner/member/staff counters live on the row, and the superadmin fail key now uses the account email when found, so switching between username and email does not reset it.
+- `/login` and `/superadmin/login`: field "Username atau email" (`autocomplete="username"`).
+- `UsernameField` (`components/shared/username-field.tsx`): fills itself from the email input with `suggestUsername` until the user edits it; shows the server error under the field. `ActionState.fieldErrors.username`.
+- Username added to `/daftar` (route returns 409 `field: "username"`; a duplicate email still takes the silent path, because the email trigger fires first), staff and coach forms (`createTenantAccount`), member activation (`activate_member_account`; ignored when the email already has an account), `seed-admin.ts` (`SEED_ADMIN_USERNAME`) and `seed-superadmin.ts` (`SEED_SUPERADMIN_USERNAME`). `seed-demo` is covered by the fill-in trigger.
+- Duplicate and reserved names come back as "Username sudah dipakai" / "Username tidak tersedia" next to the field.
