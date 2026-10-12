@@ -6,139 +6,110 @@ import { PRIVACY_VERSION } from "@/lib/privacy";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi",
-  description: `Kebijakan privasi ${APP_NAME}: data yang disimpan, tujuan, penyedia layanan, dan hak Anda.`,
+  description: `Kebijakan privasi ${APP_NAME}: data yang diproses, tujuannya, dan hak Anda.`,
   alternates: { canonical: "/privasi" },
 };
+
+const link = "font-medium text-primary underline-offset-4 hover:underline";
 
 export default function PrivacyPage() {
   return (
     <LegalPage title="Kebijakan Privasi" updated="12 Oktober 2026">
       <p>
-        {APP_NAME} adalah aplikasi untuk mengelola klub olahraga. Kebijakan ini menjelaskan data pribadi apa yang
-        diproses di dalam aplikasi, untuk apa, siapa yang bertanggung jawab, dan bagaimana Anda dapat memakai hak Anda
-        sesuai Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi. Versi kebijakan:{" "}
-        <strong>{PRIVACY_VERSION}</strong>.
+        Kebijakan ini menjelaskan data pribadi yang diproses di {APP_NAME}, tujuannya, dan hak Anda sesuai
+        Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi. Versi {PRIVACY_VERSION}.
       </p>
 
-      <h2>1. Siapa kami dan siapa yang bertanggung jawab</h2>
-      <p className="ringkas">Ringkasnya: data anggota adalah milik klub; kami mengolahnya atas nama klub.</p>
+      <h2>1. Pengelola dan tanggung jawab</h2>
       <p>
-        {APP_NAME} dikelola oleh {LEGAL_OPERATORS}, berkedudukan di {LEGAL_DOMICILE} (selanjutnya &ldquo;kami&rdquo;).
+        {APP_NAME} dikelola oleh {LEGAL_OPERATORS}, berkedudukan di {LEGAL_DOMICILE} (&ldquo;kami&rdquo;).
       </p>
       <ul>
+        <li>Untuk data akun pemilik dan langganan, kami adalah pengendali data.</li>
         <li>
-          Untuk data akun pemilik, data langganan, dan catatan keamanan platform, kami adalah <strong>pengendali data</strong>.
-        </li>
-        <li>
-          Untuk data anggota, staf, dan kegiatan sebuah klub, <strong>klub adalah pengendali data</strong> dan kami adalah{" "}
-          <strong>prosesor data</strong> yang memproses data itu hanya untuk menjalankan aplikasi bagi klub. Ketentuan
-          pemrosesan ini diatur di bagian &ldquo;Pemrosesan data atas nama klub&rdquo; pada{" "}
-          <Link href="/syarat#pemrosesan-data" className="font-medium text-primary underline-offset-4 hover:underline">
+          Untuk data anggota, staf, dan kegiatan klub, klub adalah pengendali data dan kami memprosesnya atas nama klub
+          sesuai{" "}
+          <Link href="/syarat#pemrosesan-data" className={link}>
             Syarat & Ketentuan
           </Link>
-          .
+          . Permintaan tentang data anggota sebaiknya diajukan lebih dulu kepada klub.
         </li>
-        <li>Permintaan tentang data anggota sebaiknya diajukan lebih dulu kepada klub. Kami akan membantu klub menanganinya.</li>
       </ul>
 
-      <h2>2. Data yang kami proses</h2>
-      <p className="ringkas">Ringkasnya: hanya data yang diperlukan untuk menjalankan klub. Kata sandi tidak pernah disimpan dalam bentuk asli.</p>
+      <h2>2. Data yang diproses</h2>
       <ul>
-        <li>Pemilik organisasi: nama, email, nama pengguna, kata sandi (tidak disimpan dalam bentuk asli), waktu login terakhir, dan jumlah percobaan login gagal.</li>
-        <li>Staf klub (admin, pelatih, resepsionis, keuangan): nama, email, nama pengguna, nomor telepon bila diisi, peran, data profil pelatih bila diisi, dan kata sandi (tidak disimpan dalam bentuk asli).</li>
-        <li>
-          Anggota: nama, tanggal lahir, alamat, catatan, lokasi pilihan, pelatih, serta nama dan nomor telepon kontak
-          (misalnya orang tua) bila diisi oleh klub. Anggota dapat berupa anak.
-        </li>
-        <li>Akun anggota (bila diaktifkan klub): email, nama pengguna, dan kata sandi (tidak disimpan dalam bentuk asli).</li>
-        <li>Kegiatan klub: jadwal kelas, booking kelas dan fasilitas, kehadiran beserta catatan pelatih, paket anggota, tagihan, pesanan kasir, pembayaran yang dicatat manual, buku kas, dan gaji pelatih.</li>
-        <li>Check-in: anggota, titik check-in, waktu, paket, dan cara check-in. Alamat IP dan data perangkat tidak disimpan.</li>
-        <li>Booking tamu dan pesanan kasir tanpa anggota: nama dan nomor telepon bila diisi.</li>
-        <li>Gambar promo yang diunggah klub.</li>
-        <li>Catatan persetujuan: siapa yang setuju, versi kebijakan, waktu, nama wali bila anggota masih anak, dan staf yang mencatat.</li>
-        <li>Log audit: tindakan penting (misalnya atur ulang kata sandi, perubahan status, pembatalan) beserta pelaku dan waktunya, tanpa kata sandi.</li>
-        <li>Pembatasan percobaan login dan pendaftaran: alamat IP disimpan sementara sebagai penghitung dan dihapus dalam sekitar satu hari.</li>
+        <li>Data akun pemilik, staf, dan anggota: nama, email, nama pengguna, nomor telepon, dan kata sandi.</li>
+        <li>Data anggota yang diisi klub: tanggal lahir, alamat, kontak orang tua atau wali, dan catatan. Anggota dapat berupa anak.</li>
+        <li>Data kegiatan klub: jadwal, booking, kehadiran, check-in, paket, tagihan, transaksi kasir, buku kas, dan gaji pelatih.</li>
+        <li>Catatan persetujuan dan riwayat tindakan penting di aplikasi.</li>
       </ul>
-      <p>Kami tidak memproses data pembayaran kartu atau rekening, karena aplikasi tidak menerima pembayaran online.</p>
+      <p>Kami tidak memproses data kartu atau rekening pembayaran.</p>
 
-      <h2>3. Tujuan dan dasar pemrosesan</h2>
+      <h2>3. Tujuan pemrosesan</h2>
       <ul>
-        <li>Menyediakan akun, langganan, dan fitur aplikasi: pelaksanaan perjanjian dengan pemilik.</li>
-        <li>Mengelola anggota, kelas, kehadiran, tagihan, dan kasir atas nama klub: dasar pemrosesan yang dimiliki klub, umumnya persetujuan anggota atau walinya dan pelaksanaan perjanjian keanggotaan.</li>
-        <li>Menjaga keamanan akun, mencegah penyalahgunaan, dan mencatat log audit: kepentingan yang sah untuk melindungi pengguna dan data.</li>
-        <li>Menyimpan catatan keuangan: pemenuhan kewajiban hukum klub dan kami.</li>
+        <li>Menyediakan akun, langganan, dan fitur aplikasi.</li>
+        <li>Membantu klub mengelola anggota, kegiatan, dan keuangannya.</li>
+        <li>Menjaga keamanan akun dan mencegah penyalahgunaan.</li>
+        <li>Memenuhi kewajiban hukum, termasuk pencatatan keuangan.</li>
       </ul>
-      <p>Kami tidak menjual data pribadi, tidak memakainya untuk iklan, dan tidak membuat profil perilaku pengguna.</p>
+      <p>Kami tidak menjual data pribadi dan tidak memakainya untuk iklan.</p>
 
       <h2>4. Data anak</h2>
-      <p className="ringkas">Ringkasnya: anggota di bawah 18 tahun hanya dapat dicatat dengan persetujuan orang tua atau wali.</p>
       <p>
-        Saat klub menambah anggota berusia di bawah 18 tahun, aplikasi mewajibkan staf mencatat persetujuan orang tua
-        atau wali beserta namanya. Klub bertanggung jawab memastikan persetujuan itu benar-benar diperoleh. Orang tua
-        atau wali dapat meminta akses, perbaikan, atau penghapusan data anaknya melalui klub atau melalui kontak kami.
+        Anggota di bawah 18 tahun hanya dapat dicatat dengan persetujuan orang tua atau wali. Klub bertanggung jawab
+        memperoleh persetujuan tersebut. Orang tua atau wali dapat meminta akses, perbaikan, atau penghapusan data
+        anaknya melalui klub atau kontak kami.
       </p>
 
       <h2>5. Penyedia layanan dan transfer ke luar negeri</h2>
-      <p className="ringkas">Ringkasnya: data disimpan di server penyedia layanan di luar Indonesia.</p>
       <p>
-        Kami memakai penyedia layanan pihak ketiga untuk hosting, basis data dan penyimpanan berkas, serta, bila
-        diaktifkan, pengiriman email dan pemeriksaan anti-bot. Sebagian server penyedia berada di luar Indonesia, sehingga
-        data pribadi dapat ditransfer ke luar wilayah Indonesia. Kami hanya memilih penyedia yang menerapkan standar
-        keamanan dan pelindungan data yang diakui secara internasional, dan hanya memberikan data yang diperlukan untuk
-        layanan masing-masing.
+        Kami memakai penyedia layanan pihak ketiga untuk menjalankan aplikasi. Sebagian server penyedia berada di luar
+        Indonesia, sehingga data dapat ditransfer ke luar wilayah Indonesia. Kami hanya memilih penyedia dengan standar
+        pelindungan data yang memadai dan hanya memberikan data yang diperlukan.
       </p>
 
-      <h2>6. Cookie dan penyimpanan di peramban</h2>
-      <ul>
-        <li>Cookie sesi <code>app_session</code> (httpOnly, berlaku hingga 7 hari) untuk menjaga Anda tetap masuk.</li>
-        <li>Cookie <code>superadmin_session</code> dan <code>superadmin_mfa</code> hanya untuk tim pengelola platform.</li>
-        <li>Pilihan tema terang atau gelap disimpan di peramban Anda.</li>
-        <li>Tidak ada cookie atau skrip analitik, iklan, atau pelacakan pihak ketiga.</li>
-      </ul>
+      <h2>6. Cookie</h2>
+      <p>
+        Kami hanya memakai cookie yang diperlukan agar Anda tetap masuk dan pengaturan tampilan tersimpan. Tidak ada
+        cookie analitik, iklan, atau pelacakan pihak ketiga.
+      </p>
 
       <h2>7. Keamanan</h2>
       <p>
         Kami menerapkan langkah teknis dan organisasi yang wajar untuk melindungi data dari akses, perubahan, dan
-        pengungkapan yang tidak sah, termasuk pemisahan data antar klub dan pembatasan akses sesuai peran pengguna. Tidak
-        ada sistem yang sepenuhnya bebas risiko, dan kami terus memperbaiki keamanan aplikasi.
+        pengungkapan yang tidak sah. Tidak ada sistem yang sepenuhnya bebas risiko, dan kami terus memperbaiki keamanan
+        aplikasi.
       </p>
 
       <h2>8. Masa penyimpanan</h2>
-      <ul>
-        <li>Data disimpan selama langganan organisasi berjalan.</li>
-        <li>Saat langganan berakhir, ditangguhkan, atau dibatalkan, akses klub dibatasi tetapi data tetap tersimpan.</li>
-        <li>Data tidak dihapus otomatis saat langganan berakhir. Pemilik dapat memperpanjang langganan kapan saja untuk melanjutkan pemakaian dengan data yang sama.</li>
-        <li>Pemilik dapat meminta ekspor atau penghapusan data klub kapan saja. Catatan keuangan dapat disimpan dalam bentuk tanpa identitas bila diwajibkan peraturan.</li>
-        <li>Anggota yang dianonimkan kehilangan nama, kontak, alamat, catatan, dan akun loginnya; catatan keuangan dan kehadiran tetap ada tanpa identitas.</li>
-        <li>Penghitung IP untuk pembatasan login dihapus dalam sekitar satu hari; token verifikasi email dihapus setelah dipakai.</li>
-      </ul>
-
-      <h2>9. Hak Anda</h2>
-      <p className="ringkas">Ringkasnya: Anda berhak melihat, membetulkan, mengunduh, dan meminta penghapusan data Anda.</p>
-      <ul>
-        <li>Mendapat informasi tentang pemrosesan data Anda (kebijakan ini).</li>
-        <li>Mengakses dan mengunduh salinan data: anggota yang punya akun dapat mengunduh datanya (JSON) dari portal anggota; admin klub dapat mengunduh data seorang anggota.</li>
-        <li>Membetulkan data yang salah melalui admin klub atau halaman profil Anda.</li>
-        <li>Meminta penghapusan atau anonimisasi data, dan menarik persetujuan. Penarikan persetujuan tidak memengaruhi pemrosesan yang sudah dilakukan sebelumnya.</li>
-        <li>Menolak atau meminta pembatasan pemrosesan dalam hal yang diatur peraturan perundang-undangan.</li>
-      </ul>
       <p>
-        Kami dapat meminta bukti identitas sebelum memproses permintaan dan akan menanggapinya dalam jangka waktu yang
-        ditentukan peraturan. Bila Anda tidak puas dengan tanggapan kami, Anda dapat mengadu kepada lembaga yang
-        berwenang di bidang pelindungan data pribadi.
+        Data disimpan selama langganan berjalan dan tidak dihapus otomatis saat langganan berakhir, sehingga pemakaian
+        dapat dilanjutkan setelah diperpanjang. Pemilik dapat meminta salinan atau penghapusan data klub kapan saja.
+        Catatan keuangan dapat disimpan tanpa identitas bila diwajibkan peraturan.
       </p>
 
-      <h2>10. Bila terjadi kegagalan pelindungan data</h2>
+      <h2>9. Hak Anda</h2>
+      <ul>
+        <li>Mengakses dan memperoleh salinan data Anda.</li>
+        <li>Membetulkan data yang tidak akurat.</li>
+        <li>Meminta penghapusan data dan menarik persetujuan.</li>
+        <li>Menolak atau membatasi pemrosesan sesuai peraturan perundang-undangan.</li>
+      </ul>
       <p>
-        Bila terjadi kegagalan pelindungan data pribadi, kami akan memberi tahu klub yang terdampak dan, bila menjadi
-        kewajiban kami, subjek data serta lembaga yang berwenang dalam batas waktu yang ditentukan UU Pelindungan Data
-        Pribadi. Pemberitahuan memuat data yang terdampak, waktu dan cara kejadian, serta langkah penanganan.
+        Ajukan permintaan melalui klub Anda atau kontak kami. Kami dapat meminta verifikasi identitas dan akan menanggapi
+        dalam jangka waktu yang ditentukan peraturan.
+      </p>
+
+      <h2>10. Kegagalan pelindungan data</h2>
+      <p>
+        Bila terjadi kegagalan pelindungan data pribadi, kami akan memberi tahu pihak yang terdampak dan lembaga yang
+        berwenang sesuai ketentuan UU Pelindungan Data Pribadi.
       </p>
 
       <h2>11. Perubahan kebijakan</h2>
       <p>
-        Bila kebijakan ini berubah, kami memperbarui versi dan tanggal di halaman ini. Untuk perubahan yang penting, kami
-        memberi tahu pemilik organisasi sebelum perubahan berlaku.
+        Perubahan kebijakan ditandai dengan versi dan tanggal baru di halaman ini. Perubahan penting diberitahukan kepada
+        pemilik organisasi sebelum berlaku.
       </p>
 
       <h2>12. Kontak</h2>

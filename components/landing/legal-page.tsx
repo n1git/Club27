@@ -13,7 +13,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
       <main id="konten" className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6 sm:py-16">
         <h1 className="font-heading text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">Berlaku sejak {updated}</p>
-        <div className="mt-8 flex flex-col gap-6 leading-relaxed [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-1.5 [&_.ringkas]:rounded-lg [&_.ringkas]:bg-muted [&_.ringkas]:px-4 [&_.ringkas]:py-3 [&_.ringkas]:text-sm">
+        <div className="mt-8 flex flex-col gap-6 leading-relaxed [&_h2]:mt-4 [&_h2]:text-xl [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_ul]:flex [&_ul]:flex-col [&_ul]:gap-1.5">
           {children}
         </div>
       </main>
