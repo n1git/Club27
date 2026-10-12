@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 import { getContact } from "@/lib/site";
-import { LEGAL_OPERATORS } from "@/lib/legal";
+import { LEGAL_OPERATORS, LEGAL_OPERATORS_URL } from "@/lib/legal";
 
 const linkClass =
   "inline-flex min-h-6 items-center rounded-sm transition-colors duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -70,7 +70,11 @@ export function LandingFooter() {
           <FooterGroup title="Layanan" links={services} />
           <FooterGroup title="Komunitas" links={community} />
           <FooterGroup title="Tentang kami" links={about} className="col-span-2 sm:col-span-1">
-            <li>Dikelola oleh {LEGAL_OPERATORS}</li>
+            <li>
+              <a href={LEGAL_OPERATORS_URL} className={linkClass} rel="noopener" target="_blank">
+                Dikelola oleh {LEGAL_OPERATORS}
+              </a>
+            </li>
             <li className="flex flex-wrap items-center gap-x-2">
               <Link href="/syarat" className={linkClass}>
                 Syarat & ketentuan
