@@ -44,13 +44,13 @@ export default function PrivacyPage() {
       <h2>2. Data yang kami proses</h2>
       <p className="ringkas">Ringkasnya: hanya data yang diperlukan untuk menjalankan klub. Kata sandi tidak pernah disimpan dalam bentuk asli.</p>
       <ul>
-        <li>Pemilik organisasi: nama, email, nama pengguna, kata sandi dalam bentuk hash bcrypt, waktu login terakhir, dan jumlah percobaan login gagal.</li>
-        <li>Staf klub (admin, pelatih, resepsionis, keuangan): nama, email, nama pengguna, nomor telepon bila diisi, peran, data profil pelatih bila diisi, dan kata sandi dalam bentuk hash.</li>
+        <li>Pemilik organisasi: nama, email, nama pengguna, kata sandi (tidak disimpan dalam bentuk asli), waktu login terakhir, dan jumlah percobaan login gagal.</li>
+        <li>Staf klub (admin, pelatih, resepsionis, keuangan): nama, email, nama pengguna, nomor telepon bila diisi, peran, data profil pelatih bila diisi, dan kata sandi (tidak disimpan dalam bentuk asli).</li>
         <li>
           Anggota: nama, tanggal lahir, alamat, catatan, lokasi pilihan, pelatih, serta nama dan nomor telepon kontak
           (misalnya orang tua) bila diisi oleh klub. Anggota dapat berupa anak.
         </li>
-        <li>Akun anggota (bila diaktifkan klub): email, nama pengguna, dan kata sandi dalam bentuk hash.</li>
+        <li>Akun anggota (bila diaktifkan klub): email, nama pengguna, dan kata sandi (tidak disimpan dalam bentuk asli).</li>
         <li>Kegiatan klub: jadwal kelas, booking kelas dan fasilitas, kehadiran beserta catatan pelatih, paket anggota, tagihan, pesanan kasir, pembayaran yang dicatat manual, buku kas, dan gaji pelatih.</li>
         <li>Check-in: anggota, titik check-in, waktu, paket, dan cara check-in. Alamat IP dan data perangkat tidak disimpan.</li>
         <li>Booking tamu dan pesanan kasir tanpa anggota: nama dan nomor telepon bila diisi.</li>
@@ -97,14 +97,11 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>7. Keamanan</h2>
-      <ul>
-        <li>Koneksi ke aplikasi memakai HTTPS.</li>
-        <li>Kata sandi disimpan sebagai hash bcrypt; mengganti atau mengatur ulang kata sandi mengakhiri semua sesi lama.</li>
-        <li>Data setiap klub dipisahkan di tingkat basis data dengan row level security, sesuai peran pengguna.</li>
-        <li>Percobaan login dibatasi dan akun dikunci sementara setelah beberapa kali gagal.</li>
-        <li>Akses tim pengelola platform wajib memakai verifikasi dua langkah, dan tindakan penting tercatat di log audit yang tidak dapat diubah.</li>
-      </ul>
-      <p>Tidak ada sistem yang sepenuhnya bebas risiko. Kami terus memperbaiki keamanan aplikasi.</p>
+      <p>
+        Kami menerapkan langkah teknis dan organisasi yang wajar untuk melindungi data dari akses, perubahan, dan
+        pengungkapan yang tidak sah, termasuk pemisahan data antar klub dan pembatasan akses sesuai peran pengguna. Tidak
+        ada sistem yang sepenuhnya bebas risiko, dan kami terus memperbaiki keamanan aplikasi.
+      </p>
 
       <h2>8. Masa penyimpanan</h2>
       <ul>
