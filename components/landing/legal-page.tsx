@@ -3,8 +3,7 @@ import { getContact } from "@/lib/site";
 import { LandingFooter } from "./landing-footer";
 import { LandingHeader, SkipLink } from "./landing-header";
 
-export const LEGAL_OPERATORS = "N-1Labs";
-export const LEGAL_DOMICILE = "Kota Semarang, Jawa Tengah";
+export { LEGAL_DOMICILE, LEGAL_OPERATORS } from "@/lib/legal";
 
 export function LegalPage({ title, updated, children }: { title: string; updated: string; children: React.ReactNode }) {
   return (
