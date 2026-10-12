@@ -88,10 +88,9 @@ export function LandingFooter() {
         </div>
       </div>
       <div className="border-t border-border">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground sm:px-6">
-          <p>{APP_NAME} adalah aplikasi pengelolaan klub olahraga: anggota, jadwal, booking, tagihan, kasir, dan buku kas.</p>
-          <p>© {new Date().getFullYear()} {APP_NAME}. Waktu di aplikasi ditampilkan dalam WIB.</p>
-        </div>
+        <p className="mx-auto max-w-6xl px-4 py-5 text-xs text-muted-foreground sm:px-6">
+          © {new Date().getFullYear()} {APP_NAME}. Hak cipta dilindungi.
+        </p>
       </div>
     </footer>
   );
