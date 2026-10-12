@@ -1,6 +1,6 @@
 # billing-renewal
 
-Status: selesai di kode; migrasi 035 perlu diterapkan ke hosted.
+Status: selesai; migrasi 035 diterapkan ke hosted 2026-10-12.
 
 - [x] Fase 1 - migrasi 035: status `expired`, `subscription_renewals`, `subscription_reminders`, `request_renewal`, `confirm_renewal` (idempoten, periode menyambung), `expire_subscriptions`, `enforce_billing_gate` menolak periode lewat. Diuji di audit_full (expire, ajukan dua kali, konfirmasi ulang, konfirmasi yang dibatalkan ditolak).
 - [x] Fase 2 - kunci akses: `isBillingLocked` di `checkSession`; pemilik diarahkan ke `/admin/klub/langganan`, pengguna lain keluar dengan `?expired=1`; `template.tsx` admin/coach/member; aksi server dikunci kecuali `allowBillingLocked`.
