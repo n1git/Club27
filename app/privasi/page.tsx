@@ -80,16 +80,12 @@ export default function PrivacyPage() {
 
       <h2>5. Penyedia layanan dan transfer ke luar negeri</h2>
       <p className="ringkas">Ringkasnya: data disimpan di server penyedia layanan di luar Indonesia.</p>
-      <ul>
-        <li>Supabase: basis data dan penyimpanan berkas, server di Tokyo, Jepang.</li>
-        <li>Vercel: hosting aplikasi; permintaan dapat dilayani dari server di luar Indonesia.</li>
-        <li>Resend (bila diaktifkan): pengiriman email verifikasi; menerima alamat email dan isi email.</li>
-        <li>Cloudflare Turnstile (bila diaktifkan): pemeriksaan anti-bot pada formulir; menerima alamat IP dan sinyal peramban.</li>
-      </ul>
       <p>
-        Karena itu data pribadi ditransfer ke luar wilayah Indonesia. Kami memilih penyedia yang menerapkan standar
-        keamanan dan pelindungan data yang diakui secara internasional dan hanya memberikan data yang diperlukan untuk
-        layanan masing-masing. Daftar ini akan kami perbarui bila penyedia berubah.
+        Kami memakai penyedia layanan pihak ketiga untuk hosting, basis data dan penyimpanan berkas, serta, bila
+        diaktifkan, pengiriman email dan pemeriksaan anti-bot. Sebagian server penyedia berada di luar Indonesia, sehingga
+        data pribadi dapat ditransfer ke luar wilayah Indonesia. Kami hanya memilih penyedia yang menerapkan standar
+        keamanan dan pelindungan data yang diakui secara internasional, dan hanya memberikan data yang diperlukan untuk
+        layanan masing-masing.
       </p>
 
       <h2>6. Cookie dan penyimpanan di peramban</h2>

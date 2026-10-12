@@ -81,7 +81,7 @@ export default function TermsPage() {
         <li>Objek: data anggota, staf, dan kegiatan klub yang dimasukkan ke aplikasi, untuk tujuan menjalankan fitur aplikasi selama langganan berlaku.</li>
         <li>Instruksi: pemakaian fitur aplikasi oleh klub adalah instruksi pemrosesan. Kami tidak memproses data untuk tujuan lain.</li>
         <li>Kerahasiaan: hanya pengelola yang memerlukan akses yang dapat mengakses data, dan mereka terikat kewajiban kerahasiaan.</li>
-        <li>Sub-prosesor: penyedia yang tercantum di Kebijakan Privasi. Kami memberi tahu klub sebelum menambah atau mengganti sub-prosesor.</li>
+        <li>Sub-prosesor: penyedia layanan hosting, basis data, email, dan anti-bot yang kami pakai untuk menjalankan aplikasi, sebagaimana dijelaskan di Kebijakan Privasi.</li>
         <li>Keamanan: langkah keamanan sebagaimana dijelaskan di Kebijakan Privasi.</li>
         <li>Bantuan: kami membantu klub menanggapi permintaan subjek data dan memberi tahu klub bila terjadi kegagalan pelindungan data tanpa penundaan yang tidak wajar.</li>
         <li>Pengakhiran: data disimpan sampai klub meminta salinan atau penghapusan, sebagaimana bagian 7.</li>
