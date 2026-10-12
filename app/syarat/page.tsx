@@ -30,11 +30,9 @@ export default function TermsPage() {
       </ul>
 
       <h2>2. Akun dan peran</h2>
-      <p className="ringkas">Ringkasnya: Anda bertanggung jawab atas akun dan orang yang Anda beri akses.</p>
       <ul>
-        <li>Satu pendaftaran membuat satu organisasi, satu akun pemilik, dan klub pertama. Data pendaftaran harus benar.</li>
-        <li>Pemilik dan admin menambahkan staf dengan peran admin, pelatih, resepsionis, atau keuangan. Akses setiap peran dibatasi oleh aplikasi dan basis data.</li>
-        <li>Satu email hanya dapat dipakai untuk satu jenis akun (pemilik, staf, atau anggota).</li>
+        <li>Data pendaftaran harus benar dan lengkap.</li>
+        <li>Anda bertanggung jawab atas staf yang Anda beri akses dan tindakan yang dilakukan dengan akun mereka.</li>
         <li>Anda wajib menjaga kerahasiaan kata sandi dan segera memberi tahu kami bila ada akses yang tidak sah.</li>
       </ul>
 
@@ -42,8 +40,8 @@ export default function TermsPage() {
       <ul>
         <li>Klub adalah pengendali data anggota dan stafnya, dan bertanggung jawab atas kebenaran serta keabsahan data yang dimasukkannya.</li>
         <li>Klub wajib memperoleh persetujuan anggota, dan untuk anggota di bawah 18 tahun persetujuan orang tua atau wali, sebelum mencatat datanya.</li>
-        <li>Klub wajib menanggapi permintaan anggota atas datanya, dengan bantuan fitur ekspor dan anonimisasi di aplikasi.</li>
-        <li>Pembayaran dari anggota ke klub dicatat manual oleh klub. {APP_NAME} tidak menerima, menyimpan, atau menyalurkan uang anggota.</li>
+        <li>Klub wajib menanggapi permintaan anggota atas datanya.</li>
+        <li>{APP_NAME} tidak menerima, menyimpan, atau menyalurkan uang anggota klub.</li>
       </ul>
 
       <h2>4. Penggunaan yang dilarang</h2>
@@ -55,19 +53,18 @@ export default function TermsPage() {
       </ul>
 
       <h2>5. Langganan, trial, dan pembayaran</h2>
-      <p className="ringkas">Ringkasnya: harga per pengguna internal, dibayar di luar aplikasi, tanpa perpanjangan otomatis.</p>
       <ul>
         <li>Harga dihitung per pengguna internal sesuai paket dan periode (bulanan atau tahunan) yang tertera di halaman harga saat pemesanan.</li>
         <li>Masa trial, batas klub, dan potongan tahunan mengikuti paket yang berlaku saat pendaftaran.</li>
         <li>Pembayaran dilakukan di luar aplikasi. Paket diaktifkan oleh kami setelah pembayaran diterima.</li>
-        <li>Langganan tidak ditagih otomatis. Untuk melanjutkan, ajukan perpanjangan di halaman Langganan dan selesaikan pembayaran; periode baru dimulai setelah periode berjalan habis. Pengingat dikirim 7 hari dan 1 hari sebelum berakhir.</li>
+        <li>Langganan tidak ditagih otomatis. Untuk melanjutkan, ajukan perpanjangan dan selesaikan pembayaran sebelum periode berakhir.</li>
         <li>Biaya untuk periode yang sudah berjalan tidak dikembalikan, kecuali terjadi kesalahan tagihan dari pihak kami atau layanan tidak dapat kami berikan.</li>
         <li>Perubahan harga diberitahukan paling lambat 30 hari sebelumnya dan berlaku untuk periode berikutnya.</li>
       </ul>
 
       <h2>6. Penangguhan dan pengakhiran</h2>
       <ul>
-        <li>Bila langganan belum aktif, atau periode maupun trial berakhir tanpa perpanjangan, akses klub dikunci untuk semua pengguna. Pemilik tetap dapat masuk ke halaman Langganan untuk memperpanjang, dan data tetap tersimpan.</li>
+        <li>Bila langganan belum aktif atau berakhir tanpa perpanjangan, akses klub dikunci sampai langganan diperpanjang.</li>
         <li>Kami dapat menangguhkan layanan bila langganan tidak dibayar atau terjadi pelanggaran berat terhadap syarat ini, dengan pemberitahuan lebih dulu kecuali diperlukan segera untuk mencegah kerugian.</li>
         <li>Anda dapat mengakhiri langganan kapan saja dengan menghubungi kami.</li>
         <li>Penangguhan dan pengakhiran menonaktifkan akses ke klub tanpa menghapus data.</li>
@@ -76,11 +73,10 @@ export default function TermsPage() {
       <h2>7. Data Anda dan ekspor</h2>
       <ul>
         <li>Data yang dimasukkan klub tetap milik klub. Kami tidak memakainya selain untuk menjalankan layanan.</li>
-        <li>Data tetap tersimpan setelah langganan berakhir, sehingga Anda dapat memperpanjang dan melanjutkan pemakaian. Anda dapat meminta salinan atau penghapusan data klub kapan saja.</li>
+        <li>Data tetap tersimpan setelah langganan berakhir. Anda dapat meminta salinan atau penghapusan data klub kapan saja.</li>
       </ul>
 
       <h2 id="pemrosesan-data">8. Pemrosesan data atas nama klub</h2>
-      <p className="ringkas">Ringkasnya: kami memproses data anggota hanya sesuai instruksi klub dan menjaganya tetap rahasia.</p>
       <ul>
         <li>Objek: data anggota, staf, dan kegiatan klub yang dimasukkan ke aplikasi, untuk tujuan menjalankan fitur aplikasi selama langganan berlaku.</li>
         <li>Instruksi: pemakaian fitur aplikasi oleh klub adalah instruksi pemrosesan. Kami tidak memproses data untuk tujuan lain.</li>
@@ -88,8 +84,7 @@ export default function TermsPage() {
         <li>Sub-prosesor: penyedia yang tercantum di Kebijakan Privasi. Kami memberi tahu klub sebelum menambah atau mengganti sub-prosesor.</li>
         <li>Keamanan: langkah keamanan sebagaimana dijelaskan di Kebijakan Privasi.</li>
         <li>Bantuan: kami membantu klub menanggapi permintaan subjek data dan memberi tahu klub bila terjadi kegagalan pelindungan data tanpa penundaan yang tidak wajar.</li>
-        <li>Pengakhiran: data tetap disimpan sampai klub meminta ekspor atau penghapusan, sebagaimana bagian 7.</li>
-        <li>Klub dapat meminta keterangan tertulis tentang kepatuhan kami terhadap bagian ini.</li>
+        <li>Pengakhiran: data disimpan sampai klub meminta salinan atau penghapusan, sebagaimana bagian 7.</li>
       </ul>
 
       <h2>9. Ketersediaan layanan</h2>
