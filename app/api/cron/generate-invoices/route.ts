@@ -1,20 +1,11 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getJakartaMonthBounds } from "@/lib/format";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { isCronAuthorized } from "@/lib/cron";
 
-function digest(value: string) {
-  return createHash("sha256").update(value).digest();
-}
-
-function isAuthorized(header: string | null) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret || !header) return false;
-  return timingSafeEqual(digest(header), digest(`Bearer ${secret}`));
-}
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request.headers.get("authorization"))) {
+  if (!isCronAuthorized(request.headers.get("authorization"))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

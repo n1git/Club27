@@ -4,7 +4,11 @@ import { formatJakartaDate } from "@/lib/format";
 import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import { STATUS_LABEL } from "@/lib/validations/superadmin";
 import { SubscriptionBanner } from "@/components/subscription/subscription-banner";
-import { ChangePlanForm } from "@/components/subscription/change-plan-form";
+import { RenewalForm } from "@/components/subscription/renewal-form";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { getPendingRenewal } from "@/lib/billing/renewals";
+import { isBillingLocked } from "@/lib/billing/access";
+import { getContact } from "@/lib/site";
 import { ModuleList } from "@/components/pricing/pricing-picker";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -23,21 +27,30 @@ const STATUS_VARIANT = {
   pending: "secondary",
   trial: "warning",
   active: "success",
+  expired: "destructive",
   suspended: "destructive",
   cancelled: "secondary",
 } as const;
 
 export default async function SubscriptionPage() {
   const owner = await requireOwner();
-  const [billing, users, modules] = await Promise.all([
+  const [billing, users, modules, renewal] = await Promise.all([
     getOrganizationBilling(owner.organizationId),
     listInternalUsers(owner.organizationId),
     getModules(),
+    getPendingRenewal(owner.organizationId),
   ]);
   if (!billing) return <p className="text-sm text-muted-foreground">Langganan belum tersedia.</p>;
 
   const { subscription, plan, quote } = billing;
   const periodUnit = subscription.billingPeriod === "yearly" ? "tahun" : "bulan";
+  const locked = isBillingLocked({
+    status: subscription.status,
+    trial_ends_at: subscription.trialEndsAt,
+    current_period_end: subscription.currentPeriodEnd,
+  });
+  const contact = getContact();
+  const longDate = { day: "numeric", month: "long", year: "numeric" } as const;
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,7 +59,36 @@ export default async function SubscriptionPage() {
         <Badge variant={STATUS_VARIANT[subscription.status]}>{STATUS_LABEL[subscription.status]}</Badge>
       </div>
 
-      <SubscriptionBanner />
+      {locked ? (
+        <Alert variant="warning">
+          <AlertTitle>Akses klub dikunci</AlertTitle>
+          <AlertDescription>
+            Langganan organisasi belum aktif atau sudah berakhir. Semua data tetap tersimpan. Ajukan perpanjangan di
+            bawah; akses klub terbuka kembali setelah pembayaran dikonfirmasi.
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <SubscriptionBanner />
+      )}
+
+      {renewal ? (
+        <Alert>
+          <AlertTitle>Menunggu pembayaran</AlertTitle>
+          <AlertDescription className="flex flex-col gap-1">
+            <span>
+              {renewal.planName ?? renewal.planCode} · {PERIOD_LABEL[renewal.billingPeriod]} · {renewal.users} pengguna ·{" "}
+              <strong>{formatRupiah(renewal.amount)}</strong>, diajukan{" "}
+              {formatJakartaDate(renewal.requestedAt, longDate)}.
+            </span>
+            <span>
+              Lakukan pembayaran lalu kirim bukti ke admin platform
+              {contact.email ? ` (${contact.email})` : ""}
+              {contact.whatsapp ? `${contact.email ? " atau" : ""} WhatsApp +${contact.whatsapp}` : ""}. Periode baru
+              dimulai setelah periode berjalan habis, atau hari konfirmasi bila sudah lewat.
+            </span>
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard title="Paket" value={`${plan.name} · ${PERIOD_LABEL[subscription.billingPeriod]}`} />
@@ -63,10 +105,10 @@ export default async function SubscriptionPage() {
         {formatRupiah(quote.total)}
         {subscription.billingPeriod === "yearly" ? `, setara ${formatRupiah(quote.perMonth)}/bulan` : ""}.
         {subscription.currentPeriodEnd
-          ? ` Periode berjalan sampai ${formatJakartaDate(subscription.currentPeriodEnd, { day: "numeric", month: "long", year: "numeric" })}.`
+          ? ` Periode berjalan sampai ${formatJakartaDate(subscription.currentPeriodEnd, longDate)}.`
           : ""}
         {subscription.status === "trial" && subscription.trialEndsAt
-          ? ` Trial sampai ${formatJakartaDate(subscription.trialEndsAt, { day: "numeric", month: "long", year: "numeric" })}.`
+          ? ` Trial sampai ${formatJakartaDate(subscription.trialEndsAt, longDate)}.`
           : ""}
       </p>
 
@@ -101,15 +143,16 @@ export default async function SubscriptionPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Ubah paket</h2>
+        <h2 className="text-lg font-semibold">Perpanjang atau ganti paket</h2>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Perubahan berlaku untuk perhitungan berikutnya. Penagihan dan aktivasi dilakukan admin platform setelah
-          pembayaran diterima di luar aplikasi.
+          Langganan tidak diperpanjang otomatis. Pilih paket dan periode, lalu ajukan; harga dihitung ulang dari jumlah
+          pengguna internal saat ini. Paket dan periode baru berlaku setelah pembayaran dikonfirmasi.
+          {renewal ? " Pengajuan baru menggantikan pengajuan yang sedang menunggu." : ""}
         </p>
-        <ChangePlanForm
+        <RenewalForm
           plans={billing.plans}
-          planCode={subscription.planCode}
-          period={subscription.billingPeriod}
+          planCode={renewal?.planCode ?? subscription.planCode}
+          period={renewal?.billingPeriod ?? subscription.billingPeriod}
           users={billing.internalUsers}
         />
       </section>

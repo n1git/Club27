@@ -23,6 +23,8 @@ const ACTION_LABEL: Record<string, string> = {
   "invoice.void": "Batalkan tagihan",
   "order.void": "Batalkan pesanan",
   "subscription.plan_change": "Ubah paket langganan",
+  "subscription.renewal_request": "Ajukan perpanjangan langganan",
+  "subscription.renewal_confirm": "Konfirmasi pembayaran langganan",
   "organization.status": "Ubah status langganan",
   "organization.trial": "Ubah masa trial",
   "organization.club_limit": "Ubah batas klub",

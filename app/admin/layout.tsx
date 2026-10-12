@@ -92,7 +92,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           },
         ]
       : []),
-    ...visible.map((group) => ({
+    ...(session.billingLocked ? [] : visible).map((group) => ({
       label: group.label,
       items: group.items.map(({ href, label, icon, exact, primary }) => ({
         href,

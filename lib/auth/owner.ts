@@ -29,8 +29,8 @@ export async function requireOwner() {
   return { ...user, ...owner };
 }
 
-export async function requireOwnerAction(): Promise<OwnerContext> {
-  const session = await requireActionRole("admin");
+export async function requireOwnerAction(options: { allowBillingLocked?: boolean } = {}): Promise<OwnerContext> {
+  const session = await requireActionRole("admin", options);
   const owner = await loadOwner(session.sub, session.tenant_id);
   if (!owner) throw new UnauthorizedError("Hanya pemilik organisasi yang dapat melakukan aksi ini");
   return owner;

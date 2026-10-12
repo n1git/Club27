@@ -1,12 +1,15 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSession } from "./session";
 import type { SessionClaims } from "./jwt";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { roleHome, type AppRole } from "./roles";
+import { BILLING_OPEN_PATHS, isBillingLocked, type BillingState } from "@/lib/billing/access";
 
 export class UnauthorizedError extends Error {}
 
-export type SessionEndReason = "deactivated" | "revoked" | "suspended";
+export type SessionEndReason = "deactivated" | "revoked" | "suspended" | "expired";
+
 
 interface ValidProfile {
   id: string;
@@ -17,7 +20,7 @@ interface ValidProfile {
 }
 
 export type SessionCheck =
-  | { ok: true; profile: ValidProfile; mustChangePassword: boolean }
+  | { ok: true; profile: ValidProfile; mustChangePassword: boolean; billingLocked: boolean }
   | { ok: false; reason: SessionEndReason };
 
 type One<T> = T | T[] | null;
@@ -28,7 +31,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "id, tenant_id, role, is_active, must_change_password, full_name, sessions_valid_after, owner_id, member_account_id, is_head_coach, tenants(is_active), org_owners(is_active), member_accounts(is_active, must_change_password)"
+      "id, tenant_id, role, is_active, must_change_password, full_name, sessions_valid_after, owner_id, member_account_id, is_head_coach, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end))), org_owners(is_active), member_accounts(is_active, must_change_password)"
     )
     .eq("id", session.sub)
     .maybeSingle();
@@ -43,7 +46,12 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   ) {
     return { ok: false, reason: "revoked" };
   }
-  if (!one(profile.tenants as One<{ is_active: boolean }>)?.is_active) return { ok: false, reason: "suspended" };
+  const tenant = one(
+    profile.tenants as One<{ is_active: boolean; organizations: One<{ organization_subscriptions: One<BillingState> }> }>
+  );
+  if (!tenant?.is_active) return { ok: false, reason: "suspended" };
+  const billingLocked = isBillingLocked(one(one(tenant.organizations)?.organization_subscriptions ?? null));
+  if (billingLocked && !profile.owner_id) return { ok: false, reason: "expired" };
 
   if (profile.owner_id && !one(profile.org_owners as One<{ is_active: boolean }>)?.is_active) {
     return { ok: false, reason: "deactivated" };
@@ -59,6 +67,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
 
   return {
     ok: true,
+    billingLocked,
     mustChangePassword: Boolean(profile.must_change_password) || accountMustChange,
     profile: {
       id: profile.id,
@@ -91,6 +100,12 @@ export async function requireRole(role: AppRole | readonly AppRole[]) {
   const check = await checkSession(session);
   if (!check.ok) redirect(sessionEndedPath(check.reason));
   if (check.mustChangePassword) redirect("/change-password");
+  if (check.billingLocked) {
+    const path = (await headers()).get("x-pathname") ?? "";
+    if (!BILLING_OPEN_PATHS.some((open) => path === open || path.startsWith(`${open}/`))) {
+      redirect(BILLING_OPEN_PATHS[0]);
+    }
+  }
 
   return {
     id: session.sub,
@@ -101,6 +116,7 @@ export async function requireRole(role: AppRole | readonly AppRole[]) {
     fullName: check.profile.fullName,
     isHeadCoach: check.profile.isHeadCoach,
     clubPending: Boolean(session.club_pending),
+    billingLocked: check.billingLocked,
   };
 }
 
@@ -110,7 +126,10 @@ export async function requireMemberClub() {
   return user;
 }
 
-export async function requireActionRole(role: AppRole | readonly AppRole[]) {
+export async function requireActionRole(
+  role: AppRole | readonly AppRole[],
+  options: { allowBillingLocked?: boolean } = {}
+) {
   const session = await getSession();
   if (!session) throw new UnauthorizedError("Anda harus login");
   const roles: readonly AppRole[] = typeof role === "string" ? [role] : role;
@@ -120,5 +139,6 @@ export async function requireActionRole(role: AppRole | readonly AppRole[]) {
   const check = await checkSession(session);
   if (!check.ok) redirect(sessionEndedPath(check.reason));
   if (check.mustChangePassword) redirect("/change-password");
+  if (check.billingLocked && !options.allowBillingLocked) redirect(BILLING_OPEN_PATHS[0]);
   return session;
 }

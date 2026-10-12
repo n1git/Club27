@@ -13,6 +13,8 @@ import {
 } from "@/lib/validations/superadmin";
 import { getJakartaDateString } from "@/lib/format";
 import { logAudit } from "@/lib/audit";
+import { confirmRenewal } from "@/lib/billing/renewals";
+import { z } from "zod";
 import { type ActionState } from "./types";
 
 export async function toggleOwnerActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -201,4 +203,33 @@ export async function updatePlan(_prevState: ActionState, formData: FormData): P
   revalidatePath("/superadmin");
   revalidatePath("/");
   return { ok: true, message: "Paket diperbarui" };
+}
+
+const confirmRenewalSchema = z.object({
+  renewalId: z.string().uuid("Pengajuan tidak valid"),
+  reference: z.string().trim().max(200, "Referensi maksimal 200 karakter").optional(),
+});
+
+export async function confirmRenewalPayment(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const superadmin = await superadminOrNull();
+  if (!superadmin) return SESSION_ENDED;
+
+  const parsed = confirmRenewalSchema.safeParse({
+    renewalId: formData.get("renewalId"),
+    reference: formData.get("reference") || undefined,
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+
+  const { data, error } = await confirmRenewal(parsed.data.renewalId, superadmin.email, "manual", parsed.data.reference ?? null);
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "Referensi pembayaran ini sudah dipakai" };
+    return { ok: false, error: error.code === "22023" || error.code === "SW004" ? error.message : "Gagal mengonfirmasi pembayaran" };
+  }
+  await platformAudit(superadmin, "subscription.renewal_confirm", "renewal", parsed.data.renewalId, null, {
+    reference: parsed.data.reference ?? null,
+    periodEnd: data,
+  });
+
+  revalidatePath("/superadmin");
+  return { ok: true, message: "Pembayaran dikonfirmasi, langganan aktif" };
 }

@@ -28,12 +28,12 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 
 ## 4. Aturan akses
 
-- Status organisasi: `pending_verification` (email pendaftaran belum diverifikasi), `pending`, `trial`, `active`, `suspended`, `cancelled`.
+- Status organisasi: `pending_verification` (email pendaftaran belum diverifikasi), `pending`, `trial`, `active`, `expired`, `suspended`, `cancelled`.
 - `pending_verification`, `pending`, `trial` yang lewat tanggal akhir, `suspended`, dan `cancelled` menolak tambahan anggota, klub, dan pengguna internal, serta kelas baru, booking kelas dan fasilitas, pesanan kasir, check-in, penggajian, dan pembuatan tagihan (`SW003`). Membaca data, melunasi tagihan yang sudah ada, login, dan halaman langganan tetap jalan.
 - Klub pertama organisasi tidak terkena `SW003` saat dibuat.
 - Hanya `suspended` dan `cancelled` yang mematikan akses seluruh klub organisasi. Data tidak dihapus.
-- Tidak ada penangguhan otomatis saat periode berakhir; portal superadmin hanya menandai lewat jatuh tempo.
-- Tidak ada payment gateway: superadmin mengaktifkan setelah pembayaran di luar aplikasi dan mengisi tanggal periode.
+- `pending`, `expired`, serta `trial`/`active` yang lewat tanggal akhir mengunci akses klub: pemilik hanya bisa membuka halaman Langganan, pengguna lain keluar dengan pesan langganan berakhir. Cron harian (`/api/cron/subscriptions`, 07.00 WIB) mengubah trial/periode yang lewat menjadi `expired` dan mengirim email pengingat H-7 dan H-1.
+- Perpanjangan: pemilik mengajukan paket dan periode (`request_renewal`, harga dihitung ulang di server), superadmin mengonfirmasi pembayaran (`confirm_renewal`, idempoten, periode baru menyambung dari periode lama). Payment gateway nanti cukup memanggil `confirm_renewal` dengan `provider` dan `provider_ref`.
 
 ## 5. Unit ekonomi (asumsi, wajib diverifikasi)
 
@@ -47,4 +47,4 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 1. Apakah Advanced perlu trial singkat? Sekarang Advanced hanya bisa dipakai setelah pembayaran.
 2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
 3. Apakah batas klub Standard (3) perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
-4. Penagihan tingkat organisasi (invoice/kwitansi 27 Club, perpanjangan otomatis, proration) belum dirancang.
+4. Invoice/kwitansi 27 Club, payment gateway, dan proration belum dirancang.

@@ -60,14 +60,14 @@ export default function TermsPage() {
         <li>Harga dihitung per pengguna internal sesuai paket dan periode (bulanan atau tahunan) yang tertera di halaman harga saat pemesanan.</li>
         <li>Masa trial, batas klub, dan potongan tahunan mengikuti paket yang berlaku saat pendaftaran.</li>
         <li>Pembayaran dilakukan di luar aplikasi. Paket diaktifkan oleh kami setelah pembayaran diterima.</li>
-        <li>Langganan tidak diperpanjang dan tidak ditagih otomatis. Untuk melanjutkan, Anda memperpanjang sebelum periode berakhir.</li>
+        <li>Langganan tidak ditagih otomatis. Untuk melanjutkan, ajukan perpanjangan di halaman Langganan dan selesaikan pembayaran; periode baru dimulai setelah periode berjalan habis. Pengingat dikirim 7 hari dan 1 hari sebelum berakhir.</li>
         <li>Biaya untuk periode yang sudah berjalan tidak dikembalikan, kecuali terjadi kesalahan tagihan dari pihak kami atau layanan tidak dapat kami berikan.</li>
         <li>Perubahan harga diberitahukan paling lambat 30 hari sebelumnya dan berlaku untuk periode berikutnya.</li>
       </ul>
 
       <h2>6. Penangguhan dan pengakhiran</h2>
       <ul>
-        <li>Langganan yang belum aktif atau trial yang habis membatasi penambahan anggota, klub, dan pengguna internal; login dan halaman langganan tetap dapat dipakai.</li>
+        <li>Bila langganan belum aktif, atau periode maupun trial berakhir tanpa perpanjangan, akses klub dikunci untuk semua pengguna. Pemilik tetap dapat masuk ke halaman Langganan untuk memperpanjang, dan data tetap tersimpan.</li>
         <li>Kami dapat menangguhkan layanan bila langganan tidak dibayar atau terjadi pelanggaran berat terhadap syarat ini, dengan pemberitahuan lebih dulu kecuali diperlukan segera untuk mencegah kerugian.</li>
         <li>Anda dapat mengakhiri langganan kapan saja dengan menghubungi kami.</li>
         <li>Penangguhan dan pengakhiran menonaktifkan akses ke klub tanpa menghapus data.</li>

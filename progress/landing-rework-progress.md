@@ -89,7 +89,7 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
 | Plan activated by the Swimma team after payment; no online payment | `organization_subscriptions.status 'pending'`, superadmin activation (`app/superadmin`); no gateway in code |
 | Members and locations are not limited | no limit columns or triggers for `members`/`locations` (014, CLAUDE.md) |
 | Member payments recorded manually by admin, receptionist or finance; cashier payments per method; every payment enters the cash book | `mark_invoice_paid` allows admin, finance, receptionist (016); `add_order_payment` (022); ledger rows as above |
-| After an unpaid trial ends: data kept, login works, adding members, clubs and internal users is held | `SW003` gate (014, 016), CLAUDE.md "Terbuka" note |
+| After an unpaid trial ends: data kept, club access locked until the owner renews and payment is confirmed | `isBillingLocked` in `checkSession` (`lib/billing/access.ts`), `expire_subscriptions` (035) |
 | A "Segera hadir" type cannot be chosen at registration and appears automatically once ready | `register_organization` / `create_tenant_for_owner` require `status = 'ready'` (018); `getReadyClubTypes` in the form; this page reads `club_types` live |
 | After registering you go straight to club setup | `app/api/onboarding/register/route.ts` redirects to `/admin/onboarding` (020 work) |
 | Product visuals are sample data | `hero-preview.tsx`, `multi-club.tsx` labelled "Contoh data" |

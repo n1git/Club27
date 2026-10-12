@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { changePlan } from "@/lib/actions/subscription";
+import { submitRenewal } from "@/lib/actions/subscription";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { PeriodToggle, PlanCard } from "@/components/pricing/pricing-picker";
 import type { BillingPeriod, PlanCode, PricingPlan } from "@/lib/pricing";
 
-export function ChangePlanForm({
+export function RenewalForm({
   plans,
   planCode,
   period,
@@ -20,10 +20,9 @@ export function ChangePlanForm({
 }) {
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>(planCode);
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>(period);
-  const unchanged = selectedPlan === planCode && selectedPeriod === period;
 
   return (
-    <ActionForm action={changePlan} className="flex flex-col gap-4">
+    <ActionForm action={submitRenewal} className="flex flex-col gap-4">
       <input type="hidden" name="planCode" value={selectedPlan} />
       <input type="hidden" name="billingPeriod" value={selectedPeriod} />
       <PeriodToggle
@@ -43,9 +42,7 @@ export function ChangePlanForm({
           />
         ))}
       </div>
-      <ActionSubmitButton className="w-fit" disabled={unchanged}>
-        Simpan perubahan paket
-      </ActionSubmitButton>
+      <ActionSubmitButton className="w-fit">Ajukan perpanjangan</ActionSubmitButton>
     </ActionForm>
   );
 }

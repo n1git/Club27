@@ -7,6 +7,8 @@ import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/validations
 import { MetricCard } from "@/components/ui/metric-card";
 import { OrganizationControls, type OwnerRow } from "@/components/superadmin/organization-controls";
 import { PlanEditor } from "@/components/superadmin/plan-editor";
+import { RenewalConfirmForm } from "@/components/superadmin/renewal-confirm-form";
+import { listPendingRenewals } from "@/lib/billing/renewals";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -23,6 +25,7 @@ const STATUS_VARIANT: Record<PlatformSubscriptionStatus, "success" | "secondary"
   pending: "secondary",
   trial: "warning",
   active: "success",
+  expired: "destructive",
   suspended: "destructive",
   cancelled: "secondary",
 };
@@ -53,12 +56,13 @@ export default async function SuperadminDashboardPage() {
   const supabase = createAdminSupabaseClient();
   const today = getJakartaDateString();
 
-  const [{ data: usage }, { data: tenants }, { data: owners }, { data: planRows }, { data: organizations }] = await Promise.all([
+  const [{ data: usage }, { data: tenants }, { data: owners }, { data: planRows }, { data: organizations }, renewals] = await Promise.all([
     supabase.from("platform_organization_usage").select("*"),
     supabase.from("tenants").select("id, name, is_active, created_at, organization_id").order("created_at"),
     supabase.from("org_owners").select("id, organization_id, email, full_name, is_active"),
     supabase.from("subscription_plans").select(`${PLAN_COLUMNS}, is_active`).order("price_per_user_month"),
     supabase.from("organizations").select("id, created_at").order("created_at", { ascending: false }),
+    listPendingRenewals(),
   ]);
 
   const rows = (usage ?? []) as UsageRow[];
@@ -76,12 +80,48 @@ export default async function SuperadminDashboardPage() {
         <MetricCard title="Organisasi / klub" value={`${rows.length} / ${(tenants ?? []).length}`} />
         <MetricCard title="Menunggu aktivasi" value={String(rows.filter((r) => r.status === "pending").length)} />
         <MetricCard title="Trial berjalan" value={String(rows.filter((r) => r.status === "trial" && !isTrialExpired(r)).length)} />
-        <MetricCard title="Trial berakhir" value={String(rows.filter(isTrialExpired).length)} />
+        <MetricCard title="Berakhir" value={String(rows.filter((r) => r.status === "expired" || isTrialExpired(r)).length)} />
         <MetricCard
           title={`Pendapatan bulanan (${rows.filter((r) => r.status === "active").length} aktif)`}
           value={formatRupiah(monthlyRevenue)}
         />
       </div>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Perpanjangan menunggu pembayaran</h2>
+        {renewals.length ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Organisasi</TableHead>
+                <TableHead>Paket</TableHead>
+                <TableHead>Pengguna</TableHead>
+                <TableHead>Jumlah</TableHead>
+                <TableHead>Diajukan</TableHead>
+                <TableHead>Konfirmasi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {renewals.map((renewal) => (
+                <TableRow key={renewal.id}>
+                  <TableCell className="font-medium">{renewal.organizationName ?? "-"}</TableCell>
+                  <TableCell>
+                    {renewal.planName ?? renewal.planCode} · {PERIOD_LABEL[renewal.billingPeriod]}
+                  </TableCell>
+                  <TableCell>{renewal.users}</TableCell>
+                  <TableCell>{formatRupiah(renewal.amount)}</TableCell>
+                  <TableCell>{formatDate(renewal.requestedAt)}</TableCell>
+                  <TableCell>
+                    <RenewalConfirmForm renewalId={renewal.id} amount={formatRupiah(renewal.amount)} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-sm text-muted-foreground">Tidak ada pengajuan yang menunggu.</p>
+        )}
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Paket</h2>
@@ -99,7 +139,8 @@ export default async function SuperadminDashboardPage() {
       <p className="max-w-3xl text-sm text-muted-foreground">
         Ubah status ke Aktif setelah pembayaran organisasi diterima. Ditangguhkan dan Dibatalkan langsung memutus akses
         seluruh klub organisasi; datanya tetap tersimpan. Pemilik yang dinonaktifkan kehilangan akses ke semua klubnya
-        sekaligus. Tidak ada penangguhan otomatis saat periode berakhir; periode lewat jatuh tempo hanya ditandai.
+        sekaligus. Periode atau trial yang lewat otomatis menjadi Berakhir setiap pagi: pemilik hanya bisa membuka
+        halaman Langganan sampai perpanjangannya dikonfirmasi di atas.
       </p>
 
       {(organizations ?? []).map((organization) => {

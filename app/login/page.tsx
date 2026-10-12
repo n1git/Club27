@@ -9,15 +9,16 @@ const NOTICES: Record<string, string> = {
   suspended: `Akses klub Anda sedang dinonaktifkan. Data klub tetap tersimpan. Hubungi admin platform ${APP_NAME} untuk mengaktifkannya kembali.`,
   deactivated: "Akun Anda dinonaktifkan oleh admin klub.",
   revoked: "Sesi Anda berakhir karena kata sandi diubah. Silakan masuk lagi.",
+  expired: "Langganan klub Anda sudah berakhir. Data tetap tersimpan. Hubungi pemilik klub untuk memperpanjang.",
 };
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ suspended?: string; deactivated?: string; revoked?: string; next?: string }>;
+  searchParams: Promise<{ suspended?: string; deactivated?: string; revoked?: string; expired?: string; next?: string }>;
 }) {
   const params = await searchParams;
-  const key = (["suspended", "deactivated", "revoked"] as const).find((k) => params[k]);
+  const key = (["suspended", "deactivated", "revoked", "expired"] as const).find((k) => params[k]);
   const notice = key ? NOTICES[key] : null;
 
   return (

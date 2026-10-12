@@ -21,10 +21,10 @@ Sisa risiko keamanan
 - Penguncian akun setelah 5 gagal login bisa dipicu orang lain yang tahu email (kunci 15 menit). Rate limit per IP (`hit_rate_limit`) membatasi skalanya.
 - CSP baru membatasi framing/form/base-uri; belum membatasi script (butuh nonce).
 - `/privasi` dan `/syarat` sudah terbit (pengelola N-1Labs, Kota Semarang; sengketa PN Semarang; data tidak dihapus saat langganan berakhir, hanya atas permintaan pemilik) tapi belum ditinjau ahli hukum; PSE sengaja ditunda owner. Kontak privasi dari `NEXT_PUBLIC_CONTACT_EMAIL`/`NEXT_PUBLIC_CONTACT_WHATSAPP`. FAQ ada di landing.
-- Tidak ada payment gateway, invoice/kwitansi Swimma, proration, perpanjangan atau penangguhan otomatis saat periode berakhir (hanya ditandai lewat jatuh tempo di portal superadmin).
+- Tidak ada payment gateway, invoice/kwitansi, atau proration. Perpanjangan: pemilik mengajukan (`subscription_renewals`, `request_renewal`), superadmin mengonfirmasi (`confirm_renewal`, nanti dipanggil webhook gateway).
 
 Terbuka
-- Langganan `pending`, trial habis, `suspended` atau `cancelled` memblokir penambahan anggota, klub, dan pengguna internal (`SW003`); login dan halaman langganan tetap jalan. Hanya suspended/cancelled yang memutus akses semua klub.
+- Langganan `pending`, `expired`, atau trial/periode yang lewat mengunci akses (`isBillingLocked`, dicek di `checkSession`): pemilik hanya bisa membuka `/admin/klub/langganan` dan `/admin/profile` (path dari header `x-pathname` proxy, dicek di `template.tsx` admin/coach/member), pengguna lain dikeluarkan (`?expired=1`). Aksi server ikut dikunci di `requireActionRole` kecuali `allowBillingLocked`. `SW003` tetap menjaga insert di database. Cron harian `/api/cron/subscriptions` menjalankan `expire_subscriptions` dan email pengingat H-7/H-1 (`subscription_reminders`). Suspended/cancelled memutus akses lewat `tenants.is_active`.
 
 Aturan teknis
 - Semua waktu memakai WIB lewat helper di `lib/format.ts` (`formatJakarta*`, `parseJakartaLocalInput`); jangan pakai `toLocale*String` atau `new Date(datetimeLocal)` langsung.

@@ -5,39 +5,43 @@ import { getSession } from "@/lib/auth/session";
 import { loadOwner } from "@/lib/auth/owner";
 import { getOwnSubscription } from "@/lib/data/platform-pricing";
 import { getJakartaDateString } from "@/lib/format";
-import { APP_NAME } from "@/lib/config";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const REMIND_DAYS = 7;
 
-function trialMessage(trialEndsAt: string | null) {
-  if (!trialEndsAt) return { title: "Organisasi Anda sedang dalam masa trial", blocked: false };
-  const daysLeft = Math.round((Date.parse(trialEndsAt) - Date.parse(getJakartaDateString())) / DAY_MS);
-  if (daysLeft < 0) return { title: "Masa trial organisasi Anda sudah berakhir", blocked: true };
-  if (daysLeft === 0) return { title: "Masa trial berakhir hari ini", blocked: false };
-  return { title: `Masa trial tersisa ${daysLeft} hari`, blocked: false };
+function daysUntil(date: string) {
+  return Math.round((Date.parse(date) - Date.parse(getJakartaDateString())) / DAY_MS);
+}
+
+function endsLabel(days: number) {
+  return days === 0 ? "hari ini" : days === 1 ? "besok" : `dalam ${days} hari`;
 }
 
 export async function SubscriptionBanner() {
   const [subscription, session] = await Promise.all([getOwnSubscription(), getSession()]);
-  if (!subscription || (subscription.status !== "pending" && subscription.status !== "trial")) return null;
+  if (!subscription) return null;
+
+  const isTrial = subscription.status === "trial";
+  const endDate = isTrial ? subscription.trialEndsAt : subscription.status === "active" ? subscription.currentPeriodEnd : null;
+  if (!endDate) return null;
+  const days = daysUntil(endDate);
+  if (days < 0 || (!isTrial && days > REMIND_DAYS)) return null;
 
   const owner = session ? await loadOwner(session.sub, session.tenant_id) : null;
-  const trial = subscription.status === "trial" ? trialMessage(subscription.trialEndsAt) : null;
-  const blocked = subscription.status === "pending" || trial?.blocked;
-  const title = subscription.status === "pending" ? "Langganan menunggu aktivasi" : trial!.title;
+  const soon = days <= REMIND_DAYS;
+  const title = isTrial ? `Masa trial berakhir ${endsLabel(days)}` : `Langganan berakhir ${endsLabel(days)}`;
 
   return (
-    <Alert variant={blocked ? "warning" : "default"}>
+    <Alert variant={soon ? "warning" : "default"}>
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription className="flex flex-col gap-3">
         <span>
-          {blocked
-            ? `Data tetap bisa dilihat dan tagihan yang ada tetap bisa dilunasi. Menambah anggota, klub, pengguna, kelas, booking, pesanan kasir, check-in, gaji, dan membuat tagihan baru dinonaktifkan sampai admin platform ${APP_NAME} mengaktifkan langganan.`
-            : `Agar tetap berjalan setelah trial, pilih paket dan hubungi admin platform ${APP_NAME}. Pembayaran dilakukan di luar aplikasi.`}
+          Setelah berakhir, akses klub dikunci sampai langganan diperpanjang. Data tetap tersimpan.
+          {owner ? " Ajukan perpanjangan dan selesaikan pembayaran sebelum tanggal berakhir." : " Hubungi pemilik klub untuk memperpanjang."}
         </span>
         {owner ? (
           <Link href="/admin/klub/langganan" className={buttonVariants({ size: "sm", className: "w-fit" })}>
-            Kelola langganan
+            Perpanjang langganan
           </Link>
         ) : null}
       </AlertDescription>

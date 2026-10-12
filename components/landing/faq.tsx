@@ -69,8 +69,8 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
         trialPlans.length > 0 ? (
           <>
             {trialPlans.map((p) => `Paket ${p.name} bisa dicoba gratis ${p.trialDays} hari`).join("; ")} dengan semua modul yang
-            tersedia dan batas klub paket tersebut. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan dan login
-            tetap bisa, tetapi penambahan anggota, klub, dan pengguna internal ditahan sampai paket diaktifkan.
+            tersedia dan batas klub paket tersebut. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan, tetapi
+            akses klub dikunci sampai pemilik memperpanjang dan pembayarannya dikonfirmasi.
           </>
         ) : (
           "Saat ini tidak ada paket dengan masa trial. Paket aktif setelah pembayaran diterima."
