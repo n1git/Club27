@@ -1,4 +1,4 @@
-# Paket Langganan 27 Club
+# Paket Langganan 27club
 
 Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah hanya bukti rancangan; nilai sebenarnya ada di tabel `subscription_plans` dan bisa diubah superadmin.
 
@@ -47,4 +47,4 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 1. Apakah Advanced perlu trial singkat? Sekarang Advanced hanya bisa dipakai setelah pembayaran.
 2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
 3. Apakah batas klub Standard (3) perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
-4. Invoice/kwitansi 27 Club, payment gateway, dan proration belum dirancang.
+4. Invoice/kwitansi 27club, payment gateway, dan proration belum dirancang.
