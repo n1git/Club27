@@ -30,7 +30,8 @@ export async function createOrder(_prevState: ActionState, formData: FormData): 
   const v = parsed.data;
 
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.rpc("create_order", {
+  const { data, error } = await supabase.rpc("create_order_once", {
+    p_request_id: v.requestId,
     p_member_id: v.memberId ?? null,
     p_customer_name: v.customerName ?? null,
     p_items: v.items.map((i) =>
@@ -48,16 +49,18 @@ export async function createOrder(_prevState: ActionState, formData: FormData): 
 export async function addOrderPayment(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireActionRole(["admin", "receptionist"]);
   const id = z.string().uuid().safeParse(formData.get("orderId"));
+  const requestId = z.string().uuid().safeParse(formData.get("requestId"));
   const parsed = paymentSchema.safeParse({
     method: formData.get("method"),
     amount: formData.get("amount"),
     reference: formData.get("reference") || undefined,
   });
-  if (!id.success || !parsed.success) {
+  if (!id.success || !requestId.success || !parsed.success) {
     return { ok: false, error: parsed.success ? "Data tidak valid" : (parsed.error.issues[0]?.message ?? "Data tidak valid") };
   }
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.rpc("add_order_payment", {
+  const { data, error } = await supabase.rpc("add_order_payment_once", {
+    p_request_id: requestId.data,
     p_order_id: id.data,
     p_method: parsed.data.method,
     p_amount: parsed.data.amount,

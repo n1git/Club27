@@ -5,6 +5,7 @@ import { addOrderPayment, voidOrder } from "@/lib/actions/orders";
 import { PAYMENT_METHODS } from "@/lib/commerce";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
+import { RequestIdInput } from "@/components/shared/request-id-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ export function PaymentForm({ orderId, remaining }: { orderId: string; remaining
   return (
     <ActionForm action={addOrderPayment} className="flex flex-col gap-3">
       <input type="hidden" name="orderId" value={orderId} />
+      <RequestIdInput />
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="op-method">Metode</Label>
@@ -43,9 +45,7 @@ export function PaymentForm({ orderId, remaining }: { orderId: string; remaining
           <Input id="op-ref" name="reference" maxLength={120} className="h-10" />
         </div>
       </div>
-      <Button type="submit" className="h-10 w-fit">
-        Catat pembayaran
-      </Button>
+      <ActionSubmitButton className="h-10 w-fit">Catat pembayaran</ActionSubmitButton>
     </ActionForm>
   );
 }

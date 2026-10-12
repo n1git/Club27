@@ -19,6 +19,7 @@ export const paymentSchema = z.object({
 });
 
 export const orderPayloadSchema = z.object({
+  requestId: z.string().uuid("Data tidak valid"),
   memberId: z.string().uuid().nullable().optional(),
   customerName: z.string().trim().max(120).nullable().optional(),
   items: z

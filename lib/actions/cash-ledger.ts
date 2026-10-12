@@ -12,6 +12,9 @@ export async function addManualAdjustment(
 ): Promise<ActionState> {
   await requireActionRole(["admin", "finance"]);
 
+  const requestId = String(formData.get("requestId") ?? "");
+  if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { ok: false, error: "Data tidak valid" };
+
   const parsed = manualAdjustmentSchema.safeParse({
     direction: formData.get("direction"),
     amount: formData.get("amount"),
@@ -27,9 +30,10 @@ export async function addManualAdjustment(
     direction: parsed.data.direction,
     amount: parsed.data.amount,
     reason: parsed.data.reason,
+    client_request_id: requestId,
   });
 
-  if (error) {
+  if (error && error.code !== "23505") {
     return { ok: false, error: "Gagal menyimpan penyesuaian" };
   }
 

@@ -42,6 +42,7 @@ export function PosTerminal({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [requestId] = useState(() => crypto.randomUUID());
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [lines, setLines] = useState<Line[]>([]);
@@ -115,6 +116,7 @@ export function PosTerminal({
   function submit() {
     setError("");
     const payload = {
+      requestId,
       memberId: memberId || null,
       customerName: customer.trim() || null,
       items: lines.map((l) => (l.kind === "product" ? { kind: "product", productId: l.id, qty: l.qty } : { kind: "booking", bookingId: l.id })),

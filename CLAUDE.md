@@ -13,7 +13,7 @@ Always use the lean-dev skill.
 
 Status
 - Nama produk tampil "27 Club" (`NEXT_PUBLIC_APP_NAME`, default di `lib/config.ts`); semua pengenal teknis memakai `club27`: project Vercel dan Supabase (ref Supabase `gmldacyjdbsdofqqaqry`), package, audience JWT `club27-superadmin`, domain seed `demo.club27.test`, setting Postgres `club27.purge`/`club27.late_attendance`/`club27.audit_suppress`; repo GitHub `n1git/Club27` (URL lama `swimma` dialihkan GitHub).
-- Production Vercel: READY. Supabase `club27`: skema migrasi 001-032 lengkap (dicek langsung ke produksi 2026-10-11), tapi riwayat migrasi hosted hanya mencatat 001-012 karena sisanya diterapkan manual; pakai `supabase db push --dry-run` dulu. Data masih kosong: 0 organisasi, 0 superadmin, 2 paket harga. `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
+- Production Vercel: READY. Supabase `club27`: skema migrasi 001-034 lengkap (034 diterapkan 2026-10-12), tapi riwayat migrasi hosted tidak lengkap karena sebagian diterapkan manual; pakai `supabase db push --dry-run` dulu. Data masih kosong: 0 organisasi, 0 superadmin, 2 paket harga. `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
 - Langkah berikut: `npm run seed:superadmin` untuk akun superadmin pertama. Vercel Authentication masih aktif, situs belum publik.
 - Dua paket, Standard dan Advanced, semua modul `ready` termasuk di keduanya; yang membedakan hanya batas klub dan trial (`KAJIAN_PAKET.md`). Anggota dan lokasi tidak dibatasi.
 
@@ -50,4 +50,5 @@ Aturan teknis
 - Fungsi `security definer` baru wajib di-`revoke execute ... from public, anon, authenticated` kecuali memang untuk klien.
 - Booking kelas lewat RPC `book_class` (trigger `enforce_booking_rules`): `BK001` kelas sudah mulai, `BK002` tanpa paket aktif di tanggal kelas; hanya admin yang boleh melewatinya dengan `p_late_attendance` (tercatat di log audit). Insert tanpa JWT (seed/service role) tidak dicek.
 - Batas data: nama 200, teks bebas 2.000, tanggal lahir 1900..hari ini (WIB), promo berakhir >= mulai, periode gaji per pelatih tidak tumpang tindih; zod (`lib/validations/limits.ts`) dan `CHECK` di database harus sama.
+- Idempotensi: pesanan kasir lewat `create_order_once`, pembayaran lewat `add_order_payment_once`, penyesuaian buku kas dengan `client_request_id`; klien mengirim `requestId` (UUID per form, diganti setelah sukses, `RequestIdInput`), kirim ulang dengan ID sama tidak membuat baris baru. Tombol `ActionSubmitButton` terkunci selama form memproses.
 - Log audit (`audit_log`) hanya ditambah: lewat trigger atau `logAudit` (`lib/audit.ts`, service role). Superadmin wajib TOTP (`SUPERADMIN_JWT_SECRET`).

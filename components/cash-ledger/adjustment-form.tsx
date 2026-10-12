@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionToast } from "@/components/shared/use-action-toast";
+import { RequestIdInput } from "@/components/shared/request-id-input";
 
 export function AdjustmentForm() {
   const [state, formAction, pending] = useActionState(addManualAdjustment, {});
@@ -16,6 +17,7 @@ export function AdjustmentForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      <RequestIdInput state={state} />
       {state.error ? (
         <Alert variant="destructive">
           <AlertDescription>{state.error}</AlertDescription>
