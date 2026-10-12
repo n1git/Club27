@@ -75,3 +75,31 @@ Mock (new tokens, Bebas Neue display, logo in the sidebar and landing header, da
 2. **`MetricCard` values:** Bebas Neue for numbers and amounts only, with text values ("Belum ada jam buka") in Source Sans 3, or Bebas for every value?
 3. **Volt button edge on light pages:** add a thin `#0E0E0E` border at 15% opacity to primary buttons in light mode, or leave the fill as is?
 4. **Uppercase labels:** change the sidebar group labels and the landing section labels to sentence case, or keep the uppercase small labels?
+
+### Mock with logo A (requested 2026-10-12)
+
+Logo A (`27club-brand-a.zip`): charcoal `#15161A`, red `#E23B2E`, off-white `#F6F4F1`, heavy italic condensed lettering. Mock tokens (applied locally, screenshotted, reverted):
+
+| Token | Light | Dark |
+|---|---|---|
+| Background / foreground | `#F6F4F1` / `#15161A` (16.5:1) | `#15161A` / `#F6F4F1` (16.5:1) |
+| Card | `#FDFCFA` | `#1E1F24` |
+| Muted foreground | `#5A5852` (6.5:1) | `#A8A59E` (7.4:1) |
+| Primary button | `#C42E22` fill, white text (5.6:1) | same |
+| Accent text, links, focus ring | `#B8261B` (5.7:1) | `#FF6B5E` (6.5:1) |
+| Destructive | `#9F1239` | `#FB7185` |
+| Sidebar active item | `#15161A` fill, off-white text | `#C42E22` fill, white text |
+
+Display font in the mock: Barlow Condensed 800 italic (closest Google font to the logo lettering; not settled).
+
+Notes from the A mock:
+- The logo's own red `#E23B2E` fails as a button colour: white text on it is 4.29:1 and charcoal 4.22:1. Buttons use the darker `#C42E22`; `#E23B2E` stays in the logo and large display type only.
+- Brand red and the error colour are the same hue. The mock moves destructive to a rose (`#9F1239` / `#FB7185`) so errors still read differently from primary buttons. Without that, a red "Hapus" button and a red "Simpan" button look alike.
+- At 36–40 px tall, the small "CLUB" line of logo A is barely legible; the full logo needs about 48 px, or the icon in tight spots.
+- Italic all-caps display type has the same problem as Bebas for text values in `MetricCard` ("BELUM ADA JAM …").
+
+Screenshots:
+- ![landing A](redesign-brand-c/mock-a-landing.png) ![admin A](redesign-brand-c/mock-a-admin.png) ![member A](redesign-brand-c/mock-a-member.png)
+- Dark: ![landing A](redesign-brand-c/mock-a-dark-landing.png) ![admin A](redesign-brand-c/mock-a-dark-admin.png) ![member A](redesign-brand-c/mock-a-dark-member.png)
+
+Waiting for: the choice between logo C and logo A, plus the four open decisions above.
