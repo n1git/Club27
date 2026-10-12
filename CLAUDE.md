@@ -20,7 +20,7 @@ Status
 Sisa risiko keamanan
 - Penguncian akun setelah 5 gagal login bisa dipicu orang lain yang tahu email (kunci 15 menit). Rate limit per IP (`hit_rate_limit`) membatasi skalanya.
 - CSP baru membatasi framing/form/base-uri; belum membatasi script (butuh nonce).
-- `/privasi` dan `/syarat` masih draf (`noindex`, label "Draf"); wajib ditinjau ahli hukum sebelum publik karena menyimpan data anak. FAQ ada di landing.
+- `/privasi` dan `/syarat` sudah terbit (pengelola N-1Labs, Kota Semarang; sengketa PN Semarang; data tidak dihapus saat langganan berakhir, hanya atas permintaan pemilik) tapi belum ditinjau ahli hukum; PSE sengaja ditunda owner. Kontak privasi dari `NEXT_PUBLIC_CONTACT_EMAIL`/`NEXT_PUBLIC_CONTACT_WHATSAPP`. FAQ ada di landing.
 - Tidak ada payment gateway, invoice/kwitansi Swimma, proration, perpanjangan atau penangguhan otomatis saat periode berakhir (hanya ditandai lewat jatuh tempo di portal superadmin).
 
 Terbuka
