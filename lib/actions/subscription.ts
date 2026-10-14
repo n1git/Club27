@@ -5,7 +5,8 @@ import { z } from "zod";
 import { requireActionRole } from "@/lib/auth/guard";
 import { requireOwnerAction } from "@/lib/auth/owner";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { requestRenewal } from "@/lib/billing/renewals";
+import { getPendingRenewal, preparePayment, requestRenewal } from "@/lib/billing/renewals";
+import { isMidtransConfigured } from "@/lib/payments/midtrans";
 import { BILLING_PERIODS, PLAN_CODES } from "@/lib/pricing";
 import { internalUserCostChange, type InternalUserCostChange } from "@/lib/data/platform-pricing";
 import { logAudit } from "@/lib/audit";
@@ -39,8 +40,27 @@ export async function submitRenewal(_prevState: ActionState, formData: FormData)
     actorId: owner.profileId,
     actorRole: "admin",
   });
+  const paymentUrl = await preparePaymentFor(owner.organizationId, owner.ownerId);
   revalidatePath("/admin/klub/langganan");
+  if (paymentUrl) return { ok: true, message: "Pengajuan tercatat. Lanjutkan pembayaran lewat tombol Bayar sekarang." };
   return { ok: true, message: "Pengajuan tercatat. Langganan aktif setelah pembayaran dikonfirmasi." };
+}
+
+async function preparePaymentFor(organizationId: string, ownerId: string) {
+  if (!isMidtransConfigured()) return null;
+  const [renewal, { data: owner }] = await Promise.all([
+    getPendingRenewal(organizationId),
+    createAdminSupabaseClient().from("org_owners").select("full_name, email").eq("id", ownerId).maybeSingle(),
+  ]);
+  if (!renewal || !owner) return null;
+  return preparePayment(renewal, { name: owner.full_name as string, email: owner.email as string });
+}
+
+export async function retryRenewalPayment(_prevState: ActionState): Promise<ActionState> {
+  const owner = await requireOwnerAction({ allowBillingLocked: true });
+  const url = await preparePaymentFor(owner.organizationId, owner.ownerId);
+  revalidatePath("/admin/klub/langganan");
+  return url ? { ok: true, message: "Tautan pembayaran siap." } : { ok: false, error: "Tautan pembayaran belum bisa dibuat. Coba lagi beberapa saat lagi." };
 }
 
 export async function previewInternalUserCost(): Promise<InternalUserCostChange | null> {

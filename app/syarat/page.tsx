@@ -47,7 +47,7 @@ export default function TermsPage() {
       <h2>4. Langganan dan pembayaran</h2>
       <ul>
         <li>Harga, masa trial, dan batas klub mengikuti paket yang tertera di halaman harga saat pemesanan.</li>
-        <li>Pembayaran dilakukan di luar aplikasi. Paket aktif setelah pembayaran kami terima.</li>
+        <li>Pembayaran dilakukan melalui penyedia pembayaran resmi atau transfer. Paket aktif setelah pembayaran terkonfirmasi.</li>
         <li>Langganan tidak ditagih otomatis. Untuk melanjutkan, ajukan perpanjangan dan selesaikan pembayaran sebelum periode berakhir.</li>
         <li>Biaya periode yang sudah berjalan tidak dikembalikan, kecuali terjadi kesalahan tagihan dari pihak kami atau layanan tidak dapat kami berikan.</li>
         <li>Perubahan harga diberitahukan paling lambat 30 hari sebelumnya dan berlaku untuk periode berikutnya.</li>

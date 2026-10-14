@@ -43,7 +43,7 @@ export default function PrivacyPage() {
         <li>Data kegiatan klub: jadwal, booking, kehadiran, check-in, paket, tagihan, transaksi kasir, buku kas, dan gaji pelatih.</li>
         <li>Catatan persetujuan dan riwayat tindakan penting di aplikasi.</li>
       </ul>
-      <p>Kami tidak memproses data kartu atau rekening pembayaran.</p>
+      <p>Data kartu atau rekening pembayaran diproses langsung oleh penyedia pembayaran dan tidak kami simpan.</p>
 
       <h2>3. Tujuan pemrosesan</h2>
       <ul>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
 
       <h2>5. Penyedia layanan dan transfer ke luar negeri</h2>
       <p>
-        Kami memakai penyedia layanan pihak ketiga untuk menjalankan aplikasi. Sebagian server penyedia berada di luar
+        Kami memakai penyedia layanan pihak ketiga untuk menjalankan aplikasi dan memproses pembayaran langganan. Sebagian server penyedia berada di luar
         Indonesia, sehingga data dapat ditransfer ke luar wilayah Indonesia. Kami hanya memilih penyedia dengan standar
         pelindungan data yang memadai dan hanya memberikan data yang diperlukan.
       </p>

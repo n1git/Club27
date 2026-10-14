@@ -9,6 +9,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getPendingRenewal } from "@/lib/billing/renewals";
 import { isBillingLocked } from "@/lib/billing/access";
 import { getContact } from "@/lib/site";
+import { isMidtransConfigured } from "@/lib/payments/midtrans";
+import { RetryPaymentForm } from "@/components/subscription/retry-payment-form";
+import { buttonVariants } from "@/components/ui/button";
 import { ModuleList } from "@/components/pricing/pricing-picker";
 import { MetricCard } from "@/components/ui/metric-card";
 import { Badge } from "@/components/ui/badge";
@@ -32,8 +35,10 @@ const STATUS_VARIANT = {
   cancelled: "secondary",
 } as const;
 
-export default async function SubscriptionPage() {
+export default async function SubscriptionPage({ searchParams }: { searchParams: Promise<{ bayar?: string }> }) {
   const owner = await requireOwner();
+  const { bayar } = await searchParams;
+  const gateway = isMidtransConfigured();
   const [billing, users, modules, renewal] = await Promise.all([
     getOrganizationBilling(owner.organizationId),
     listInternalUsers(owner.organizationId),
@@ -71,6 +76,13 @@ export default async function SubscriptionPage() {
         <SubscriptionBanner />
       )}
 
+      {bayar === "selesai" && renewal ? (
+        <Alert>
+          <AlertTitle>Pembayaran sedang diproses</AlertTitle>
+          <AlertDescription>Status langganan diperbarui otomatis setelah pembayaran terkonfirmasi. Muat ulang halaman ini beberapa saat lagi.</AlertDescription>
+        </Alert>
+      ) : null}
+
       {renewal ? (
         <Alert>
           <AlertTitle>Menunggu pembayaran</AlertTitle>
@@ -80,12 +92,27 @@ export default async function SubscriptionPage() {
               <strong>{formatRupiah(renewal.amount)}</strong>, diajukan{" "}
               {formatJakartaDate(renewal.requestedAt, longDate)}.
             </span>
-            <span>
-              Lakukan pembayaran lalu kirim bukti ke admin platform
-              {contact.email ? ` (${contact.email})` : ""}
-              {contact.whatsapp ? `${contact.email ? " atau" : ""} WhatsApp +${contact.whatsapp}` : ""}. Periode baru
-              dimulai setelah periode berjalan habis, atau hari konfirmasi bila sudah lewat.
-            </span>
+            {gateway ? (
+              <>
+                <span>
+                  Bayar lewat transfer bank, e-wallet, atau QRIS. Langganan aktif otomatis setelah pembayaran berhasil.
+                </span>
+                {renewal.paymentUrl ? (
+                  <a href={renewal.paymentUrl} className={buttonVariants({ size: "sm", className: "mt-2 w-fit" })}>
+                    Bayar sekarang
+                  </a>
+                ) : (
+                  <RetryPaymentForm />
+                )}
+              </>
+            ) : (
+              <span>
+                Lakukan pembayaran lalu kirim bukti ke admin platform
+                {contact.email ? ` (${contact.email})` : ""}
+                {contact.whatsapp ? `${contact.email ? " atau" : ""} WhatsApp +${contact.whatsapp}` : ""}. Periode baru
+                dimulai setelah periode berjalan habis, atau hari konfirmasi bila sudah lewat.
+              </span>
+            )}
           </AlertDescription>
         </Alert>
       ) : null}

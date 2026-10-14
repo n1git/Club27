@@ -1,4 +1,9 @@
+import { randomBytes } from "node:crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { createSnapTransaction, isMidtransConfigured } from "@/lib/payments/midtrans";
+import { APP_NAME } from "@/lib/config";
+import { SITE_URL } from "@/lib/site";
+import { PERIOD_LABEL } from "@/lib/pricing";
 import type { BillingPeriod, PlanCode } from "@/lib/pricing";
 
 export interface Renewal {
@@ -14,6 +19,7 @@ export interface Renewal {
   requestedAt: string;
   periodStart: string | null;
   periodEnd: string | null;
+  paymentUrl: string | null;
 }
 
 type Row = {
@@ -27,12 +33,13 @@ type Row = {
   requested_at: string;
   period_start: string | null;
   period_end: string | null;
+  payment_url: string | null;
   organizations: { name: string } | { name: string }[] | null;
   subscription_plans: { name: string } | { name: string }[] | null;
 };
 
 const COLUMNS =
-  "id, organization_id, plan_code, billing_period, users, amount, status, requested_at, period_start, period_end, organizations(name), subscription_plans(name)";
+  "id, organization_id, plan_code, billing_period, users, amount, status, requested_at, period_start, period_end, payment_url, organizations(name), subscription_plans(name)";
 
 const first = <T>(value: T | T[] | null): T | null => (Array.isArray(value) ? value[0] ?? null : value);
 
@@ -50,6 +57,7 @@ function toRenewal(row: Row): Renewal {
     requestedAt: row.requested_at,
     periodStart: row.period_start,
     periodEnd: row.period_end,
+    paymentUrl: row.payment_url,
   };
 }
 
@@ -88,4 +96,24 @@ export async function confirmRenewal(renewalId: string, actor: string, provider 
     p_provider: provider,
     p_provider_ref: providerRef,
   });
+}
+
+export async function preparePayment(renewal: Renewal, customer: { name: string; email: string }): Promise<string | null> {
+  if (!isMidtransConfigured() || renewal.status !== "pending") return null;
+  if (renewal.paymentUrl) return renewal.paymentUrl;
+  const orderId = `${renewal.id.slice(0, 8)}-${Date.now().toString(36)}-${randomBytes(3).toString("hex")}`;
+  const url = await createSnapTransaction({
+    orderId,
+    amount: Math.round(renewal.amount),
+    itemName: `${APP_NAME} ${renewal.planName ?? renewal.planCode} ${PERIOD_LABEL[renewal.billingPeriod]}`,
+    customer,
+    finishUrl: `${SITE_URL}/admin/klub/langganan?bayar=selesai`,
+  });
+  if (!url) return null;
+  const { error } = await createAdminSupabaseClient()
+    .from("subscription_renewals")
+    .update({ payment_order_id: orderId, payment_url: url })
+    .eq("id", renewal.id)
+    .eq("status", "pending");
+  return error ? null : url;
 }

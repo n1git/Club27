@@ -33,7 +33,7 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 - Klub pertama organisasi tidak terkena `SW003` saat dibuat.
 - Hanya `suspended` dan `cancelled` yang mematikan akses seluruh klub organisasi. Data tidak dihapus.
 - `pending`, `expired`, serta `trial`/`active` yang lewat tanggal akhir mengunci akses klub: pemilik hanya bisa membuka halaman Langganan, pengguna lain keluar dengan pesan langganan berakhir. Cron harian (`/api/cron/subscriptions`, 07.00 WIB) mengubah trial/periode yang lewat menjadi `expired` dan mengirim email pengingat H-7 dan H-1.
-- Perpanjangan: pemilik mengajukan paket dan periode (`request_renewal`, harga dihitung ulang di server), superadmin mengonfirmasi pembayaran (`confirm_renewal`, idempoten, periode baru menyambung dari periode lama). Payment gateway nanti cukup memanggil `confirm_renewal` dengan `provider` dan `provider_ref`.
+- Perpanjangan: pemilik mengajukan paket dan periode (`request_renewal`, harga dihitung ulang di server), superadmin mengonfirmasi pembayaran (`confirm_renewal`, idempoten, periode baru menyambung dari periode lama). Pembayaran lewat Midtrans Snap (notifikasi `/api/payments/midtrans` memanggil `confirm_renewal` dengan `provider = midtrans`); konfirmasi manual superadmin tetap tersedia.
 
 ## 5. Unit ekonomi (asumsi, wajib diverifikasi)
 
@@ -47,4 +47,4 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 1. Apakah Advanced perlu trial singkat? Sekarang Advanced hanya bisa dipakai setelah pembayaran.
 2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
 3. Apakah batas klub Standard (3) perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
-4. Invoice/kwitansi 27club, payment gateway, dan proration belum dirancang.
+4. Invoice/kwitansi 27club dan proration belum dirancang.
