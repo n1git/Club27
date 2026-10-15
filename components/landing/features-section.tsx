@@ -76,8 +76,15 @@ const FEATURES = [
   },
 ];
 
+const GROUPS = [
+  { label: "Orang", titles: ["Anggota & keanggotaan", "Portal anggota", "Peran & akses"] },
+  { label: "Operasional", titles: ["Jadwal & kehadiran", "Fasilitas & booking", "Check-in QR untuk gym", "Modul per klub"] },
+  { label: "Uang dan laporan", titles: ["Kasir, produk & pesanan", "Buku kas & gaji pelatih", "Laporan & dasbor"] },
+];
+
 export function FeaturesSection({ modules }: { modules: PlatformModule[] }) {
   const status = new Map(modules.map((m) => [m.code, m.status]));
+  const byTitle = new Map(FEATURES.map((f) => [f.title, f]));
   return (
     <Section
       id="fitur"
@@ -85,26 +92,32 @@ export function FeaturesSection({ modules }: { modules: PlatformModule[] }) {
       title="Semua pekerjaan klub dalam satu sumber data."
       intro="Dikelompokkan menurut pekerjaan yang biasa dilakukan pemilik, admin, pelatih, resepsionis, dan bagian keuangan."
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:[&>li:last-child]:col-span-3">
-        {FEATURES.map((f) => {
-          const soon = status.get(f.module) === "soon";
-          return (
-            <li key={f.title} className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
-              <div className="flex items-center justify-between gap-3">
-                <span className="flex size-10 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
-                  <f.icon className="size-5" aria-hidden />
-                </span>
-                {soon ? (
-                  <span className="rounded-full border border-dashed border-border px-2.5 py-0.5 text-xs text-muted-foreground">Segera hadir</span>
-                ) : null}
-              </div>
-              <h3 className="font-heading text-lg font-semibold">{f.title}</h3>
-              <p className="text-pretty text-muted-foreground">{f.body}</p>
-            </li>
-          );
-        })}
-      </ul>
-      <p className="mt-8 max-w-3xl text-sm text-muted-foreground">
+      <div className="flex flex-col gap-12">
+        {GROUPS.map((group) => (
+          <div key={group.label} className="grid gap-4 border-t border-foreground/80 pt-5 lg:grid-cols-[13rem_1fr] lg:gap-10">
+            <h3 className="text-sm font-semibold text-accent-foreground">{group.label}</h3>
+            <ul className="flex flex-col divide-y divide-border">
+              {group.titles.map((title) => {
+                const f = byTitle.get(title)!;
+                const soon = status.get(f.module) === "soon";
+                return (
+                  <li key={f.title} className="grid gap-2 py-5 first:pt-0 last:pb-0 md:grid-cols-[minmax(0,15rem)_1fr] md:gap-8">
+                    <div className="flex items-start gap-3">
+                      <f.icon className="mt-0.5 size-5 shrink-0 text-accent-foreground" aria-hidden />
+                      <div>
+                        <h4 className="font-heading text-lg font-semibold leading-snug">{f.title}</h4>
+                        {soon ? <span className="mt-1 inline-block rounded-sm border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground">Segera hadir</span> : null}
+                      </div>
+                    </div>
+                    <p className="text-pretty text-muted-foreground">{f.body}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+      <p className="mt-10 max-w-3xl text-sm text-muted-foreground">
         Semua waktu ditampilkan dalam WIB. Data setiap klub dipisahkan di tingkat basis data, sehingga pengguna hanya
         membaca data klub yang sedang aktif dan sesuai perannya.
       </p>
