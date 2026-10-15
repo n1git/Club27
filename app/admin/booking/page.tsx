@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
+import { RefreshOnFocus } from "@/components/shared/refresh-on-focus";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -64,6 +65,7 @@ export default async function BookingPage({
 
   return (
     <div className="flex flex-col gap-4">
+      <RefreshOnFocus />
       <PageHeader title={<>Booking</>} subtitle={<>
           Pilih slot untuk membuat booking atau mengelola yang sudah ada. Waktu dalam WIB.
         </>} />

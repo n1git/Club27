@@ -20,6 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page-header";
+import { RefreshOnFocus } from "@/components/shared/refresh-on-focus";
 
 export default async function CheckinPage() {
   await requireRole("admin");
@@ -34,6 +35,7 @@ export default async function CheckinPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
+        <RefreshOnFocus />
         <PageHeader title={<>Check-in</>} />
         <TriggerDialog trigger={<Button type="button">Check-in manual</Button>}>
           <h2 className="mb-4 text-xl font-semibold">Check-in manual</h2>

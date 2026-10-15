@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
+import { RefreshOnFocus } from "@/components/shared/refresh-on-focus";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -40,6 +41,7 @@ export default async function MemberBookingPage({
 
   return (
     <div className="flex max-w-3xl flex-col gap-6">
+      <RefreshOnFocus />
       <PageHeader title={<>Booking</>} subtitle={<>Pilih {terms.resource.toLowerCase()}, tanggal, lalu slot. Waktu dalam WIB.</>} />
 
       {resources.length === 0 ? (

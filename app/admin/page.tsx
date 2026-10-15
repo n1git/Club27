@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page-header";
+import { RefreshOnFocus } from "@/components/shared/refresh-on-focus";
 
 function formatRupiah(value: number) {
   return `Rp ${Number(value).toLocaleString("id-ID")}`;
@@ -63,6 +64,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <RefreshOnFocus />
       <PageHeader title={<>Dasbor Admin</>} />
 
       <SubscriptionBanner />

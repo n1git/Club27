@@ -6,7 +6,18 @@ import { useEffect, useRef } from "react";
 import { ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLinkIcon } from "./nav-progress";
-import { isNavActive, type NavGroup } from "./nav-types";
+import { useFullPrefetch } from "./use-full-prefetch";
+import { isNavActive, type NavGroup, type NavItem } from "./nav-types";
+
+function TabLink({ item, active, className }: { item: NavItem; active: boolean; className: string }) {
+  const prefetch = useFullPrefetch(item.href);
+  return (
+    <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} className={className}>
+      <NavLinkIcon name={item.icon} />
+      <span className="max-w-full truncate">{item.label}</span>
+    </Link>
+  );
+}
 
 const MAX_TABS = 5;
 const MIN_TABS = 3;
@@ -49,18 +60,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
             const active = isNavActive(pathname, item);
             return (
               <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    tabClass,
-                    "w-full",
-                    active && "text-accent-foreground",
-                  )}
-                >
-                  <NavLinkIcon name={item.icon} />
-                  <span className="max-w-full truncate">{item.label}</span>
-                </Link>
+                <TabLink item={item} className={cn(tabClass, "w-full", active && "text-accent-foreground")} active={active} />
               </li>
             );
           })}
