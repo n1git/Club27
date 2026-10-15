@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { HeroPreview } from "./hero-preview";
 
 export function Hero({ trialDays }: { trialDays: number }) {
   return (
     <section aria-labelledby="hero-judul" className="dark relative overflow-hidden border-b border-border bg-background text-foreground">
-      <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:py-24">
-        <div>
+      <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
+        <div className="max-w-3xl">
           <h1 id="hero-judul" className="text-balance font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
             Satu aplikasi untuk mengelola semua klub olahraga Anda.
           </h1>
@@ -24,7 +23,6 @@ export function Hero({ trialDays }: { trialDays: number }) {
           </div>
           <p className="mt-4 text-sm text-muted-foreground">Anggota tidak dibatasi jumlahnya. Harga dihitung per pengguna internal.</p>
         </div>
-        <HeroPreview />
       </div>
     </section>
   );

@@ -140,3 +140,6 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
   - Desktop: performance 100, accessibility 100, best practices 100, SEO 100; LCP 0.6 s, CLS 0.
   - Mobile with devtools throttling (real network and CPU throttling): performance 97-99, accessibility 100, best practices 100, SEO 100; LCP 1.0-1.8 s, CLS 0.02-0.04 (web font swap in the hero).
   - Mobile with the default simulated throttling: performance 95-97, LCP 2.6-3.0 s, CLS 0. This misses the LCP target. The observed LCP in the same runs was 0.11-0.21 s (the H1, first paint); the simulated value is inflated because on localhost the framework scripts (about 137 KB of the 169 KB JS) arrive and run before the first paint, so the simulator counts them in the LCP path. Tried and reverted: lazy-loading the toast library (gain 0.1 s), `display: optional` for the heading font (no gain), `experimental.inlineCss` (bimodal 2.2 or 2.9 s; global experimental flag, not kept). The landing's own client code is about 22 KB; the rest is the Next.js runtime. Needs a run against the deployed site to confirm; see the decision line in the final summary.
+
+## 2026-10-15
+- Owner removed the hero product preview ("Dasbor Admin" sample card): `hero-preview.tsx` and `sample-label.tsx` deleted, hero is now a single text column.
