@@ -4,7 +4,7 @@ import { getCurrentTenant } from "@/lib/data/tenant";
 import { listClubsForProfile } from "@/lib/data/member-clubs";
 import { AppShell } from "@/components/shared/app-shell";
 import type { NavGroup, NavItem } from "@/components/shared/nav-types";
-import { ClubSwitcher } from "@/components/member/club-switcher";
+import { LazyClubSwitcher } from "@/components/member/lazy-club-switcher";
 import { APP_NAME } from "@/lib/config";
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
@@ -36,7 +36,7 @@ export default async function MemberLayout({ children }: { children: React.React
       roleLabel="Anggota"
       clubName={user.clubPending ? APP_NAME : (tenant?.name ?? APP_NAME)}
       tenantSwitcher={
-        clubs.length > 1 && !user.clubPending ? <ClubSwitcher clubs={clubs} currentId={user.tenantId} /> : null
+        clubs.length > 1 && !user.clubPending ? <LazyClubSwitcher clubs={clubs} currentId={user.tenantId} /> : null
       }
     >
       {children}

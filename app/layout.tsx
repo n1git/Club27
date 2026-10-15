@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Barlow_Condensed, Source_Sans_3 } from "next/font/google";
-import { Toaster } from "sonner";
 import { APP_NAME } from "@/lib/config";
 import { SITE_URL } from "@/lib/site";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { LazyToaster } from "@/components/shared/lazy-toaster";
 import "./globals.css";
 
 const display = Barlow_Condensed({
@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <ThemeProvider nonce={nonce}>
           {children}
-          <Toaster richColors position="top-center" />
+          <LazyToaster />
         </ThemeProvider>
       </body>
     </html>

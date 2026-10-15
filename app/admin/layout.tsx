@@ -5,7 +5,7 @@ import type { NavGroup, NavItem } from "@/components/shared/nav-types";
 import { APP_NAME } from "@/lib/config";
 import { loadOwner } from "@/lib/auth/owner";
 import { getSwitchableTenants } from "@/lib/data/organization";
-import { TenantSwitcher } from "@/components/organization/tenant-switcher";
+import { LazyTenantSwitcher } from "@/components/organization/lazy-tenant-switcher";
 import { canAccessPath, ROLE_LABEL, STAFF_ROLES } from "@/lib/auth/roles";
 import { getEnabledModules } from "@/lib/modules";
 import { getClubTerms } from "@/lib/club-type";
@@ -103,7 +103,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       })),
     })),
   ];
-  const switcher = tenants.length > 1 ? <TenantSwitcher tenants={tenants} currentId={session.tenantId} /> : null;
+  const switcher = tenants.length > 1 ? <LazyTenantSwitcher tenants={tenants} currentId={session.tenantId} /> : null;
   return (
     <AppShell
       navGroups={navGroups}
