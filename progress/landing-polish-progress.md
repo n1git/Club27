@@ -1,6 +1,6 @@
 # landing-polish progress
 
-Status: 404, error pages and the Fitur and Cara kerja recompose are done.
+Status: 404, error pages, Fitur and Cara kerja, shadows, hover, square labels and the ruled FAQ are done; the light bands mock waits for OK.
 
 - [x] Branded `app/not-found.tsx` and `app/error.tsx` (shared `components/shared/status-page.tsx`), pushed.
 - [x] Recompose Fitur and Cara kerja (approved from the mock, applied). Fitur: three groups (Orang, Operasional, Uang dan laporan), each a label column and a divided list of icon, title and unchanged body text, no cards. Cara kerja: sticky heading on the left, vertical stepper on the right. Copy unchanged.
@@ -8,3 +8,5 @@ Status: 404, error pages and the Fitur and Cara kerja recompose are done.
   - Cara kerja: ![](landing-polish/mock-cara-kerja-d.png) ![](landing-polish/mock-cara-kerja-d-dark.png) ![](landing-polish/mock-cara-kerja-m.png)
   - 404: ![](landing-polish/mock-404.png)
 - [ ] Remaining audit items (hover states, tinted shadows, dark bands, FAQ, pills): not started.
+- [x] Tinted shadow token `--shadow-ink`, button and nav hover, square labels, ruled FAQ (applied).
+- [ ] Dark bands (Multi klub, CTA akhir) to light: mock only, reverted. ![](landing-polish/mock-bands-light.png) ![](landing-polish/mock-bands-dark.png)
