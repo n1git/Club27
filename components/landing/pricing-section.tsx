@@ -2,7 +2,7 @@ import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
 import type { PricingPlan } from "@/lib/pricing";
 import type { PlatformModule } from "@/lib/data/platform-pricing";
-import { LazyLandingPricing } from "@/components/pricing/lazy-landing-pricing";
+import { LandingPricing } from "@/components/pricing/landing-pricing";
 import { buttonVariants } from "@/components/ui/button";
 import { Section } from "./section";
 
@@ -60,7 +60,7 @@ export function PricingSection({ plans, modules }: { plans: PricingPlan[]; modul
               </p>
             </li>
           </ul>
-          <LazyLandingPricing plans={plans} modules={modules} />
+          <LandingPricing plans={plans} modules={modules} />
           <p className="mt-6 max-w-3xl text-sm text-muted-foreground">
             Total dihitung ulang di server dari jumlah pengguna internal saat itu. Paket diaktifkan oleh tim {APP_NAME}{" "}
             setelah pembayaran diterima; belum ada pembayaran online di dalam aplikasi.

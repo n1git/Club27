@@ -1,11 +1,11 @@
 # cache-lazy progress
 
-Status: Phase 0 done, waiting for OK.
+Status: all phases done.
 
 - [x] Phase 0 — measure and plan
-- [ ] Phase 1 — cache and invalidation
-- [ ] Phase 2 — prefetch and live parts
-- [ ] Phase 3 — lazy loading, after measurement
+- [x] Phase 1 — cache and invalidation
+- [x] Phase 2 — prefetch and live parts
+- [x] Phase 3 — lazy loading, after measurement
 
 ## Phase 0
 
@@ -87,8 +87,70 @@ Phase 3
 - Landing: look at the 41 KB island; lazy load the pricing calculator only if it saves more than it costs; keep SSR.
 - Repeat the Phase 0 measurement.
 
-### Needs your OK
+### Decisions (owner OK: all three)
 
-1. **Conflict with "second visit makes no server request".** The never-stale rule covers money, check-in, attendance and availability, and the dashboard, schedule, member home and booking pages all show some of them. Under the strict reading those pages (the main tabs of each role) are refetched on every visit; the 60 s cache then helps only the list and settings pages. The alternative is to cache them too and rely on refresh-on-focus and mutation purges, which can show a figure up to 60 s old. I recommend the strict reading. Which do you want?
-2. `unstable_dynamicStaleTime` is not in this version's docs, only in its types and source. OK to use it? The fallback is a small client component that calls `router.refresh()` on mount for those pages (shows cached content for one round trip, then fresh).
-3. `staleTimes.static = 60` (decision 1 said static keeps the default) is needed to cap `router.prefetch`. OK?
+Strict reading of never-stale (those pages are refetched on every visit), `unstable_dynamicStaleTime` allowed, `staleTimes.static = 60`.
+
+## Phase 1 — cache and invalidation (done)
+
+- `next.config.ts`: `experimental.staleTimes = { dynamic: 60, static: 60 }`.
+- `export const unstable_dynamicStaleTime = 0;` on the 27 never-stale pages (dashboard, billing, cash ledger, payroll, POS and orders, booking, check-in, schedule and its detail, reports, org billing, member detail, coach schedule, attendance, coach home, member home, booking, orders and visits, superadmin home).
+- Login, register, superadmin login and all logouts end with `window.location.assign` instead of `router.push` plus `router.refresh`.
+- Browser test on a production build: a cacheable page revisit makes no data request; never-stale pages and the dashboard refetch; a saved change refreshes the cached pages; after logout and login as another account in the same tab no page of the first account is shown.
+
+## Phase 2 — prefetch and live parts (done)
+
+- Sidebar and bottom-bar links of the cacheable pages use `prefetch={true}` (full payload) after the page has loaded plus 1.5 s, skipped on `saveData` and 2g (`components/shared/use-full-prefetch.ts`). `router.prefetch` only fetches the shell in this version, so `<Link prefetch>` is used. Never-stale pages keep the default link prefetch.
+- `RefreshOnFocus` (throttled to once per 15 s) on the dashboard, check-in, admin booking and member booking.
+- Tests: a prefetched page opens without a data request; the 60 s limit expires (refetch after 62 s); focus refresh runs once and is throttled; switching club shows the new club's pages (the server action sets the cookie and purges the cache).
+
+## Phase 3 — lazy loading (done)
+
+- zod no longer ships to ten routes: `lib/username-suggest.ts` and `lib/platform-status.ts` hold the zod-free parts, the schema modules re-export them.
+- `next/dynamic` with a same-size `Skeleton`: the three recharts charts, the club and member club switchers (skeleton sized like the control, 44 px on phones), the sonner toaster (mounted after load plus 1.5 s or on the first tap or key, never on `/`, `/login`, `/privasi`, `/syarat`), and the QR generator (dynamic `import()` in the existing placeholder).
+- Tried and reverted: lazy landing pricing (SSR on): it added a request and no saving.
+- No layout jump from the charts and switchers: skeleton and loaded element measured at the same top and height. A header reflow on throttled phones when fonts load shows up in layout-shift records with or without the lazy parts and is unchanged.
+
+## After (same database and scripts, production build, 375 px, Fast 3G, 4x CPU; baseline rebuilt from the Phase 0 commit)
+
+Navigation by bottom-bar tabs, ms (server requests), five legs, legs 3 and 4 are revisits:
+
+| Role | Before | After |
+|---|---|---|
+| admin | 1414 ms (2) · 772 ms (1) · 721 ms (1) · 763 ms (1) · 792 ms (1) | 455 ms (0) · 786 ms (2) · 244 ms (0) · 744 ms (1) · 777 ms (1) |
+| coach | 1382 ms (1) · 771 ms (1) · 686 ms (1) · 703 ms (1) · 747 ms (1) | 778 ms (1) · 182 ms (0) · 713 ms (1) · 177 ms (0) · 666 ms (1) |
+| member | 1333 ms (1) · 701 ms (1) · 713 ms (1) · 747 ms (1) · 695 ms (1) | 1478 ms (1) · 691 ms (1) · 687 ms (1) · 710 ms (1) · 702 ms (1) |
+
+Pages in the never-stale list still cost one request per visit by design; list and settings pages are served from cache in 120–290 ms.
+
+First load, JS transferred in KB (gzip) up to 1.2 s after load, and load event in ms:
+
+| Route | JS KB | Load ms |
+|---|---|---|
+| `landing /` | 173 → 165 | 3013 → 2983 |
+| `login /login` | 172 → 164 | 3086 → 2993 |
+| `dashboard /admin` | 179 → 182 | 3161 → 3013 |
+| `daftar /daftar` | 266 → 178 | 3490 → 3088 |
+| `/admin/reports` | 284 → 182 | 3725 → 2996 |
+| `/admin/checkin` | 284 → 187 | 3700 → 3303 |
+| `/admin/staff` | 272 → 185 | 3637 → 3227 |
+| `/admin/profile` | 271 → 184 | 3776 → 3281 |
+| `/admin/kasir` | 183 → 197 | 3265 → 3341 |
+
+First-load JS per route from the analyzer, uncompressed KB:
+
+| Route | Before → after |
+|---|---|
+| `/` | 550 → 520 |
+| `/login` | 542 → 512 |
+| `/admin` | 559 → 529 |
+| `/member` | 559 → 528 |
+| `/admin/reports` | 921 → 529 |
+| `/admin/checkin` | 921 → 575 |
+| `/admin/staff` | 951 → 575 |
+| `/admin/profile` | 948 → 571 |
+| `/daftar` | 944 → 566 |
+| `/coach` | 951 → 575 |
+| `/superadmin` | 935 → 556 |
+
+Not lower: `/admin/kasir` is about 14 KB gzip higher in the transfer window (the page already imports sonner, and the toaster now loads beside it); the dashboard is 3 KB higher in the window because the test account has two clubs and loads the switcher chunk, while its route first-load is 30 KB lower. Recharts and the toaster are deferred, not removed, so total bytes on report and check-in pages are unchanged; they leave the critical path.
