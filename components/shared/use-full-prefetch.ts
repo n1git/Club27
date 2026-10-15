@@ -29,12 +29,16 @@ export function useFullPrefetch(href: string): true | undefined {
     if (!cached) return;
     const connection = (navigator as Navigator & { connection?: ConnectionInfo }).connection;
     if (connection?.saveData || connection?.effectiveType === "2g" || connection?.effectiveType === "slow-2g") return;
-    if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(() => setReady(true), { timeout: 3000 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const id = setTimeout(() => setReady(true), 1500);
-    return () => clearTimeout(id);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const start = () => {
+      timer = setTimeout(() => setReady(true), 1500);
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+    return () => {
+      window.removeEventListener("load", start);
+      clearTimeout(timer);
+    };
   }, [cached]);
 
   return ready ? true : undefined;

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-15 (kecepatan)
+
+- Moving between list and settings pages is served from a 60 s router cache; pages with money, check-in, attendance, booking availability and dashboard figures are always refetched. Any save clears the cache, and login, register and logout reload the page so one account never sees another's cached pages.
+- Live pages (dashboard, check-in, booking) refresh when the window regains focus.
+- Charts, the QR generator, club switchers, the toaster and the landing pricing calculator load on demand; zod no longer ships to ten routes. First-load JS dropped on the landing, login and dashboard routes and by about 40% on routes that carried zod or recharts.
+
 ## 2026-10-15
 
 - New look around the Twenty 7 Club logo: off-white and near-black surfaces, volt `#C8F31D` for primary buttons, the active menu item and focus, Source Sans 3 for text and Barlow Condensed 800 italic for page titles, metric numbers and the landing hero. Light and dark themes, sidebar follows the theme.
