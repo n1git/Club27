@@ -103,14 +103,14 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
 
   return (
     <Section id="faq" eyebrow="FAQ" title="Pertanyaan yang sering diajukan.">
-      <div className="mx-auto max-w-3xl divide-y divide-border rounded-lg border border-border bg-card">
+      <div className="max-w-4xl divide-y divide-border border-y border-t-foreground/80 border-b-border">
         {items.map((item) => (
           <details key={item.q} className="group">
-            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+            <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
               <h3 className="text-base font-semibold">{item.q}</h3>
               <ChevronDown className="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180 motion-reduce:transition-none" aria-hidden />
             </summary>
-            <div className="px-5 pb-5 text-pretty text-muted-foreground">{item.a}</div>
+            <div className="max-w-3xl pb-5 text-pretty text-muted-foreground">{item.a}</div>
           </details>
         ))}
       </div>

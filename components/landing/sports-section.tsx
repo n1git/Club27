@@ -50,7 +50,7 @@ export function SportsSection({ types, readyModules }: { types: PublicClubType[]
                 {soon.map((t) => (
                   <li
                     key={t.code}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-sm text-muted-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-sm border border-dashed border-border px-3 py-1.5 text-sm text-muted-foreground"
                   >
                     <CircleDashed className="size-4" aria-hidden />
                     {t.name}

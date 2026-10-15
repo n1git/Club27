@@ -27,7 +27,7 @@ export function LandingHeader() {
           <ul className="flex items-center gap-6 text-sm text-muted-foreground">
             {LANDING_LINKS.map((link) => (
               <li key={link.href}>
-                <a href={link.href} className="rounded-sm transition-colors duration-200 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <a href={link.href} className="rounded-sm transition-colors duration-200 hover:text-foreground hover:underline hover:decoration-1 hover:underline-offset-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   {link.label}
                 </a>
               </li>

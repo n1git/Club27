@@ -40,7 +40,7 @@ export function MultiClub({ plans }: { plans: PricingPlan[] }) {
               <Building2 className="size-4" aria-hidden />
               Organisasi contoh
             </p>
-            <span className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">Contoh data</span>
+            <span className="rounded-sm border border-border px-2.5 py-0.5 text-xs text-muted-foreground">Contoh data</span>
           </div>
           <ul className="mt-4 flex flex-col gap-2">
             {SAMPLE_CLUBS.map((club) => (
