@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
+import { BrandLogo } from "@/components/shared/brand-logo";
 import { getContact } from "@/lib/site";
 import { LEGAL_OPERATORS, LEGAL_OPERATORS_URL } from "@/lib/legal";
 
@@ -65,7 +66,7 @@ export function LandingFooter() {
   return (
     <footer className="border-t border-border">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 text-sm text-muted-foreground sm:px-6">
-        <p className="font-heading text-xl font-semibold text-accent-foreground">{APP_NAME}</p>
+        <BrandLogo />
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3">
           <FooterGroup title="Layanan" links={services} />
           <FooterGroup title="Komunitas" links={community} />

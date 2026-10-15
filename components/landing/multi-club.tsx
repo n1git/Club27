@@ -9,14 +9,14 @@ const SAMPLE_CLUBS = [
 
 export function MultiClub({ plans }: { plans: PricingPlan[] }) {
   return (
-    <section id="multi-klub" aria-labelledby="multi-klub-judul" className="scroll-mt-20 bg-sidebar py-16 text-sidebar-foreground sm:py-24">
+    <section id="multi-klub" aria-labelledby="multi-klub-judul" className="scroll-mt-20 dark border-y border-border bg-background py-16 text-foreground sm:py-24">
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-sidebar-muted-foreground">Multi klub</p>
+          <p className="text-sm font-semibold text-accent-foreground">Multi klub</p>
           <h2 id="multi-klub-judul" className="mt-2 text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
             Satu organisasi, beberapa klub, satu akun pemilik.
           </h2>
-          <ul className="mt-6 flex flex-col gap-3 text-sidebar-muted-foreground">
+          <ul className="mt-6 flex flex-col gap-3 text-muted-foreground">
             <li>Setiap klub punya jenis olahraga, anggota, staf, jadwal, dan buku kas sendiri, terpisah di tingkat basis data.</li>
             <li>Pemilik berpindah klub dari menu di bagian atas tanpa masuk ulang.</li>
             <li>Satu langganan untuk seluruh organisasi, dihitung dari jumlah pengguna internal semua klub.</li>
@@ -34,25 +34,25 @@ export function MultiClub({ plans }: { plans: PricingPlan[] }) {
             ) : null}
           </ul>
         </div>
-        <figure aria-label="Contoh daftar klub milik satu organisasi dengan data contoh" className="rounded-xl border border-sidebar-border bg-sidebar-accent p-4 sm:p-5">
+        <figure aria-label="Contoh daftar klub milik satu organisasi dengan data contoh" className="rounded-xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <p className="flex items-center gap-2 font-heading text-sm font-semibold">
               <Building2 className="size-4" aria-hidden />
               Organisasi contoh
             </p>
-            <span className="rounded-full border border-sidebar-border px-2.5 py-0.5 text-xs text-sidebar-muted-foreground">Contoh data</span>
+            <span className="rounded-full border border-border px-2.5 py-0.5 text-xs text-muted-foreground">Contoh data</span>
           </div>
           <ul className="mt-4 flex flex-col gap-2">
             {SAMPLE_CLUBS.map((club) => (
-              <li key={club.name} className="flex items-center justify-between gap-3 rounded-lg border border-sidebar-border px-4 py-3">
+              <li key={club.name} className="flex items-center justify-between gap-3 rounded-lg border border-border px-4 py-3">
                 <div>
                   <p className="font-medium">{club.name}</p>
-                  <p className="text-sm text-sidebar-muted-foreground">{club.type}</p>
+                  <p className="text-sm text-muted-foreground">{club.type}</p>
                 </div>
                 {club.current ? (
-                  <span className="text-xs font-medium text-sidebar-foreground">Klub aktif</span>
+                  <span className="text-xs font-medium text-foreground">Klub aktif</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-xs text-sidebar-muted-foreground">
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <ArrowLeftRight className="size-3.5" aria-hidden />
                     Pindah
                   </span>

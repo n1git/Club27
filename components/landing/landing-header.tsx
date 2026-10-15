@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APP_NAME } from "@/lib/config";
+import { BrandLogo } from "@/components/shared/brand-logo";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { LANDING_LINKS } from "./nav-links";
@@ -19,9 +19,9 @@ export function SkipLink() {
 export function LandingHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="rounded-md font-heading text-lg font-semibold tracking-tight text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          {APP_NAME}
+      <div className="relative mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link href="/" className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <BrandLogo />
         </Link>
         <nav aria-label="Navigasi utama" className="hidden md:block">
           <ul className="flex items-center gap-6 text-sm text-muted-foreground">
