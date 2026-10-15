@@ -96,3 +96,5 @@ export default async function CheckinPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

@@ -50,3 +50,5 @@ export default async function MemberDetailPage({
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

@@ -63,3 +63,5 @@ export default async function PackagesPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

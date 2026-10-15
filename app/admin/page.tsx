@@ -310,3 +310,5 @@ export default async function AdminDashboardPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

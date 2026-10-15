@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +29,6 @@ export function RegisterClubForm({
   captchaSiteKey?: string | null;
   nonce?: string;
 }) {
-  const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [planCode, setPlanCode] = useState<PlanCode>(initialPlan);
   const [period, setPeriod] = useState<BillingPeriod>(initialPeriod);
@@ -86,8 +84,7 @@ export function RegisterClubForm({
       return;
     }
 
-    router.push(data.redirectTo);
-    router.refresh();
+    window.location.assign(data.redirectTo);
   }
 
   if (sentTo) {

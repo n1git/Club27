@@ -145,3 +145,5 @@ export default async function BookingPage({
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

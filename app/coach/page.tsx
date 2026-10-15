@@ -164,3 +164,5 @@ export default async function CoachSchedulePage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

@@ -24,3 +24,5 @@ export default async function CheckinScreenPage({ params }: { params: Promise<{ 
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

@@ -248,3 +248,5 @@ export default async function MemberHomePage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

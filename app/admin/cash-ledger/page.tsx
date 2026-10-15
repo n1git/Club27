@@ -100,3 +100,5 @@ export default async function CashLedgerPage({ searchParams }: { searchParams: P
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

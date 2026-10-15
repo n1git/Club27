@@ -10,3 +10,5 @@ export default async function ClassDetailModal({ params }: { params: Promise<{ i
     </Dialog>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

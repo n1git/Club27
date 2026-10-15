@@ -226,3 +226,5 @@ export default async function SuperadminDashboardPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

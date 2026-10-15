@@ -123,3 +123,5 @@ export default async function ReportsPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

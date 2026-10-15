@@ -11,3 +11,5 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

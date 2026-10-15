@@ -19,3 +19,5 @@ export default async function CashierPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

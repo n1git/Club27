@@ -87,3 +87,5 @@ export default async function HeadCoachSchedulePage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

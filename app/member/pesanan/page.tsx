@@ -42,3 +42,5 @@ export default async function MemberOrdersPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

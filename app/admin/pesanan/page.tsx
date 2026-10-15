@@ -98,3 +98,5 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

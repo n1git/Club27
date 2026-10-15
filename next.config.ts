@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
     serverActions: { bodySizeLimit: "2100kb" },
+    staleTimes: { dynamic: 60, static: 60 },
   },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];

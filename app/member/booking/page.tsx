@@ -188,3 +188,5 @@ export default async function MemberBookingPage({
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

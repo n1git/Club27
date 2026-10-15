@@ -192,3 +192,5 @@ export default async function InvoicesPage({
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import qrcode from "qrcode-generator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +67,6 @@ function CodeField({ recovery }: { recovery: boolean }) {
 }
 
 export function SuperadminLoginForm() {
-  const router = useRouter();
   const [step, setStep] = useState<Step>({ name: "password" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -101,8 +99,7 @@ export function SuperadminLoginForm() {
       return setError(data.error ?? "Kode tidak valid");
     }
     if (data.recoveryCodes) return setStep({ name: "codes", codes: data.recoveryCodes, redirectTo: data.redirectTo });
-    router.push(data.redirectTo);
-    router.refresh();
+    window.location.assign(data.redirectTo);
   }
 
   if (step.name === "codes") {
@@ -134,8 +131,7 @@ export function SuperadminLoginForm() {
           type="button"
           className="min-h-11"
           onClick={() => {
-            router.push(step.redirectTo);
-            router.refresh();
+            window.location.assign(step.redirectTo);
           }}
         >
           Saya sudah menyimpan, lanjutkan

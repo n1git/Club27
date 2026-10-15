@@ -184,3 +184,5 @@ export default async function SubscriptionsPage({
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

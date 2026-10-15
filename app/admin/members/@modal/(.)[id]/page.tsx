@@ -54,3 +54,5 @@ export default async function MemberDetailModal({
     </Dialog>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

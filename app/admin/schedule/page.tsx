@@ -173,3 +173,5 @@ export default async function SchedulePage({
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

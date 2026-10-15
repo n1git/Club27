@@ -191,3 +191,5 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;

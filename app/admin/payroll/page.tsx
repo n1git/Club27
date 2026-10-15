@@ -90,3 +90,5 @@ export default async function PayrollPage() {
     </div>
   );
 }
+
+export const unstable_dynamicStaleTime = 0;
