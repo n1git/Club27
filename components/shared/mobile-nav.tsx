@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NavIcon } from "./nav-icon";
+import { NavLinkIcon } from "./nav-progress";
 import { isNavActive, type NavGroup } from "./nav-types";
 
 const MAX_TABS = 5;
@@ -58,7 +58,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
                     active && "text-accent-foreground",
                   )}
                 >
-                  <NavIcon name={item.icon} />
+                  <NavLinkIcon name={item.icon} />
                   <span className="max-w-full truncate">{item.label}</span>
                 </Link>
               </li>
@@ -126,7 +126,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
                               active && "text-accent-foreground",
                             )}
                           >
-                            <NavIcon name={item.icon} className="shrink-0" />
+                            <NavLinkIcon name={item.icon} />
                             <span className="flex-1 truncate">
                               {item.label}
                             </span>

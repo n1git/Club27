@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { NavIcon } from "./nav-icon";
+import { NavLinkIcon } from "./nav-progress";
 import { isNavActive, type NavItem } from "./nav-types";
 
 export function NavLink({ item }: { item: NavItem }) {
@@ -19,7 +19,7 @@ export function NavLink({ item }: { item: NavItem }) {
         active && "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
-      <NavIcon name={item.icon} className="shrink-0" />
+      <NavLinkIcon name={item.icon} />
       <span className="truncate">{item.label}</span>
     </Link>
   );
