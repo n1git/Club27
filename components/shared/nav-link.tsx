@@ -15,8 +15,8 @@ export function NavLink({ item }: { item: NavItem }) {
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "ui-transition flex min-h-[34px] items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-foreground",
-        active && "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm ring-1 ring-sidebar-border"
+        "ui-transition flex min-h-[34px] items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium text-sidebar-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-foreground",
+        active && "bg-sidebar-accent text-sidebar-accent-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
       <NavIcon name={item.icon} className="shrink-0" />

@@ -39,7 +39,7 @@ export function MetricCard({
       </CardHeader>
       <CardContent className="flex flex-1 items-center justify-between gap-3 py-2.5">
         <div className="min-w-0">
-          <p className="truncate text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+          <p className={cn("truncate tabular-nums", typeof value === "string" && /[A-Za-z]{4,}/.test(value) ? "text-2xl font-semibold tracking-tight" : "font-display text-4xl leading-none")}>{value}</p>
           {delta !== undefined ? (
             <p className={cn("mt-1 flex items-center gap-1 text-xs", up ? "text-success" : "text-destructive")}>
               {up ? <ArrowUpRight className="size-3.5" aria-hidden="true" /> : <ArrowDownRight className="size-3.5" aria-hidden="true" />}

@@ -92,7 +92,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
                 return (
                   <section key={group.label ?? index} aria-labelledby={group.label ? headingId : undefined}>
                     {group.label ? (
-                      <h3 id={headingId} className="px-1 pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <h3 id={headingId} className="px-1 pb-2 text-sm font-semibold text-muted-foreground">
                         {group.label}
                       </h3>
                     ) : null}

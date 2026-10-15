@@ -6,6 +6,7 @@ import { requireSuperadmin } from "@/lib/auth/superadmin";
 import { SuperadminLogoutButton } from "@/components/superadmin/superadmin-logout-button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { APP_NAME } from "@/lib/config";
+import { BrandIcon, BrandLogo } from "@/components/shared/brand-logo";
 
 export const metadata: Metadata = {
   title: `Admin platform | ${APP_NAME}`,
@@ -17,11 +18,13 @@ export default async function SuperadminPortalLayout({ children }: { children: R
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3 sm:px-6">
+      <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2 sm:px-6">
         <div className="flex items-center gap-2">
-          <span className="font-heading text-base font-semibold tracking-tight text-accent-foreground">
-            {APP_NAME} Platform
+          <BrandIcon className="size-9 sm:hidden" />
+          <span className="hidden sm:block">
+            <BrandLogo />
           </span>
+          <span className="text-sm font-semibold sm:ml-1">Platform</span>
           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
             Superadmin
           </span>
