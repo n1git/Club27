@@ -1,12 +1,12 @@
 # redesign-brand-a-volt progress
 
-Status: Phase 0 done, waiting for OK.
+Status: all phases done.
 
 - [x] Phase 0 — audit reused, Design Read, mocks
-- [ ] Phase 1 — tokens, fonts, brand assets, icons, OG image
-- [ ] Phase 2 — shell and shared components
-- [ ] Phase 3 — landing and auth pages
-- [ ] Phase 4 — page sweep, after screenshots, changelog
+- [x] Phase 1 — tokens, fonts, brand assets, icons, OG image
+- [x] Phase 2 — shell and shared components
+- [x] Phase 3 — landing and auth pages
+- [x] Phase 4 — page sweep, after screenshots, changelog
 
 Replaces `redesign-brand-c`. Logo A in the volt palette uses the same palette as logo C, so the audit and token table from `progress/redesign-brand-c-progress.md` are reused as they stand. Logo files: `27club-brand-a-volt.zip` (unpacked to `public/brand/` in Phase 1).
 
@@ -81,4 +81,16 @@ Mock dark: ![landing](redesign-brand-a-volt/mock-dark-landing.png) ![admin](rede
 4. Volt is used for the active nav item, primary buttons and nothing else; light pages stay off-white. The volt fill on the active nav item is heavy on admin because it is the largest volt area on screen; kept as decided.
 5. Member home is still bare headings and tables (finding 8); Phase 4 recomposes it into framed sections.
 
-Waiting for: your OK to start Phase 1, or changes to the mock (for example logo size or crop).
+Decision: full logo at 64 px tall (option 2), icon on mobile.
+
+## After
+
+Checks: `grep -rE "0369a1|38bdf8|sky-|Lexend" app components` returns nothing; scrollWidth equals viewport at 375 px on the landing page, `/admin` and `/member`; contrast per the token table above (unchanged values).
+
+Light: ![landing](redesign-brand-a-volt/after-landing.png) ![admin](redesign-brand-a-volt/after-admin.png) ![member](redesign-brand-a-volt/after-member.png)
+
+Dark: ![landing](redesign-brand-a-volt/after-dark-landing.png) ![admin](redesign-brand-a-volt/after-dark-admin.png) ![member](redesign-brand-a-volt/after-dark-member.png)
+
+Auth: ![login](redesign-brand-a-volt/after-login.png) ![daftar](redesign-brand-a-volt/after-daftar.png) ![superadmin](redesign-brand-a-volt/after-superadmin-login.png)
+
+Mobile 375: ![landing](redesign-brand-a-volt/m375-landing.png) ![admin](redesign-brand-a-volt/m375-admin.png) ![member](redesign-brand-a-volt/m375-member.png)

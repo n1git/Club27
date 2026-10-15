@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-15
+
+- New look around the Twenty 7 Club logo: off-white and near-black surfaces, volt `#C8F31D` for primary buttons, the active menu item and focus, Source Sans 3 for text and Barlow Condensed 800 italic for page titles, metric numbers and the landing hero. Light and dark themes, sidebar follows the theme.
+- Logo, icon, favicon, Apple icon and social image come from the new brand files in `public/brand/`.
+- Landing hero, multi-club and closing sections are dark; section labels are sentence case; member home uses framed sections like the admin pages.
+
 ## 2026-10-11
 
 - Every account has a username (3–30 characters, lowercase letters, digits, dot, underscore). Owners, staff and member accounts share one namespace; superadmins have their own. Existing accounts get one from their email (migration 033).
