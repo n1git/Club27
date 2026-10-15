@@ -8,7 +8,7 @@ import { formatJakartaDate } from "@/lib/format";
 import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import type { BillingPeriod } from "@/lib/pricing";
 import type { ProfileData } from "@/lib/data/profile";
-import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/validations/superadmin";
+import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 import { DetailList } from "./detail-list";
 import { MaskedAmount } from "./masked-amount";
 import { ProfileForm } from "./profile-form";

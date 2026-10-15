@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { PointsManager } from "@/components/checkin/points-manager";
 import { ManualCheckinForm } from "@/components/checkin/manual-checkin-form";
 import { VisitTable } from "@/components/checkin/visit-table";
-import { HourlyChart } from "@/components/checkin/hourly-chart";
+import { LazyHourlyChart } from "@/components/checkin/lazy-hourly-chart";
 import {
   Table,
   TableBody,
@@ -60,7 +60,7 @@ export default async function CheckinPage() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Jam ramai (30 hari terakhir)</h2>
-        <HourlyChart data={overview.hourly} />
+        <LazyHourlyChart data={overview.hourly} />
       </section>
 
       <section className="flex flex-col gap-3">

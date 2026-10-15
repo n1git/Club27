@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { suggestUsername } from "@/lib/validations/username";
+import { suggestUsername } from "@/lib/username-suggest";
 import { useActionFormState } from "./action-form";
 
 export function UsernameField({

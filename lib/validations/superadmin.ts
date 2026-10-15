@@ -1,18 +1,8 @@
 import { z } from "zod";
 
-export const PLATFORM_SUBSCRIPTION_STATUSES = ["pending_verification", "pending", "trial", "active", "expired", "suspended", "cancelled"] as const;
+import { PLATFORM_SUBSCRIPTION_STATUSES, STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 
-export type PlatformSubscriptionStatus = (typeof PLATFORM_SUBSCRIPTION_STATUSES)[number];
-
-export const STATUS_LABEL: Record<PlatformSubscriptionStatus, string> = {
-  pending_verification: "Menunggu verifikasi email",
-  pending: "Menunggu aktivasi",
-  trial: "Trial",
-  active: "Aktif",
-  expired: "Berakhir",
-  suspended: "Ditangguhkan",
-  cancelled: "Dibatalkan",
-};
+export { PLATFORM_SUBSCRIPTION_STATUSES, STATUS_LABEL, type PlatformSubscriptionStatus };
 
 export const ownerActiveSchema = z.object({
   ownerId: z.string().uuid("Pemilik tidak valid"),

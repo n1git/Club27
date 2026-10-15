@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import qrcode from "qrcode-generator";
 import { fetchCheckinToken } from "@/lib/actions/checkin";
 
 const REFRESH_MS = 20_000;
@@ -20,6 +19,8 @@ export function QrScreen({ pointId, pointName, clubName }: { pointId: string; po
         setFailed(true);
         return;
       }
+      const { default: qrcode } = await import("qrcode-generator");
+      if (cancelled) return;
       const qr = qrcode(0, "M");
       qr.addData(`${window.location.origin}/checkin?p=${pointId}&t=${result.token}`);
       qr.make();

@@ -1,7 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { MetricCard } from "@/components/ui/metric-card";
-import { CashflowChart } from "@/components/reports/cashflow-chart";
-import { RevenueByProgramChart } from "@/components/reports/revenue-chart";
+import { LazyCashflowChart, LazyRevenueByProgramChart } from "@/components/reports/lazy-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -77,7 +76,7 @@ export default async function ReportsPage() {
           <CardTitle>Arus Kas Bulanan</CardTitle>
         </CardHeader>
         <CardContent>
-          <CashflowChart data={cashFlowData} />
+          <LazyCashflowChart data={cashFlowData} />
         </CardContent>
       </Card>
 
@@ -86,7 +85,7 @@ export default async function ReportsPage() {
           <CardTitle>Pendapatan per Program</CardTitle>
         </CardHeader>
         <CardContent>
-          <RevenueByProgramChart data={revenueByProgramData} />
+          <LazyRevenueByProgramChart data={revenueByProgramData} />
         </CardContent>
       </Card>
 

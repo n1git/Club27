@@ -12,7 +12,7 @@ import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/validations/superadmin";
+import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 
 export interface OwnerRow {
   id: string;
