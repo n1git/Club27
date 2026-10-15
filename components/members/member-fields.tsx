@@ -78,7 +78,7 @@ export function MemberFields({
           {coaches.length === 0 ? (
             <p id="coachId-empty" className="text-sm text-muted-foreground">
               Setiap anggota wajib punya pelatih, dan belum ada pelatih aktif.{" "}
-              <Link href="/admin/coaches/new" className="font-medium text-primary underline underline-offset-4">
+              <Link href="/admin/coaches/new" className="font-medium text-accent-foreground underline underline-offset-4">
                 Tambah pelatih dulu
               </Link>
               .

@@ -12,7 +12,7 @@ export const buttonVariants = cva(
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:opacity-90",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-accent-foreground underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4 py-2 in-[.app-ui]:h-11 in-[.app-ui]:rounded-lg in-[.app-ui]:px-3 in-[.app-ui]:py-0 in-[.app-ui]:text-sm in-[.app-ui]:sm:h-8 in-[.app-ui]:sm:text-xs",

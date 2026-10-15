@@ -43,7 +43,7 @@ export default async function RegisterClubPage({
       footer={
         <>
           Sudah punya akun?{" "}
-          <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link href="/login" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Masuk
           </Link>
         </>

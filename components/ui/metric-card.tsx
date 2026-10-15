@@ -50,7 +50,7 @@ export function MetricCard({
             </p>
           ) : null}
         </div>
-        {spark ? <Sparkline values={spark} className={delta === undefined ? "text-primary" : up ? "text-success" : "text-destructive"} /> : null}
+        {spark ? <Sparkline values={spark} className={delta === undefined ? "text-accent-foreground" : up ? "text-success" : "text-destructive"} /> : null}
       </CardContent>
     </Card>
   );

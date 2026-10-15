@@ -15,7 +15,7 @@ function ContactLine() {
         <>
           {" "}
           di{" "}
-          <a href={`mailto:${contact.email}`} className="font-medium text-primary underline-offset-4 hover:underline">
+          <a href={`mailto:${contact.email}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             {contact.email}
           </a>
         </>
@@ -23,7 +23,7 @@ function ContactLine() {
       {contact.whatsappUrl ? (
         <>
           {contact.email ? " atau" : ""} lewat{" "}
-          <a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline-offset-4 hover:underline">
+          <a href={contact.whatsappUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             WhatsApp
           </a>
         </>
@@ -91,7 +91,7 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
       a: (
         <>
           Buka{" "}
-          <Link href="/daftar" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link href="/daftar" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             halaman pendaftaran
           </Link>
           , isi nama klub, akun pemilik, jenis klub, paket, dan periode. Setelah itu Anda langsung masuk ke penyiapan klub.

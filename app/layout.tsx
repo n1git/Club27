@@ -1,16 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Lexend, Source_Sans_3 } from "next/font/google";
+import { Barlow_Condensed, Source_Sans_3 } from "next/font/google";
 import { Toaster } from "sonner";
 import { APP_NAME } from "@/lib/config";
 import { SITE_URL } from "@/lib/site";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import "./globals.css";
 
-const heading = Lexend({
+const display = Barlow_Condensed({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--nf-heading",
+  weight: ["800"],
+  style: ["italic"],
+  variable: "--nf-display",
 });
 
 const sans = Source_Sans_3({
@@ -40,7 +41,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`h-full antialiased ${heading.variable} ${sans.variable}`}
+      className={`h-full antialiased ${display.variable} ${sans.variable}`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

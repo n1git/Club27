@@ -32,7 +32,7 @@ export function LegalContact() {
       {contact.email ? (
         <li>
           Email:{" "}
-          <a href={`mailto:${contact.email}`} className="font-medium text-primary underline-offset-4 hover:underline">
+          <a href={`mailto:${contact.email}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             {contact.email}
           </a>
         </li>
@@ -40,7 +40,7 @@ export function LegalContact() {
       {contact.whatsappUrl ? (
         <li>
           WhatsApp:{" "}
-          <a href={contact.whatsappUrl} className="font-medium text-primary underline-offset-4 hover:underline">
+          <a href={contact.whatsappUrl} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             +{contact.whatsapp}
           </a>
         </li>

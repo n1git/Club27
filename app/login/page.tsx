@@ -28,7 +28,7 @@ export default async function LoginPage({
       footer={
         <>
           Klub Anda belum terdaftar?{" "}
-          <Link href="/daftar" className="font-medium text-primary underline-offset-4 hover:underline">
+          <Link href="/daftar" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Daftarkan klub
           </Link>
         </>

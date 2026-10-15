@@ -34,7 +34,7 @@ export function SportsSection({ types, readyModules }: { types: PublicClubType[]
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Jenis klub yang tersedia">
               {ready.map((t) => (
                 <li key={t.code} className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">
-                  <CircleCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden />
+                  <CircleCheck className="mt-0.5 size-5 shrink-0 text-accent-foreground" aria-hidden />
                   <div>
                     <p className="font-heading font-semibold">{t.name}</p>
                     <p className="mt-1 text-sm text-muted-foreground">{describe(t, ready_)}</p>

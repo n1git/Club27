@@ -150,7 +150,7 @@ export function RegisterClubForm({
             </p>
             <button
               type="button"
-              className="mt-1 font-medium text-primary underline-offset-4 hover:underline"
+              className="mt-1 font-medium text-accent-foreground underline-offset-4 hover:underline"
               onClick={() => setStep(1)}
             >
               Ubah paket
@@ -206,11 +206,11 @@ export function RegisterClubForm({
             <input type="checkbox" name="acceptTerms" required className="mt-0.5 size-5 shrink-0 accent-primary" />
             <span>
               Saya menyetujui{" "}
-              <a href="/syarat" target="_blank" className="font-medium text-primary underline-offset-4 hover:underline">
+              <a href="/syarat" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                 Syarat & Ketentuan
               </a>{" "}
               dan{" "}
-              <a href="/privasi" target="_blank" className="font-medium text-primary underline-offset-4 hover:underline">
+              <a href="/privasi" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                 Kebijakan Privasi
               </a>
               .

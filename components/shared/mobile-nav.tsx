@@ -43,7 +43,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
             const active = isNavActive(pathname, item);
             return (
               <li key={item.href}>
-                <Link href={item.href} aria-current={active ? "page" : undefined} className={cn(tabClass, "w-full", active && "text-primary")}>
+                <Link href={item.href} aria-current={active ? "page" : undefined} className={cn(tabClass, "w-full", active && "text-accent-foreground")}>
                   <NavIcon name={item.icon} />
                   <span className="max-w-full truncate">{item.label}</span>
                 </Link>
@@ -106,7 +106,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
                               aria-current={active ? "page" : undefined}
                               className={cn(
                                 "flex min-h-12 items-center gap-3 px-4 text-sm font-medium ui-transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-                                active && "text-primary"
+                                active && "text-accent-foreground"
                               )}
                             >
                               <NavIcon name={item.icon} className="shrink-0" />

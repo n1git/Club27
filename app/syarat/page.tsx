@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/syarat" },
 };
 
-const link = "font-medium text-primary underline-offset-4 hover:underline";
+const link = "font-medium text-accent-foreground underline-offset-4 hover:underline";
 
 export default function TermsPage() {
   return (

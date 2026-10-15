@@ -33,7 +33,7 @@ export async function CoachMembers({ coachId }: { coachId: string }) {
           {members.map((m) => (
             <TableRow key={m.id}>
               <TableCell>
-                <Link href={`/admin/members/${m.id}`} className="text-primary underline-offset-2 hover:underline">
+                <Link href={`/admin/members/${m.id}`} className="text-accent-foreground underline-offset-2 hover:underline">
                   {m.full_name}
                 </Link>
               </TableCell>
