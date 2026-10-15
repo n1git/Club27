@@ -1,6 +1,6 @@
 # redesign-brand-c progress
 
-Status: Phase 0 done, waiting for OK.
+Status: Superseded by redesign-brand-a-volt (see `progress/redesign-brand-a-volt-progress.md`). Its audit and token table remain valid.
 
 - [x] Phase 0 — audit, token table, before and mock screenshots
 - [ ] Phase 1 — tokens, fonts, brand assets, icons
