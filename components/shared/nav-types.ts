@@ -23,7 +23,8 @@ export type NavIconKey =
   | "orgBilling"
   | "home"
   | "visits"
-  | "switchClub";
+  | "switchClub"
+  | "profile";
 
 export interface NavItem {
   href: string;

@@ -108,6 +108,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <AppShell
       navGroups={navGroups}
       fullName={session.fullName}
+      profileHref="/admin/profile"
       roleLabel={ROLE_LABEL[session.role]}
       clubName={tenant?.name ?? APP_NAME}
       tenantSwitcher={switcher}

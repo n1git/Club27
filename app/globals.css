@@ -171,3 +171,42 @@ body {
     letter-spacing: -0.01em;
   }
 }
+
+.menu-sheet {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition:
+    opacity var(--dur-3) var(--ease-ui),
+    transform var(--dur-3) var(--ease-ui),
+    overlay var(--dur-3) allow-discrete,
+    display var(--dur-3) allow-discrete;
+}
+
+.menu-sheet[open] {
+  opacity: 1;
+  transform: none;
+}
+
+.menu-sheet::backdrop {
+  background: rgb(0 0 0 / 0.5);
+  opacity: 0;
+  transition:
+    opacity var(--dur-3) var(--ease-ui),
+    overlay var(--dur-3) allow-discrete,
+    display var(--dur-3) allow-discrete;
+}
+
+.menu-sheet[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .menu-sheet[open] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  .menu-sheet[open]::backdrop {
+    opacity: 0;
+  }
+}

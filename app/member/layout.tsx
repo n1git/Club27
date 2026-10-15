@@ -32,6 +32,7 @@ export default async function MemberLayout({ children }: { children: React.React
     <AppShell
       navGroups={[{ items: navItems }] satisfies NavGroup[]}
       fullName={user.fullName}
+      profileHref="/member/profile"
       roleLabel="Anggota"
       clubName={user.clubPending ? APP_NAME : (tenant?.name ?? APP_NAME)}
       tenantSwitcher={

@@ -18,6 +18,7 @@ export default async function CoachLayout({ children }: { children: React.ReactN
     <AppShell
       navGroups={navGroups}
       fullName={session.fullName}
+      profileHref="/coach/profile"
       roleLabel={session.isHeadCoach ? "Kepala Pelatih" : "Pelatih"}
       clubName={tenant?.name ?? APP_NAME}
     >
