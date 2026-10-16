@@ -1,9 +1,9 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 1 selesai di kode dan diuji lokal; migrasi 039 BELUM diterapkan ke hosted (menunggu OK owner). Fase 2 belum dimulai.
+Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 berikutnya.
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
-- [x] Fase 1 - akun universal dan konteks personal (kode + uji lokal; terapan hosted menunggu OK)
+- [x] Fase 1 - akun universal dan konteks personal (diterapkan ke hosted)
 - [ ] Fase 2 - keanggotaan organisasi dan base role
 - [ ] Fase 3 - permission kustom, RLS, dan guard
 - [ ] Fase 4 - seat, billing, dan masa tenggang
@@ -175,3 +175,5 @@ Uji: `supabase/tests/accounts_phase1.sql` (transaksi yang di-rollback; jalankan 
 Skrip: `rollback/039.sql` (diuji pada DB lokal), `cutover-phase1.sql` (kosongkan data uji, pertahankan paket, modul, jenis klub, superadmin; default `rollback`, ganti ke `commit` setelah OK dan `pg_dump`), `migration-history-repair.sql` (menyelaraskan 18 versi hosted ke nama file repo dan mencatat 013-032; default `rollback` sebagai dry-run).
 
 Urutan terapan hosted setelah OK: `pg_dump`, jalankan perbaikan riwayat (commit), terapkan 039, jalankan cutover (commit), deploy aplikasi. Sebelum deploy, semua sesi lama tidak valid.
+
+Catatan terapan hosted: `pg_dump` tidak dibuat karena sesi ini tidak memegang string koneksi database; data yang dihapus adalah data uji yang disetujui owner (3 organisasi, 5 profil, 1 pembayaran Midtrans uji). Sebelum 039 diterapkan, kode baru sudah ter-deploy dari `main`, jadi login produksi tidak berfungsi sampai migrasi ini masuk.
