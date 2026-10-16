@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { submitRenewal } from "@/lib/actions/subscription";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { PeriodToggle, PlanCard } from "@/components/pricing/pricing-picker";
@@ -11,20 +13,43 @@ export function RenewalForm({
   plans,
   planCode,
   period,
-  users,
+  seats,
+  minSeats,
+  maxSeats,
 }: {
   plans: PricingPlan[];
   planCode: PlanCode;
   period: BillingPeriod;
-  users: number;
+  seats: number;
+  minSeats: number;
+  maxSeats: number | null;
 }) {
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>(planCode);
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>(period);
+  const [selectedSeats, setSelectedSeats] = useState(seats);
 
   return (
     <ActionForm action={submitRenewal} className="flex flex-col gap-4">
       <input type="hidden" name="planCode" value={selectedPlan} />
       <input type="hidden" name="billingPeriod" value={selectedPeriod} />
+      <div className="flex max-w-xs flex-col gap-1.5">
+        <Label htmlFor="renewal-seats">Jumlah seat</Label>
+        <Input
+          id="renewal-seats"
+          name="seats"
+          type="number"
+          inputMode="numeric"
+          min={Math.max(minSeats, 1)}
+          max={maxSeats ?? 1000}
+          value={selectedSeats}
+          onChange={(event) => setSelectedSeats(Math.max(Number(event.target.value) || 1, 1))}
+          required
+        />
+        <p className="text-xs text-muted-foreground">
+          Minimal {Math.max(minSeats, 1)} (pengguna aktif saat ini).
+          {maxSeats !== null ? ` Menambah seat saat langganan berjalan lewat Tambah seat di bawah.` : ""}
+        </p>
+      </div>
       <PeriodToggle
         period={selectedPeriod}
         onChange={setSelectedPeriod}
@@ -36,7 +61,7 @@ export function RenewalForm({
             key={plan.code}
             plan={plan}
             period={selectedPeriod}
-            users={users}
+            users={selectedSeats}
             selected={plan.code === selectedPlan}
             onSelect={setSelectedPlan}
           />

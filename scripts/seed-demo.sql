@@ -56,6 +56,7 @@ begin
         from register_organization(
           o ->> 'name', c ->> 'name', pg_temp.acct(o #>> '{owner,email}', o #>> '{owner,name}', o #>> '{owner,hash}'),
           o ->> 'plan', o ->> 'period', c ->> 'type');
+        update organization_subscriptions set seats = 100 where organization_id = v_org;
         if o ->> 'status' = 'active' then
           perform set_organization_status(v_org, 'active', 'seed-demo', v_today, null);
         end if;

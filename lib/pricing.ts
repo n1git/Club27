@@ -11,6 +11,7 @@ export interface PricingPlan {
   clubLimit: number | null;
   trialDays: number;
   yearlyFreeMonths: number;
+  graceDays: number;
 }
 
 export interface Quote {

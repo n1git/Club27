@@ -11,7 +11,11 @@ interface Person {
   fullName: string;
 }
 
-export async function grantPaidMembership(person: Person): Promise<boolean> {
+function seatFailure(error: { code?: string; message: string } | null): string {
+  return error?.code && PLAN_LIMIT_CODES.has(error.code) ? error.message : "Gagal memperbarui keanggotaan seat";
+}
+
+export async function grantPaidMembership(person: Person): Promise<string | null> {
   const supabase = createAdminSupabaseClient();
   const { data: existing } = await supabase
     .from("organization_members")
@@ -21,10 +25,10 @@ export async function grantPaidMembership(person: Person): Promise<boolean> {
     .maybeSingle();
 
   let memberId = existing?.id as string | undefined;
-  if (existing && (existing.base_role === "p_owner" || existing.base_role === "owner")) return true;
+  if (existing && (existing.base_role === "p_owner" || existing.base_role === "owner")) return null;
   if (existing && !existing.is_active) {
     const { error } = await supabase.from("organization_members").update({ is_active: true }).eq("id", existing.id);
-    if (error) return false;
+    if (error) return seatFailure(error);
   }
   if (!memberId) {
     const { data, error } = await supabase
@@ -38,13 +42,13 @@ export async function grantPaidMembership(person: Person): Promise<boolean> {
       })
       .select("id")
       .single();
-    if (error || !data) return false;
+    if (error || !data) return seatFailure(error);
     memberId = data.id as string;
   }
   const { error } = await supabase
     .from("organization_member_clubs")
     .upsert({ member_id: memberId, tenant_id: person.tenantId }, { onConflict: "member_id,tenant_id", ignoreDuplicates: true });
-  return !error;
+  return error ? seatFailure(error) : null;
 }
 
 export async function syncPaidMembership(accountId: string, organizationId: string) {
@@ -101,14 +105,14 @@ export async function setStaffProfileActive(tenantId: string, profileId: string,
   if (!target || !organizationId) return "Akun tidak ditemukan";
 
   if (isActive && target.isPaid && target.account_id) {
-    const granted = await grantPaidMembership({
+    const failure = await grantPaidMembership({
       accountId: target.account_id,
       organizationId,
       tenantId,
       email: target.email,
       fullName: target.full_name,
     });
-    if (!granted) return "Gagal memperbarui status";
+    if (failure) return failure;
   }
 
   const supabase = await createServerSupabaseClient();
@@ -138,14 +142,14 @@ export async function setStaffProfileRole(
   }
 
   if (role.isPaid && target.account_id && target.is_active) {
-    const granted = await grantPaidMembership({
+    const failure = await grantPaidMembership({
       accountId: target.account_id,
       organizationId,
       tenantId,
       email: target.email,
       fullName: target.full_name,
     });
-    if (!granted) return "Gagal mengubah peran";
+    if (failure) return failure;
   }
 
   const supabase = await createServerSupabaseClient();

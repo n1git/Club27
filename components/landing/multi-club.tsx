@@ -19,7 +19,7 @@ export function MultiClub({ plans }: { plans: PricingPlan[] }) {
           <ul className="mt-6 flex flex-col gap-3 text-muted-foreground">
             <li>Setiap klub punya jenis olahraga, anggota, staf, jadwal, dan buku kas sendiri, terpisah di tingkat basis data.</li>
             <li>Pemilik berpindah klub dari menu di bagian atas tanpa masuk ulang.</li>
-            <li>Satu langganan untuk seluruh organisasi, dihitung dari jumlah pengguna internal semua klub.</li>
+            <li>Satu langganan untuk seluruh organisasi, dihitung dari jumlah seat, bukan jumlah klub.</li>
             {plans.length > 0 ? (
               <li>
                 Batas klub per paket:{" "}

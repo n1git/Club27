@@ -44,17 +44,17 @@ export async function createTenantAccount(
   };
 
   if (role.is_paid) {
-    const granted = await grantPaidMembership({
+    const seatFailure = await grantPaidMembership({
       accountId: account.id,
       organizationId: tenant.organization_id as string,
       tenantId,
       email: input.email,
       fullName: input.fullName,
     });
-    if (!granted) {
+    if (seatFailure) {
       await supabase.from("organization_members").delete().eq("account_id", account.id);
       await discardUnusedAccount(account.id);
-      return { ok: false, error: failureMessage };
+      return { ok: false, error: seatFailure };
     }
   }
 

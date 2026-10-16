@@ -6,6 +6,7 @@ import { AppShell } from "@/components/shared/app-shell";
 import type { NavGroup, NavItem } from "@/components/shared/nav-types";
 import { LazyClubSwitcher } from "@/components/member/lazy-club-switcher";
 import { APP_NAME } from "@/lib/config";
+import { ReadOnlyBanner } from "@/components/subscription/read-only-banner";
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole("member");
@@ -40,6 +41,7 @@ export default async function MemberLayout({ children }: { children: React.React
         clubs.length > 1 && !user.clubPending ? <LazyClubSwitcher clubs={clubs} currentId={user.tenantId} /> : null
       }
     >
+      {user.readOnly ? <ReadOnlyBanner canRenew={false} /> : null}
       {children}
     </AppShell>
   );

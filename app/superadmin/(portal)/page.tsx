@@ -43,6 +43,7 @@ interface UsageRow {
   clubs: number;
   members: number;
   internal_users: number;
+  seats: number | null;
   total: number | string | null;
   per_month: number | string | null;
 }
@@ -163,8 +164,8 @@ export default async function SuperadminDashboardPage() {
                 {row.plan_code ? `${row.plan_code === "advanced" ? "Advanced" : "Standard"} · ${PERIOD_LABEL[row.billing_period ?? "monthly"]}` : "-"}
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Pengguna internal</div>
-                {row.internal_users}
+                <div className="text-xs text-muted-foreground">Seat terpakai</div>
+                {row.internal_users} / {row.seats ?? "-"}
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Klub / batas · Anggota</div>

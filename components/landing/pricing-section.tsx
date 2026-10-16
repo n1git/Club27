@@ -18,12 +18,12 @@ export function PricingSection({ plans, modules }: { plans: PricingPlan[]; modul
     <Section
       id="harga"
       eyebrow="Harga"
-      title="Satu langganan per organisasi, dihitung dari pengguna internal."
+      title="Satu langganan per organisasi, dihitung dari jumlah seat."
       className="bg-muted/50"
       intro={
         <p>
-          Pengguna internal adalah pemilik, admin, pelatih, resepsionis, dan keuangan yang aktif. Anggota tidak dibatasi
-          dan tidak dihitung. Semua modul yang tersedia termasuk di setiap paket.
+          Satu seat dipakai satu orang yang aktif sebagai pemilik, admin, resepsionis, atau keuangan, berapa pun jumlah klubnya.
+          Pelatih, kasir, dan anggota tidak memakai seat; anggota tidak dibatasi. Semua modul yang tersedia termasuk di setiap paket.
         </p>
       }
     >
@@ -55,14 +55,14 @@ export function PricingSection({ plans, modules }: { plans: PricingPlan[]; modul
               <p className="font-semibold">Trial</p>
               <p className="mt-1 text-muted-foreground">
                 {trialPlans.length > 0
-                  ? `${list(trialPlans.map((p) => `${p.name}: gratis ${p.trialDays} hari`))}. Paket lain aktif setelah pembayaran diterima.`
+                  ? `${list(trialPlans.map((p) => `${p.name}: gratis ${p.trialDays} hari`))}. Setelah trial, paket aktif setelah pembayaran diterima.`
                   : "Saat ini tidak ada masa trial. Paket aktif setelah pembayaran diterima."}
               </p>
             </li>
           </ul>
           <LandingPricing plans={plans} modules={modules} />
           <p className="mt-6 max-w-3xl text-sm text-muted-foreground">
-            Total dihitung ulang di server dari jumlah pengguna internal saat itu. Paket diaktifkan oleh tim {APP_NAME}{" "}
+            Total dihitung ulang di server dari jumlah seat. Paket diaktifkan oleh tim {APP_NAME}{" "}
             setelah pembayaran diterima; belum ada pembayaran online di dalam aplikasi.
           </p>
         </>

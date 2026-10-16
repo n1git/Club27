@@ -199,8 +199,8 @@ no new Supabase project or Vercel deployment needed. Two ways in:
 
 - **Self-service** (`/daftar`): enter club name and your own
   name/email/password. One database call (`register_organization`) creates
-  the organization, subscription (chosen plan and period; Standard starts a
-  30-day `trial`, Advanced starts `pending`), owner, first club and owner
+  the organization, subscription (chosen plan and period; both plans start a
+  14-day `trial` with 1 seat), owner, first club and owner
   admin profile, so nothing is left half-created. The owner lands on
   `/admin/klub`.
 - **More clubs**: the owner adds clubs from `/admin/klub` ("Tambah klub",
@@ -476,7 +476,8 @@ status from `/superadmin`.
   (Standard, Advanced) holds the only copy of prices and limits;
   `organization_subscriptions` holds the organization's plan, period
   (monthly or yearly), status (`pending`, `trial`, `active`, `suspended`,
-  `cancelled`), trial end, period dates and an optional club-limit override.
+  `cancelled`), trial end, period dates, an optional club-limit override and
+  the seat columns (`seats`, `pending_seats`, `pending_seats_from`).
   `platform_modules` is a price-free registry (`ready` / `soon`) that club
   types will use later. `platform_plans`, `platform_subscriptions` and
   `organizations.max_tenants` are no longer read; they stay in the schema
@@ -488,19 +489,30 @@ status from `/superadmin`.
 - The superadmin sets **active** with period dates (monthly +1 month,
   yearly +1 year by default), or an owner's paid renewal does it (see
   "Renewals and payment").
-- Owners read their subscription at `/admin/klub/langganan` and request
-  renewals there (no proration); the superadmin edits plans, status, trial
-  end and club-limit override.
+- Anyone holding `billing.view` reads the subscription at
+  `/admin/klub/langganan`; `billing.manage` requests renewals and seat
+  purchases there. The superadmin edits plans, status, trial end and
+  club-limit override.
 
 ### Renewals and payment
 
 - Status `expired` is set by `expire_subscriptions` (daily cron
-  `/api/cron/subscriptions`, 07.00 WIB) when a trial or paid period ends.
-  `isBillingLocked` in `checkSession` then sends the owner to
-  `/admin/klub/langganan` and signs other users out with `?expired=1`; server
-  actions are blocked unless marked `allowBillingLocked`. Data is kept.
-- An owner submits a renewal (`request_renewal`, table
-  `subscription_renewals`; plan, period, users, amount from `platform_quote`).
+  `/api/cron/subscriptions`, 07.00 WIB) when a trial or paid period ends; the
+  same run applies due seat reductions. The phase itself is derived from the
+  dates by `subscription_phase` (SQL) and `billingPhase` (`lib/billing/access.ts`,
+  same rules): `trial`, `active`, `grace`, `ended`, `pending`, `unverified`,
+  `suspended`.
+- **Grace period** (`subscription_plans.grace_days`, 365): after a trial or
+  paid period lapses everyone can still sign in and read, but every write
+  from a user session is rejected with `SW003` (trigger `a00_org_writable` on
+  every table that has `tenant_id`, except `audit_log`, `consents`,
+  `platform_subscriptions`, `organization_member_clubs`; service-role work such
+  as renewals is unaffected). Layouts show a read-only banner. After the grace
+  period (`ended`), and for `pending` or `unverified`, only the owner and
+  holders of `billing.view` can open the billing page (`requireRole` redirect);
+  everyone else is signed out with `?expired=1`. Data is kept.
+- A user with `billing.manage` submits a renewal (`request_renewal`, table
+  `subscription_renewals`; plan, period, seats, amount from `platform_quote`).
   With `MIDTRANS_SERVER_KEY` set, the app creates a Midtrans Snap link
   (`lib/payments/midtrans.ts`, `payment_order_id`, `payment_url`) and the
   notification handler `/api/payments/midtrans` checks the signature, re-reads
@@ -508,33 +520,44 @@ status from `/superadmin`.
   `confirm_renewal`. Without the key, the superadmin confirms by hand.
 - `confirm_renewal` is idempotent and extends the period from the current end
   when still active, otherwise from today; a gateway payment is honoured even
-  if the request was cancelled meanwhile.
+  if the request was cancelled meanwhile. A renewal can lower the seat count:
+  it is stored as `pending_seats` and applied when the new period starts
+  (`expire_subscriptions`); the seat cap uses the lower number meanwhile.
+- **Seat purchase** (`request_seat_purchase`, a `subscription_renewals` row with
+  `kind = 'seats'`): only while `active`; amount = seats added × price per seat
+  for the period × remaining days ÷ period days (inclusive of today), rounded
+  to whole rupiah, computed by `seat_quote`. Paying (Midtrans or manual
+  `confirm_renewal`) adds the seats once without moving the period. One pending
+  request per organization; a new one replaces it.
 - Reminders: a banner 7 days before the end (always for a trial) and, with
   `EMAIL_API_KEY` set, emails at 7 and 1 days (`subscription_reminders`).
 - Not built: invoices or receipts for the platform itself, proration, refunds.
 
 ### Pricing model
 
-- Price = billable internal users × `price_per_user_month` × months.
-  **Internal users** are the active owners plus active staff admins and
-  coaches (`profiles.owner_id is null`) across the organization's clubs; an
-  owner's per-club admin profiles count once; members and superadmins never
-  count; minimum 1. Monthly = 1 month; yearly = 12 − `yearly_free_months`
-  (11.5). The effective monthly price is the total ÷ 1 or ÷ 12.
-- Seeded values: Standard Rp 150.000/user/month, up to 3 clubs, 30-day trial;
-  Advanced Rp 250.000/user/month, unlimited clubs, no trial, starts
-  `pending` until activated. Members and locations are unlimited on both;
+- Price = **seats** × `price_per_user_month` × months. A seat is an active
+  `organization_members` row (owner or staff with a paid role; one per person
+  per organization however many clubs). Free roles, coaches, kasir and members
+  take no seat. `seats` is what the organization bought (trial: 1); the
+  trigger `organization_members_enforce_seats` rejects a new or reactivated
+  member beyond `least(seats, pending_seats)` with `SW005` (the subscription
+  row is locked, so parallel inserts cannot exceed it). Monthly = 1 month;
+  yearly = 12 − `yearly_free_months` (11.5). The effective monthly price is
+  the total ÷ 1 or ÷ 12.
+- Seeded values: Standard Rp 150.000/seat/month, up to 3 clubs; Advanced
+  Rp 250.000/seat/month, unlimited clubs; both with a 14-day trial of 1 seat
+  (`trial_days`, `trial_seats`). Members and locations are unlimited on both;
   every `ready` module is included.
 - `platform_quote(plan, period, users)` is the server-side calculation
   (execute revoked from clients). The landing page and wizard show a live
   estimate with the same formula over the plan rows; every authoritative
-  figure (registration, plan change, the price-change confirmation shown
-  before adding a coach, the superadmin portal) is recomputed on the server
+  figure (registration, renewal, seat purchase and its preview, the
+  superadmin portal) is recomputed on the server
   and nothing price-related is read from the client.
-- Gates (`SW003`): while the subscription is `pending`, `suspended`,
-  `cancelled` or an expired `trial`, adding members, clubs, coaches or staff
-  admins is rejected; signing in and the billing page keep working. The
-  organization's first club is exempt so registration can complete. `SW004`:
+- Gates (`SW003`): `enforce_billing_gate` rejects adding members, clubs or
+  seats unless the phase is `trial` or `active`, and the write guard above
+  covers everything else a user session writes. The organization's first
+  club is exempt so registration can complete. `SW005`: no free seat. `SW004`:
   a new club beyond `coalesce(club_limit_override, plan club limit)` is
   rejected (the subscription row is locked, so parallel creations cannot
   exceed it), and a plan or override change that leaves the organization

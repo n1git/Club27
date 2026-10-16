@@ -65,7 +65,7 @@ export async function JsonLd({ plans }: { plans: PricingPlan[] }) {
         "@type": "UnitPriceSpecification",
         price: p.pricePerUserMonth,
         priceCurrency: "IDR",
-        unitText: "pengguna internal per bulan",
+        unitText: "seat per bulan",
       },
       url: `${SITE_URL}/daftar?plan=${p.code}`,
     })),

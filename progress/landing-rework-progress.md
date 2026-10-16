@@ -50,7 +50,7 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
 | Members, schedules, facility bookings, billing, cashier and cash book in one app (H1, supporting line, OG image) | modules `members`, `classes`, `resource_booking`, `billing`, `pos`, `cash_ledger` in `platform_modules` (migrations 014, 020, 022) |
 | One club or several clubs under one organization | `organizations`, `org_owners`, `create_tenant_for_owner` (012, 018), `switchTenant` in `lib/actions/owner.ts` |
 | Members are not limited | no member limit in `subscription_plans` or triggers (014); `organization_internal_users` excludes members (016) |
-| Price is per internal user | `platform_quote`, `organization_internal_users` (014, 016) |
+| Price is per seat (owner, admin, receptionist, finance; coach, kasir and members free) | `platform_quote`, `organization_internal_users`, `organization_members_enforce_seats` (042) |
 | "Coba gratis N hari" | `subscription_plans.trial_days` read live (`getActivePlans`) |
 | Sports list, ready vs "Segera hadir", per-type terms and module summary | `club_types` (`status`, `terms`) and `club_type_modules` read live (018, 020, 023); module readiness from `platform_modules` |
 | Club type chosen at registration; terms, modules and facility suggestions follow it | `register_organization(..., p_club_type)` (018), `club_types.terms` (020), `club_type_presets` (020, 023) |
@@ -80,16 +80,16 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
 | Add staff with roles, register members, activate portal accounts | `app/admin/staff`, `app/admin/members`, `activateMemberAccount` (017) |
 | Each club has its own sport type, members, staff, schedule and cash book | `tenants.club_type` (018); `tenant_id` on those tables |
 | Owner switches club from the top menu without signing in again | `TenantSwitcher`, `switchTenant` (012) |
-| One subscription per organization, counted from internal users of all clubs | `organization_subscriptions`, `organization_internal_users(p_org)` (014, 016) |
+| One subscription per organization, counted in seats across all clubs | `organization_subscriptions.seats`, `organization_internal_users(p_org)` (042) |
 | Club limit per plan | `subscription_plans.club_limit` read live (014), enforced by `SW004` |
-| Internal users are owner, admin, coach, receptionist and finance (active) | `organization_internal_users` (016); hint fixed in `components/pricing/pricing-picker.tsx` (it said owner, admin, coach only) |
+| A seat is one active owner or paid-role staff member per organization; coaches, kasir and members take none | `organization_internal_users` (041), `organization_roles.is_paid` (041), hint in `components/pricing/pricing-picker.tsx` |
 | All available modules are included in every plan | no plan-to-module mapping exists; `platform_modules` only (014); `PlanCard` "Semua modul" |
 | Club limit per plan, yearly free months, trial per plan | live `subscription_plans.club_limit`, `yearly_free_months`, `trial_days` (014) |
-| Total recalculated on the server from current internal users | `platform_quote`, `serverQuote` in `lib/data/platform-pricing.ts` |
+| Total recalculated on the server from the seat count | `platform_quote`, `serverQuote` in `lib/data/platform-pricing.ts` |
 | Plan activated by the Swimma team after payment; no online payment | `organization_subscriptions.status 'pending'`, superadmin activation (`app/superadmin`); no gateway in code |
 | Members and locations are not limited | no limit columns or triggers for `members`/`locations` (014, CLAUDE.md) |
 | Member payments recorded manually by admin, receptionist or finance; cashier payments per method; every payment enters the cash book | `mark_invoice_paid` allows admin, finance, receptionist (016); `add_order_payment` (022); ledger rows as above |
-| After an unpaid trial ends: data kept, club access locked until the owner renews and payment is confirmed | `isBillingLocked` in `checkSession` (`lib/billing/access.ts`), `expire_subscriptions` (035) |
+| After an unpaid trial ends: data kept and readable, changes rejected until the owner renews and payment is confirmed | `billingPhase` in `checkSession` (`lib/billing/access.ts`), `enforce_org_writable`, `subscription_phase` (042) |
 | A "Segera hadir" type cannot be chosen at registration and appears automatically once ready | `register_organization` / `create_tenant_for_owner` require `status = 'ready'` (018); `getReadyClubTypes` in the form; this page reads `club_types` live |
 | After registering you go straight to club setup | `app/api/onboarding/register/route.ts` redirects to `/admin/onboarding` (020 work) |
 | Product visuals are sample data | `hero-preview.tsx`, `multi-club.tsx` labelled "Contoh data" |

@@ -21,7 +21,7 @@ export function Hero({ trialDays }: { trialDays: number }) {
               Lihat fitur
             </a>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">Anggota tidak dibatasi jumlahnya. Harga dihitung per pengguna internal.</p>
+          <p className="mt-4 text-sm text-muted-foreground">Anggota tidak dibatasi jumlahnya. Harga dihitung per seat.</p>
         </div>
       </div>
     </section>

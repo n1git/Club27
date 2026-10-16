@@ -22,8 +22,8 @@ function reminderEmail(dueDate: string, trial: boolean) {
   const date = formatJakartaDate(dueDate, { day: "numeric", month: "long", year: "numeric" });
   return {
     subject: `${what} ${APP_NAME} berakhir ${date}`,
-    text: `${what} organisasi Anda di ${APP_NAME} berakhir ${date}. Setelah itu akses klub dikunci sampai langganan diperpanjang; data tetap tersimpan.\n\nAjukan perpanjangan di ${link}`,
-    html: `<p>${what} organisasi Anda di ${APP_NAME} berakhir <strong>${date}</strong>. Setelah itu akses klub dikunci sampai langganan diperpanjang; data tetap tersimpan.</p><p><a href="${link}">Ajukan perpanjangan</a></p>`,
+    text: `${what} organisasi Anda di ${APP_NAME} berakhir ${date}. Setelah itu data hanya bisa dibaca sampai langganan diperpanjang.\n\nAjukan perpanjangan di ${link}`,
+    html: `<p>${what} organisasi Anda di ${APP_NAME} berakhir <strong>${date}</strong>. Setelah itu data hanya bisa dibaca sampai langganan diperpanjang.</p><p><a href="${link}">Ajukan perpanjangan</a></p>`,
   };
 }
 
@@ -56,6 +56,7 @@ export async function GET(request: Request) {
         .from("organization_members")
         .select("email")
         .eq("organization_id", row.organization_id)
+        .in("base_role", ["p_owner", "owner"])
         .eq("is_active", true);
       for (const owner of owners ?? []) {
         if (await sendEmail({ to: owner.email, ...reminderEmail(dueDate, row.status === "trial") })) reminders += 1;

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/auth/session";
-import { loadOwner } from "@/lib/auth/owner";
+import { currentPermissions } from "@/lib/auth/guard";
 import { getOwnSubscription } from "@/lib/data/platform-pricing";
 import { getJakartaDateString } from "@/lib/format";
 
@@ -27,7 +27,7 @@ export async function SubscriptionBanner() {
   const days = daysUntil(endDate);
   if (days < 0 || (!isTrial && days > REMIND_DAYS)) return null;
 
-  const owner = session ? await loadOwner(session.sub, session.tenant_id) : null;
+  const canRenew = session ? (await currentPermissions()).has("billing.manage") : false;
   const soon = days <= REMIND_DAYS;
   const title = isTrial ? `Masa trial berakhir ${endsLabel(days)}` : `Langganan berakhir ${endsLabel(days)}`;
 
@@ -36,10 +36,10 @@ export async function SubscriptionBanner() {
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription className="flex flex-col gap-3">
         <span>
-          Setelah berakhir, akses klub dikunci sampai langganan diperpanjang. Data tetap tersimpan.
-          {owner ? " Ajukan perpanjangan dan selesaikan pembayaran sebelum tanggal berakhir." : " Hubungi pemilik klub untuk memperpanjang."}
+          Setelah berakhir, data hanya bisa dibaca sampai langganan diperpanjang.
+          {canRenew ? " Ajukan perpanjangan dan selesaikan pembayaran sebelum tanggal berakhir." : " Hubungi pemilik klub untuk memperpanjang."}
         </span>
-        {owner ? (
+        {canRenew ? (
           <Link href="/admin/klub/langganan" className={buttonVariants({ size: "sm", className: "w-fit" })}>
             Perpanjang langganan
           </Link>

@@ -3,6 +3,7 @@ import { getCurrentTenant } from "@/lib/data/tenant";
 import { AppShell } from "@/components/shared/app-shell";
 import type { NavGroup, NavItem } from "@/components/shared/nav-types";
 import { APP_NAME } from "@/lib/config";
+import { ReadOnlyBanner } from "@/components/subscription/read-only-banner";
 
 const NAV_ITEMS: NavItem[] = [{ href: "/coach", label: "Jadwal Saya", icon: "schedule", primary: true }];
 const HEAD_COACH_NAV_ITEMS: NavItem[] = [
@@ -23,6 +24,7 @@ export default async function CoachLayout({ children }: { children: React.ReactN
       roleLabel={await loadRoleLabel(session.id, session.role)}
       clubName={tenant?.name ?? APP_NAME}
     >
+      {session.readOnly ? <ReadOnlyBanner canRenew={session.permissions.has("billing.view")} /> : null}
       {children}
     </AppShell>
   );

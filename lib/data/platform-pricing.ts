@@ -2,6 +2,16 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { BillingPeriod, PlanCode, PricingPlan, Quote } from "@/lib/pricing";
 import type { PlatformSubscriptionStatus } from "@/lib/validations/superadmin";
+import { billingPhase, graceEndsOn, type BillingPhase } from "@/lib/billing/access";
+
+type One<T> = T | T[] | null;
+const one = <T>(value: One<T>): T | null => (Array.isArray(value) ? value[0] ?? null : value);
+type BillingStateRow = {
+  status: string;
+  trial_ends_at: string | null;
+  current_period_end: string | null;
+  subscription_plans: One<{ grace_days: number }>;
+};
 
 export interface PlatformModule {
   code: string;
@@ -19,6 +29,9 @@ export interface OrganizationSubscription {
   currentPeriodStart: string | null;
   currentPeriodEnd: string | null;
   clubLimitOverride: number | null;
+  seats: number;
+  pendingSeats: number | null;
+  pendingSeatsFrom: string | null;
 }
 
 interface PlanRow {
@@ -28,6 +41,7 @@ interface PlanRow {
   club_limit: number | null;
   trial_days: number;
   yearly_free_months: number | string;
+  grace_days: number;
 }
 
 interface SubscriptionRow {
@@ -39,11 +53,14 @@ interface SubscriptionRow {
   current_period_start: string | null;
   current_period_end: string | null;
   club_limit_override: number | null;
+  seats: number;
+  pending_seats: number | null;
+  pending_seats_from: string | null;
 }
 
-export const PLAN_COLUMNS = "code, name, price_per_user_month, club_limit, trial_days, yearly_free_months";
+export const PLAN_COLUMNS = "code, name, price_per_user_month, club_limit, trial_days, yearly_free_months, grace_days";
 export const SUBSCRIPTION_COLUMNS =
-  "organization_id, plan_code, billing_period, status, trial_ends_at, current_period_start, current_period_end, club_limit_override";
+  "organization_id, plan_code, billing_period, status, trial_ends_at, current_period_start, current_period_end, club_limit_override, seats, pending_seats, pending_seats_from";
 
 export function toPlan(row: PlanRow): PricingPlan {
   return {
@@ -53,6 +70,7 @@ export function toPlan(row: PlanRow): PricingPlan {
     clubLimit: row.club_limit,
     trialDays: row.trial_days,
     yearlyFreeMonths: Number(row.yearly_free_months),
+    graceDays: row.grace_days,
   };
 }
 
@@ -66,6 +84,9 @@ export function toSubscription(row: SubscriptionRow): OrganizationSubscription {
     currentPeriodStart: row.current_period_start,
     currentPeriodEnd: row.current_period_end,
     clubLimitOverride: row.club_limit_override,
+    seats: row.seats,
+    pendingSeats: row.pending_seats,
+    pendingSeatsFrom: row.pending_seats_from,
   };
 }
 
@@ -131,13 +152,15 @@ export interface OrganizationBilling {
   plans: PricingPlan[];
   clubs: number;
   clubLimit: number | null;
-  internalUsers: number;
+  seatsUsed: number;
   quote: Quote;
+  phase: BillingPhase;
+  graceEndsOn: string | null;
 }
 
 export async function getOrganizationBilling(organizationId: string): Promise<OrganizationBilling | null> {
   const supabase = createAdminSupabaseClient();
-  const [{ data: sub }, { data: planRows }, { count: clubs }, internalUsers] = await Promise.all([
+  const [{ data: sub }, { data: planRows }, { count: clubs }, seatsUsed] = await Promise.all([
     supabase.from("organization_subscriptions").select(SUBSCRIPTION_COLUMNS).eq("organization_id", organizationId).maybeSingle(),
     supabase.from("subscription_plans").select(PLAN_COLUMNS).eq("is_active", true).order("price_per_user_month"),
     supabase.from("tenants").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
@@ -148,50 +171,61 @@ export async function getOrganizationBilling(organizationId: string): Promise<Or
   const { data: current } = await supabase.from("subscription_plans").select(PLAN_COLUMNS).eq("code", subscription.planCode).single();
   if (!current) return null;
   const plan = toPlan(current as PlanRow);
-  const quote = await serverQuote(subscription.planCode, subscription.billingPeriod, internalUsers);
+  const quote = await serverQuote(subscription.planCode, subscription.billingPeriod, subscription.pendingSeats ?? subscription.seats);
   if (!quote) return null;
+  const state = {
+    status: subscription.status,
+    trial_ends_at: subscription.trialEndsAt,
+    current_period_end: subscription.currentPeriodEnd,
+    grace_days: plan.graceDays,
+  };
   return {
     subscription,
     plan,
     plans: ((planRows ?? []) as PlanRow[]).map(toPlan),
     clubs: clubs ?? 0,
     clubLimit: effectiveClubLimit(plan, subscription),
-    internalUsers,
+    seatsUsed,
     quote,
+    phase: billingPhase(state),
+    graceEndsOn: graceEndsOn(state),
   };
 }
 
-export interface InternalUserCostChange {
-  planName: string;
-  period: BillingPeriod;
-  usersBefore: number;
-  usersAfter: number;
-  perMonthBefore: number;
-  perMonthAfter: number;
+export interface SeatUsage {
+  seats: number;
+  used: number;
+  full: boolean;
 }
 
-export async function internalUserCostChange(organizationId: string): Promise<InternalUserCostChange | null> {
+export async function seatUsage(organizationId: string): Promise<SeatUsage | null> {
   const supabase = createAdminSupabaseClient();
   const { data: sub } = await supabase
     .from("organization_subscriptions")
-    .select("plan_code, billing_period, subscription_plans(name)")
+    .select("seats, pending_seats")
     .eq("organization_id", organizationId)
     .maybeSingle();
   if (!sub) return null;
-  const users = await internalUserCount(organizationId);
-  const [before, after] = await Promise.all([
-    serverQuote(sub.plan_code as PlanCode, sub.billing_period as BillingPeriod, users),
-    serverQuote(sub.plan_code as PlanCode, sub.billing_period as BillingPeriod, users + 1),
-  ]);
-  if (!before || !after) return null;
-  return {
-    planName: (sub.subscription_plans as unknown as { name: string }).name,
-    period: sub.billing_period as BillingPeriod,
-    usersBefore: before.users,
-    usersAfter: after.users,
-    perMonthBefore: before.perMonth,
-    perMonthAfter: after.perMonth,
-  };
+  const used = await internalUserCount(organizationId);
+  const seats = Math.min(sub.seats as number, (sub.pending_seats as number | null) ?? (sub.seats as number));
+  return { seats, used, full: used >= seats };
+}
+
+export async function getGraceEndsOn(tenantId: string): Promise<string | null> {
+  const { data } = await createAdminSupabaseClient()
+    .from("tenants")
+    .select("organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))")
+    .eq("id", tenantId)
+    .maybeSingle();
+  const org = one(data?.organizations as unknown as One<{ organization_subscriptions: One<BillingStateRow> }>);
+  const sub = one(org?.organization_subscriptions ?? null);
+  if (!sub) return null;
+  return graceEndsOn({
+    status: sub.status,
+    trial_ends_at: sub.trial_ends_at,
+    current_period_end: sub.current_period_end,
+    grace_days: one(sub.subscription_plans)?.grace_days ?? 0,
+  });
 }
 
 export interface InternalUserRow {

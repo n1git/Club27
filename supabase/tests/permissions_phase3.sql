@@ -32,6 +32,7 @@ begin
 
   select * into r1 from register_organization('Org P', 'Club P', ap, 'standard', 'monthly', 'swimming');
   select * into r2 from register_organization('Org Q', 'Club Q', aq, 'standard', 'monthly', 'swimming');
+  update organization_subscriptions set seats = 50;
   p_owner := r1.profile_id;
 
   assert (select count(*) from organization_roles where organization_id = r1.organization_id) = 6, 'six preset roles per organization';

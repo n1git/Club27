@@ -39,8 +39,8 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
 
   const items: { q: string; a: React.ReactNode }[] = [
     {
-      q: "Siapa yang dihitung sebagai pengguna internal?",
-      a: "Pemilik organisasi serta admin, pelatih, resepsionis, dan keuangan yang aktif di semua klub organisasi Anda. Anggota tidak dihitung.",
+      q: "Siapa yang memakai seat?",
+      a: "Pemilik organisasi serta admin, resepsionis, dan keuangan yang aktif, satu seat per orang di seluruh klub organisasi Anda. Pelatih, kasir, dan anggota tidak memakai seat. Bila seat penuh, penambahan ditolak sampai Anda menambah seat; seat tambahan ditagih prorata sesuai sisa periode.",
     },
     {
       q: "Apakah jumlah anggota dibatasi?",
@@ -69,8 +69,8 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
         trialPlans.length > 0 ? (
           <>
             {trialPlans.map((p) => `Paket ${p.name} bisa dicoba gratis ${p.trialDays} hari`).join("; ")} dengan semua modul yang
-            tersedia dan batas klub paket tersebut. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan, tetapi
-            akses klub dikunci sampai pemilik memperpanjang dan pembayarannya dikonfirmasi.
+            tersedia dan batas klub paket tersebut. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan dan bisa
+            dibaca, tetapi perubahan ditolak sampai pemilik memperpanjang dan pembayarannya dikonfirmasi.
           </>
         ) : (
           "Saat ini tidak ada paket dengan masa trial. Paket aktif setelah pembayaran diterima."

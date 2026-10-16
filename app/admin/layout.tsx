@@ -9,6 +9,7 @@ import { getSwitchableTenants } from "@/lib/data/organization";
 import { LazyTenantSwitcher } from "@/components/organization/lazy-tenant-switcher";
 import { getEnabledModules } from "@/lib/modules";
 import { getClubTerms } from "@/lib/club-type";
+import { ReadOnlyBanner } from "@/components/subscription/read-only-banner";
 
 type AdminNavItem = NavItem & { module?: string };
 type AdminNavGroup = { label?: string; items: AdminNavItem[] };
@@ -81,19 +82,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const operationsPrimary = new Set(
     PRIMARY_OPERATIONS.filter((href) => visible.some((g) => g.items.some((i) => i.href === href))).slice(0, 2)
   );
-  const navGroups: NavGroup[] = [
-    ...(owner
-      ? [
-          {
-            label: "Organisasi",
-            items: [
-              { href: "/admin/klub", label: "Klub", icon: "club", exact: true },
-              { href: "/admin/klub/langganan", label: "Langganan", icon: "orgBilling" },
-              { href: "/admin/peran", label: "Peran", icon: "roles" },
-            ] satisfies NavItem[],
-          },
-        ]
+  const orgItems: NavItem[] = [
+    ...(owner ? [{ href: "/admin/klub", label: "Klub", icon: "club", exact: true } satisfies NavItem] : []),
+    ...(owner || session.permissions.has("billing.view")
+      ? [{ href: "/admin/klub/langganan", label: "Langganan", icon: "orgBilling" } satisfies NavItem]
       : []),
+    ...(owner ? [{ href: "/admin/peran", label: "Peran", icon: "roles" } satisfies NavItem] : []),
+  ];
+  const navGroups: NavGroup[] = [
+    ...(orgItems.length > 0 ? [{ label: "Organisasi", items: orgItems }] : []),
     ...(session.billingLocked ? [] : visible).map((group) => ({
       label: group.label,
       items: group.items.map(({ href, label, icon, exact, primary }) => ({
@@ -116,6 +113,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       clubName={tenant?.name ?? APP_NAME}
       tenantSwitcher={switcher}
     >
+      {session.readOnly ? <ReadOnlyBanner canRenew={Boolean(owner) || session.permissions.has("billing.view")} /> : null}
       {children}
     </AppShell>
   );

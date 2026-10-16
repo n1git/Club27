@@ -54,6 +54,7 @@ export const PERMISSION_CODES = [
   "club.settings",
   "audit.view",
   "billing.view",
+  "billing.manage",
   "roles.manage",
 ] as const;
 
@@ -92,6 +93,8 @@ const ADMIN_PATH_RULES: { prefix: string; any: readonly PermissionCode[] }[] = [
 
 const OWNER_ONLY_PREFIXES = ["/admin/klub"];
 
+const BILLING_PREFIX = "/admin/klub/langganan";
+
 const FREE_PREFIXES = ["/admin/profile"];
 
 function under(pathname: string, prefix: string) {
@@ -100,6 +103,7 @@ function under(pathname: string, prefix: string) {
 
 export function adminPathAllowed(isOwner: boolean, permissions: PermissionSet, pathname: string): boolean {
   if (FREE_PREFIXES.some((p) => under(pathname, p))) return true;
+  if (under(pathname, BILLING_PREFIX)) return isOwner || hasAny(permissions, "billing.view");
   if (OWNER_ONLY_PREFIXES.some((p) => under(pathname, p))) return isOwner;
   const rule = ADMIN_PATH_RULES.find((r) => under(pathname, r.prefix));
   return hasAny(permissions, rule ? rule.any : ["dashboard.view"]);
@@ -126,6 +130,7 @@ export const ADMIN_AREA_PERMISSIONS: readonly PermissionCode[] = [
   "resources.manage",
   "promo.manage",
   "club.settings",
+  "billing.view",
   "roles.manage",
 ];
 

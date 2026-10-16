@@ -62,7 +62,7 @@ export function UsersStepper({ id, users, onChange }: { id: string; users: numbe
   const step = "h-11 w-11 shrink-0 sm:h-9 sm:w-9";
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>Pengguna internal</Label>
+      <Label htmlFor={id}>Jumlah seat</Label>
       <div className="flex items-center gap-2">
         <Button
           type="button"
@@ -99,7 +99,7 @@ export function UsersStepper({ id, users, onChange }: { id: string; users: numbe
         </Button>
       </div>
       <p id={`${id}-hint`} className="text-xs text-muted-foreground">
-        Pemilik, admin, pelatih, resepsionis, dan keuangan. Anggota tidak dihitung.
+        Pemilik, admin, resepsionis, dan keuangan. Pelatih, kasir, dan anggota tidak memakai seat.
       </p>
     </div>
   );

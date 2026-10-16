@@ -6,7 +6,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { cache } from "react";
 import { roleHome, type AppRole } from "./roles";
 import { adminPathAllowed, hasAny, staffHome, type PermissionCode, type PermissionSet } from "./permissions";
-import { BILLING_OPEN_PATHS, isBillingLocked, type BillingState } from "@/lib/billing/access";
+import { BILLING_OPEN_PATHS, billingPhase, isLockedPhase, isReadOnlyPhase, type BillingState } from "@/lib/billing/access";
 
 export class UnauthorizedError extends Error {}
 
@@ -22,12 +22,14 @@ interface ValidProfile {
 }
 
 export type SessionCheck =
-  | { ok: true; profile: ValidProfile; mustChangePassword: boolean; billingLocked: boolean }
+  | { ok: true; profile: ValidProfile; mustChangePassword: boolean; billingLocked: boolean; readOnly: boolean }
   | { ok: false; reason: SessionEndReason };
 
 type One<T> = T | T[] | null;
+type BillingStateRow = Omit<BillingState, "grace_days"> & { subscription_plans: One<{ grace_days: number }> };
 const one = <T>(value: One<T>): T | null => (Array.isArray(value) ? value[0] ?? null : value);
 
+type SubscriptionRow = BillingStateRow;
 type AccountRow = { id: string; is_active: boolean; must_change_password: boolean; sessions_valid_after: string | null };
 
 function accountRevoked(account: AccountRow | null, session: SessionClaims): SessionEndReason | null {
@@ -55,6 +57,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
     return {
       ok: true,
       billingLocked: false,
+      readOnly: false,
       mustChangePassword: Boolean(account!.must_change_password),
       profile: {
         id: account!.id,
@@ -69,7 +72,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "id, tenant_id, role, is_active, full_name, sessions_valid_after, owner_id, member_account_id, account_id, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end))), organization_members(is_active), member_accounts(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
+      "id, tenant_id, role, is_active, full_name, sessions_valid_after, owner_id, member_account_id, account_id, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))), organization_members(is_active), member_accounts(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
     )
     .eq("id", session.sub)
     .maybeSingle();
@@ -88,11 +91,24 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
     return { ok: false, reason: "revoked" };
   }
   const tenant = one(
-    profile.tenants as One<{ is_active: boolean; organizations: One<{ organization_subscriptions: One<BillingState> }> }>
+    profile.tenants as One<{ is_active: boolean; organizations: One<{ organization_subscriptions: One<SubscriptionRow> }> }>
   );
   if (!tenant?.is_active) return { ok: false, reason: "suspended" };
-  const billingLocked = isBillingLocked(one(one(tenant.organizations)?.organization_subscriptions ?? null));
-  if (billingLocked && !profile.owner_id) return { ok: false, reason: "expired" };
+  const subscription = one(one(tenant.organizations)?.organization_subscriptions ?? null);
+  const phase = billingPhase(
+    subscription && {
+      status: subscription.status,
+      trial_ends_at: subscription.trial_ends_at,
+      current_period_end: subscription.current_period_end,
+      grace_days: one(subscription.subscription_plans)?.grace_days ?? 0,
+    }
+  );
+  const billingLocked = isLockedPhase(phase);
+  const readOnly = isReadOnlyPhase(phase);
+  if (billingLocked && !profile.owner_id) {
+    const permissions = profile.role === "staff" ? await loadPermissions(profile.id) : EMPTY_PERMISSIONS;
+    if (!permissions.has("billing.view")) return { ok: false, reason: "expired" };
+  }
 
   if (profile.owner_id && !one(profile.organization_members as One<{ is_active: boolean }>)?.is_active) {
     return { ok: false, reason: "deactivated" };
@@ -107,6 +123,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   return {
     ok: true,
     billingLocked,
+    readOnly,
     mustChangePassword: Boolean(account!.must_change_password),
     profile: {
       id: profile.id,
@@ -192,6 +209,7 @@ export async function requireRole(role: AppRole | readonly AppRole[]) {
     accountId: check.profile.accountId,
     clubPending: Boolean(session.club_pending),
     billingLocked: check.billingLocked,
+    readOnly: check.readOnly,
     permissions: await permissionsFor(session),
   };
 }

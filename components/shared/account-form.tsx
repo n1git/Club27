@@ -1,9 +1,10 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { previewInternalUserCost } from "@/lib/actions/subscription";
+import Link from "next/link";
+import { previewSeatUsage } from "@/lib/actions/subscription";
 import type { ActionState } from "@/lib/actions/types";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -11,8 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useActionToast } from "@/components/shared/use-action-toast";
 import { TempPasswordNotice } from "@/components/shared/temp-password-notice";
 import { UsernameField } from "@/components/shared/username-field";
-import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
-import type { InternalUserCostChange } from "@/lib/data/platform-pricing";
+import type { SeatUsage } from "@/lib/data/platform-pricing";
 
 export function AccountForm({
   action,
@@ -28,7 +28,7 @@ export function AccountForm({
   useActionToast(state, `${title} berhasil ditambahkan`);
   const formRef = useRef<HTMLFormElement>(null);
   const confirmed = useRef(false);
-  const [change, setChange] = useState<InternalUserCostChange | null>(null);
+  const [full, setFull] = useState<SeatUsage | null>(null);
   const [checking, setChecking] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -40,18 +40,12 @@ export function AccountForm({
     if (!(roleOptions?.find((o) => o.value === chosen)?.paid ?? false)) return;
     event.preventDefault();
     setChecking(true);
-    const preview = await previewInternalUserCost();
+    const usage = await previewSeatUsage();
     setChecking(false);
-    if (!preview) {
-      confirmed.current = true;
-      formRef.current?.requestSubmit();
+    if (usage?.full) {
+      setFull(usage);
       return;
     }
-    setChange(preview);
-  }
-
-  function confirm() {
-    setChange(null);
     confirmed.current = true;
     formRef.current?.requestSubmit();
   }
@@ -92,21 +86,20 @@ export function AccountForm({
           </Select>
         </div>
       ) : null}
-      {change ? (
+      {full ? (
         <Alert variant="warning">
-          <AlertTitle>Biaya langganan akan naik</AlertTitle>
+          <AlertTitle>Seat penuh</AlertTitle>
           <AlertDescription className="flex flex-col gap-3">
             <span>
-              Menambah {noun} menambah satu pengguna internal ({change.usersBefore} → {change.usersAfter}). Paket{" "}
-              {change.planName} ({PERIOD_LABEL[change.period]}): {formatRupiah(change.perMonthBefore)}/bulan menjadi{" "}
-              {formatRupiah(change.perMonthAfter)}/bulan, naik {formatRupiah(change.perMonthAfter - change.perMonthBefore)}/bulan.
+              Organisasi memakai {full.used} dari {full.seats} seat, jadi peran ini belum bisa ditambahkan. Tambah seat di halaman
+              Langganan, atau nonaktifkan pengguna yang tidak diperlukan.
             </span>
             <span className="flex gap-2">
-              <Button type="button" size="sm" onClick={confirm}>
-                Ya, tambahkan
-              </Button>
-              <Button type="button" size="sm" variant="outline" onClick={() => setChange(null)}>
-                Batal
+              <Link href="/admin/klub/langganan" className={buttonVariants({ size: "sm" })}>
+                Buka Langganan
+              </Link>
+              <Button type="button" size="sm" variant="outline" onClick={() => setFull(null)}>
+                Tutup
               </Button>
             </span>
           </AlertDescription>

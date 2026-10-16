@@ -20,6 +20,8 @@ export interface Renewal {
   periodStart: string | null;
   periodEnd: string | null;
   paymentUrl: string | null;
+  kind: "renewal" | "seats";
+  seatsAdded: number | null;
 }
 
 type Row = {
@@ -34,12 +36,14 @@ type Row = {
   period_start: string | null;
   period_end: string | null;
   payment_url: string | null;
+  kind: "renewal" | "seats";
+  seats_added: number | null;
   organizations: { name: string } | { name: string }[] | null;
   subscription_plans: { name: string } | { name: string }[] | null;
 };
 
 const COLUMNS =
-  "id, organization_id, plan_code, billing_period, users, amount, status, requested_at, period_start, period_end, payment_url, organizations(name), subscription_plans(name)";
+  "id, organization_id, plan_code, billing_period, users, amount, status, requested_at, period_start, period_end, payment_url, kind, seats_added, organizations(name), subscription_plans(name)";
 
 const first = <T>(value: T | T[] | null): T | null => (Array.isArray(value) ? value[0] ?? null : value);
 
@@ -58,6 +62,8 @@ function toRenewal(row: Row): Renewal {
     periodStart: row.period_start,
     periodEnd: row.period_end,
     paymentUrl: row.payment_url,
+    kind: row.kind,
+    seatsAdded: row.seats_added,
   };
 }
 
@@ -80,12 +86,21 @@ export async function listPendingRenewals(): Promise<Renewal[]> {
   return ((data ?? []) as unknown as Row[]).map(toRenewal);
 }
 
-export async function requestRenewal(organizationId: string, ownerId: string, plan: PlanCode, period: BillingPeriod) {
+export async function requestRenewal(organizationId: string, requestedBy: string | null, plan: PlanCode, period: BillingPeriod, seats: number) {
   return createAdminSupabaseClient().rpc("request_renewal", {
     p_org: organizationId,
-    p_owner: ownerId,
+    p_owner: requestedBy,
     p_plan: plan,
     p_period: period,
+    p_seats: seats,
+  });
+}
+
+export async function requestSeatPurchase(organizationId: string, requestedBy: string | null, add: number) {
+  return createAdminSupabaseClient().rpc("request_seat_purchase", {
+    p_org: organizationId,
+    p_requested_by: requestedBy,
+    p_add: add,
   });
 }
 
@@ -105,7 +120,10 @@ export async function preparePayment(renewal: Renewal, customer: { name: string;
   const url = await createSnapTransaction({
     orderId,
     amount: Math.round(renewal.amount),
-    itemName: `${APP_NAME} ${renewal.planName ?? renewal.planCode} ${PERIOD_LABEL[renewal.billingPeriod]}`,
+    itemName:
+      renewal.kind === "seats"
+        ? `${APP_NAME} tambah ${renewal.seatsAdded} seat`
+        : `${APP_NAME} ${renewal.planName ?? renewal.planCode} ${PERIOD_LABEL[renewal.billingPeriod]}`,
     customer,
     finishUrl: `${SITE_URL}/admin/klub/langganan?bayar=selesai`,
   });

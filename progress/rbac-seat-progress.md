@@ -1,12 +1,12 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai dan diterapkan ke hosted (041). Fase 4 berikutnya.
+Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai dan diterapkan ke hosted (041). Fase 4 selesai di kode dan diuji lokal (migrasi 042 belum diterapkan ke hosted). Fase 5 berikutnya.
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
 - [x] Fase 1 - akun universal dan konteks personal (diterapkan ke hosted)
 - [x] Fase 2 - keanggotaan organisasi dan base role (diterapkan ke hosted)
 - [x] Fase 3 - permission kustom, RLS, dan guard (diterapkan ke hosted)
-- [ ] Fase 4 - seat, billing, dan masa tenggang
+- [x] Fase 4 - seat, billing, dan masa tenggang (kode + uji lokal; belum diterapkan ke hosted)
 - [ ] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org
 - [ ] Fase 6 - siklus hapus organisasi (purge nonaktif sampai kebijakan retensi diputuskan)
 
@@ -146,6 +146,8 @@ Kasus yang diuji:
 
 - Keputusan final di prompt tugas `rbac-seat` (akun universal, p_owner/owner/staff, role kustom, seat, prorata, trial 14 hari, masa tenggang 1 bulan, purge nonaktif, reset email, autentikasi ulang) berlaku sebagai jawaban D2, D3, D5-D11 untuk fase terkait; D4 (trial 14 hari vs `trial_days`) tetap belum dijawab, jadi `subscription_plans` tidak diubah sampai Fase 4.
 - D1: data uji dikosongkan saat cutover, tanpa backfill.
+- D4 (2026-10-19): `trial_days` kedua paket diubah jadi 14 hari.
+- D6 (2026-10-19): masa tenggang read-only, semua pengguna boleh masuk dan membaca; lamanya 1 tahun (bukan 1 bulan), disimpan di `subscription_plans.grace_days`.
 - D12 (2026-10-18): daftar mandiri akun umum tanpa verifikasi email.
 - D13 (2026-10-18): saya menulis skrip perbaikan riwayat; dijalankan hanya setelah owner OK.
 
@@ -216,3 +218,22 @@ Aplikasi:
 Uji: regresi akses lama-baru pada data demo (7 persona, 32 tabel/view dibaca, 31 penulisan dan fungsi) 0 selisih dari 441; setelah rollback 0 selisih juga. `supabase/tests/permissions_phase3.sql` (role preset, permission pemilik, role berbayar, pencabutan seketika, isolasi organisasi) dan tes Fase 1-2 lolos; uji browser (buat role kustom, staf berbayar dan gratis, ubah role, nonaktifkan) lihat hasil terakhir di bawah. `rollback/041.sql` diuji.
 
 Catatan: seat belum dibatasi atau ditagih (Fase 4); satu akun hanya satu profil per klub (pemilik yang juga pelatih di klubnya sendiri belum bisa).
+
+
+## Fase 4 - hasil
+
+Skema (`20250101000042_seats_billing.sql`):
+- `subscription_plans`: `trial_days` = 14 untuk kedua paket, `trial_seats` (1), `grace_days` (365). `organization_subscriptions`: `seats`, `pending_seats`, `pending_seats_from` (trigger mengisi `seats` dari `trial_seats` saat dibuat). Izin baru `billing.manage` (tidak ada di preset; pemilik otomatis punya).
+- `subscription_phase(org)`: `trial`, `active`, `grace`, `ended`, `pending`, `unverified`, `suspended`. `enforce_billing_gate` kini memakai fase itu. Trigger `a00_org_writable` di setiap tabel ber-`tenant_id` (kecuali `audit_log`, `consents`, `platform_subscriptions`, `organization_member_clubs`) menolak penulisan sesi pengguna di luar `trial`/`active` dengan `SW003`; pekerjaan service role (perpanjangan, cron, seed) tidak kena.
+- Seat: terpakai = `organization_internal_users` (anggota organisasi aktif). Trigger `organization_members_enforce_seats` menolak melebihi `least(seats, pending_seats)` dengan `SW005`, dengan kunci baris langganan.
+- `seat_quote` (prorata: seat tambahan x harga per seat per periode x sisa hari / hari periode, dibulatkan rupiah), `request_seat_purchase` (baris `subscription_renewals` `kind='seats'`), `request_renewal(..., p_seats)`, `confirm_renewal` (menangani seat; tetap menerima pembayaran gateway atas pengajuan yang dibatalkan), `expire_subscriptions` (menerapkan pengurangan seat yang jatuh tempo). View `platform_organization_usage` memuat `seats` dan menghitung harga dari seat.
+
+Aplikasi:
+- `lib/billing/access.ts` (`billingPhase`, aturan sama dengan SQL), `checkSession` mengembalikan `billingLocked` (fase `ended`/`pending`/`unverified`) dan `readOnly` (fase `grace`); pemegang `billing.view` tetap bisa membuka halaman Langganan saat terkunci. Banner hanya-baca di layout admin, pelatih, dan anggota.
+- `/admin/klub/langganan` dibuka untuk `billing.view`; perpanjangan (dengan jumlah seat) dan beli seat untuk `billing.manage`. Pembayaran Midtrans memakai alur yang sama (item "tambah N seat").
+- Form tambah staf/pelatih berperan berbayar memberi tahu bila seat penuh; pesan `SW005` sampai ke pengguna. Email pengingat hanya ke pemilik.
+- Teks landing, FAQ, dan pemilih harga diubah dari "pengguna internal" ke "seat" (pelatih, kasir, dan anggota tidak memakai seat).
+
+Uji: `supabase/tests/seats_phase4.sql` (trial 14 hari 1 seat, seat penuh, perpanjangan dengan seat, prorata bulanan dan tahunan, pembelian idempoten, pengurangan seat periode berikutnya, tenggang baca-saja untuk insert/update/delete, batas 365 hari, semua tabel ber-`tenant_id` punya trigger) dan tes Fase 1-3 (disesuaikan: seat dinaikkan setelah daftar) lolos; uji browser (seat penuh, perpanjangan, beli seat dengan prorata, izin billing, tenggang, terkunci) lolos. `rollback/042.sql` diuji: skema identik dengan sebelum 042.
+
+Perlu diputuskan: perilaku setelah masa tenggang habis (`ended`) saya samakan dengan kunci lama (hanya pemilik dan `billing.view` ke halaman Langganan, lainnya keluar); tidak ada penghapusan data. Kebijakan retensi (D7) tetap untuk Fase 6.

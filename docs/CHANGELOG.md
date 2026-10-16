@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-19
+
+- Seats: price now follows the seats an organization bought instead of counting users. New organizations start a 14-day trial with 1 seat; a full seat count blocks new paid-role staff until seats are added (prorated for the rest of the period) or users are deactivated. Coaches, kasir and members take no seat.
+- After a trial or period ends, everyone can still sign in and read for a year, while changes are rejected until the owner renews.
+- A new `billing.manage` permission lets a role request renewals and seats; `billing.view` opens the subscription page.
+
 ## 2026-10-18
 
 - One account per person: sign-in, password changes and sign-out now work on a single account record shared by owners, staff and members. People can create a free account at `/daftar/akun` before joining a club; it opens a personal page at `/akun`.

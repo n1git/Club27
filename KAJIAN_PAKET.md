@@ -17,7 +17,7 @@ Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah 
 | Klub | maks 3 (bisa dinaikkan per organisasi oleh superadmin) | tak terbatas |
 | Anggota dan lokasi | tak terbatas | tak terbatas |
 | Modul | semua modul `ready` | semua modul `ready` |
-| Trial | 30 hari | tidak ada; mulai `pending` sampai diaktifkan |
+| Trial | 14 hari, 1 seat | 14 hari, 1 seat |
 | Tahunan | 11,5 bulan | 11,5 bulan |
 
 Contoh: Standard bulanan 4 pengguna = Rp 600.000; Standard tahunan 4 pengguna = 4 x 150.000 x 11,5 = Rp 6.900.000 (setara Rp 575.000/bulan); Advanced bulanan 2 pengguna = Rp 500.000.
@@ -29,10 +29,11 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 ## 4. Aturan akses
 
 - Status organisasi: `pending_verification` (email pendaftaran belum diverifikasi), `pending`, `trial`, `active`, `expired`, `suspended`, `cancelled`.
-- `pending_verification`, `pending`, `trial` yang lewat tanggal akhir, `suspended`, dan `cancelled` menolak tambahan anggota, klub, dan pengguna internal, serta kelas baru, booking kelas dan fasilitas, pesanan kasir, check-in, penggajian, dan pembuatan tagihan (`SW003`). Membaca data, melunasi tagihan yang sudah ada, login, dan halaman langganan tetap jalan.
+- Selain `trial` dan `active`, semua penulisan dari sesi pengguna ditolak (`SW003`): anggota, klub, seat, kelas, booking, kasir, check-in, penggajian, tagihan, dan lainnya. Membaca data, login, dan halaman langganan tetap jalan.
+- Seat: harga dihitung dari seat yang dibeli, bukan dari jumlah pengguna. Orang dengan peran berbayar (Admin, Resepsionis, Keuangan, atau peran kustom berbayar) memakai satu seat per organisasi; pelatih, kasir, peran gratis, dan anggota tidak. Seat penuh menolak penambahan (`SW005`). Tambah seat saat langganan aktif ditagih prorata sesuai sisa hari periode; pengurangan lewat perpanjangan berlaku di periode berikutnya.
 - Klub pertama organisasi tidak terkena `SW003` saat dibuat.
 - Hanya `suspended` dan `cancelled` yang mematikan akses seluruh klub organisasi. Data tidak dihapus.
-- `pending`, `expired`, serta `trial`/`active` yang lewat tanggal akhir mengunci akses klub: pemilik hanya bisa membuka halaman Langganan, pengguna lain keluar dengan pesan langganan berakhir. Cron harian (`/api/cron/subscriptions`, 07.00 WIB) mengubah trial/periode yang lewat menjadi `expired` dan mengirim email pengingat H-7 dan H-1.
+- Masa tenggang 365 hari setelah trial/periode berakhir: semua pengguna tetap bisa masuk dan membaca, perubahan ditolak. Setelah masa tenggang, atau saat `pending`/`pending_verification`, pemilik dan pemegang izin `billing.view` hanya bisa membuka halaman Langganan, pengguna lain keluar. Cron harian (`/api/cron/subscriptions`, 07.00 WIB) mengubah trial/periode yang lewat menjadi `expired` dan mengirim email pengingat H-7 dan H-1.
 - Perpanjangan: pemilik mengajukan paket dan periode (`request_renewal`, harga dihitung ulang di server), superadmin mengonfirmasi pembayaran (`confirm_renewal`, idempoten, periode baru menyambung dari periode lama). Pembayaran lewat Midtrans Snap (notifikasi `/api/payments/midtrans` memanggil `confirm_renewal` dengan `provider = midtrans`); konfirmasi manual superadmin tetap tersedia.
 
 ## 5. Unit ekonomi (asumsi, wajib diverifikasi)
@@ -44,7 +45,7 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 
 ## 6. Pertanyaan terbuka
 
-1. Apakah Advanced perlu trial singkat? Sekarang Advanced hanya bisa dipakai setelah pembayaran.
+1. Apa yang terjadi pada data setelah masa tenggang berakhir (kebijakan retensi)? Belum diputuskan; penghapusan belum dijalankan.
 2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
 3. Apakah batas klub Standard (3) perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
 4. Invoice/kwitansi 27club dan proration belum dirancang.
