@@ -80,6 +80,20 @@ id, or the account id for personal), `account_id`, `ctx` (`personal`, `member`,
 `org`), `tenant_id`, `org_id` and `app_role` (admin, coach, ..., or `personal`).
 A session without `account_id` is rejected.
 
+Organization membership lives in `organization_members` (formerly
+`org_owners`): one row per account and organization with a `base_role`:
+`p_owner` (exactly one per organization, enforced by a deferred constraint
+trigger; ownership moves by demoting the old row before promoting the new one in
+one transaction), `owner`, or `staff`. Staff are limited to the clubs listed in
+`organization_member_clubs` (an empty list means no club). One account can be
+p_owner of several organizations, each with its own subscription. After login
+the server lists the account's contexts (`lib/auth/contexts.ts`: one entry per
+organization, per member club and per staff profile): one entry opens it
+directly, several open the personal page `/akun`, which lists them ("Masuk
+sebagai"). `switchContext` (`lib/actions/context.ts`) mints a new JWT for the
+chosen entry or for `personal`; the header button "Akun saya" goes back to
+`/akun`. The older club switchers still move between clubs of one context.
+
 The **personal** context has no `tenant_id`, so every club policy returns zero
 rows for it (`supabase/tests/accounts_phase1.sql` checks every RLS table). It
 lands on `/akun` (profile, change password). Anyone can create an account at

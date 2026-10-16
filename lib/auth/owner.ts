@@ -13,12 +13,12 @@ export interface OwnerContext {
 export async function loadOwner(profileId: string, tenantId: string): Promise<OwnerContext | null> {
   const { data } = await createAdminSupabaseClient()
     .from("profiles")
-    .select("owner_id, account_id, org_owners(id, organization_id, is_active)")
+    .select("owner_id, account_id, organization_members(id, organization_id, is_active)")
     .eq("id", profileId)
     .eq("tenant_id", tenantId)
     .not("owner_id", "is", null)
     .maybeSingle();
-  const owner = data?.org_owners as unknown as { id: string; organization_id: string; is_active: boolean } | null;
+  const owner = data?.organization_members as unknown as { id: string; organization_id: string; is_active: boolean } | null;
   if (!owner?.is_active) return null;
   return { ownerId: owner.id, accountId: data!.account_id as string, organizationId: owner.organization_id, profileId, tenantId };
 }

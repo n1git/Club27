@@ -32,7 +32,7 @@ export async function toggleOwnerActive(_prevState: ActionState, formData: FormD
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
 
   const { data: owner, error } = await createAdminSupabaseClient()
-    .from("org_owners")
+    .from("organization_members")
     .update({ is_active: parsed.data.isActive === "true" })
     .eq("id", parsed.data.ownerId)
     .select("organization_id")

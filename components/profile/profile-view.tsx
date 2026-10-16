@@ -9,6 +9,7 @@ import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import type { BillingPeriod } from "@/lib/pricing";
 import type { ProfileData } from "@/lib/data/profile";
 import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
+import { ContextList } from "@/components/shared/context-list";
 import { DetailList } from "./detail-list";
 import { MaskedAmount } from "./masked-amount";
 import { ProfileForm } from "./profile-form";
@@ -77,11 +78,17 @@ export function ProfileView({ data }: { data: ProfileData }) {
         {data.kind === "personal" ? (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Klub</CardTitle>
-              <CardDescription>Anda belum tergabung di klub mana pun.</CardDescription>
+              <CardTitle>{data.contexts.length ? "Masuk sebagai" : "Klub"}</CardTitle>
+              <CardDescription>
+                {data.contexts.length ? "Pilih organisasi atau klub yang ingin Anda buka." : "Anda belum tergabung di klub mana pun."}
+              </CardDescription>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Minta admin klub mengaktifkan akun anggota Anda memakai email {data.email}. Setelah itu klub tampil saat Anda masuk.
+              {data.contexts.length ? (
+                <ContextList options={data.contexts} />
+              ) : (
+                <>Minta admin klub mengaktifkan akun anggota Anda memakai email {data.email}. Setelah itu klub tampil saat Anda masuk.</>
+              )}
             </CardContent>
           </Card>
         ) : null}

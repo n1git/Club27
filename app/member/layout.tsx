@@ -30,6 +30,7 @@ export default async function MemberLayout({ children }: { children: React.React
 
   return (
     <AppShell
+      personalSwitch
       navGroups={[{ items: navItems }] satisfies NavGroup[]}
       fullName={user.fullName}
       profileHref="/member/profile"

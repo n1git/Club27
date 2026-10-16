@@ -1,10 +1,10 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 berikutnya.
+Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai di kode dan diuji lokal (migrasi 040 belum diterapkan ke hosted).
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
 - [x] Fase 1 - akun universal dan konteks personal (diterapkan ke hosted)
-- [ ] Fase 2 - keanggotaan organisasi dan base role
+- [x] Fase 2 - keanggotaan organisasi dan base role (kode + uji lokal; terapan hosted bersama Fase 3)
 - [ ] Fase 3 - permission kustom, RLS, dan guard
 - [ ] Fase 4 - seat, billing, dan masa tenggang
 - [ ] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org
@@ -177,3 +177,21 @@ Skrip: `rollback/039.sql` (diuji pada DB lokal), `cutover-phase1.sql` (kosongkan
 Urutan terapan hosted setelah OK: `pg_dump`, jalankan perbaikan riwayat (commit), terapkan 039, jalankan cutover (commit), deploy aplikasi. Sebelum deploy, semua sesi lama tidak valid.
 
 Catatan terapan hosted: `pg_dump` tidak dibuat karena sesi ini tidak memegang string koneksi database; data yang dihapus adalah data uji yang disetujui owner (3 organisasi, 5 profil, 1 pembayaran Midtrans uji). Sebelum 039 diterapkan, kode baru sudah ter-deploy dari `main`, jadi login produksi tidak berfungsi sampai migrasi ini masuk.
+
+## Keputusan D2 (2026-10-18)
+
+Staf per klub; penugasan kosong = tanpa akses; p_owner dan owner otomatis semua klub.
+
+## Fase 2 - hasil
+
+Skema (`20250101000040_organization_members.sql`):
+- `org_owners` diganti nama menjadi `organization_members` (semua FK ikut), kolom `base_role` (`p_owner`/`owner`/`staff`). Baris lama menjadi `p_owner` (satu per organisasi, yang tertua). Unik email dan unik `account_id` dilepas; unik `(organization_id, account_id)` dan satu `p_owner` per organisasi (indeks parsial) ditambahkan, ditambah constraint trigger ditunda yang menolak organisasi tanpa tepat satu `p_owner`.
+- `organization_member_clubs(member_id, tenant_id)`: hanya untuk `staff`, klub harus satu organisasi (trigger). Keduanya tanpa grant ke klien.
+- Sembilan fungsi yang menyebut `org_owners` ditulis ulang; `register_organization` membuat `p_owner` dan boleh dipakai akun yang sudah punya organisasi lain.
+
+Aplikasi:
+- Semua rujukan `org_owners` di kode diganti `organization_members`.
+- `lib/auth/contexts.ts` (daftar konteks), `lib/actions/context.ts` (`switchContext`), login memilih: satu konteks langsung, beberapa ke `/akun`; `/akun` menampilkan "Masuk sebagai"; tombol "Akun saya" di header.
+- Belum ada UI untuk membuat staf backend, mengubah `base_role`, atau menugaskan klub (Fase 3 dan 5); konteks staf backend muncul setelah ada permission.
+
+Uji: `supabase/tests/organization_members_phase2.sql` (satu `p_owner`, keanggotaan unik, pemindahan kepemilikan, penugasan klub, tabel tertutup untuk klien) dan `accounts_phase1.sql` yang disesuaikan lolos; uji browser menambah dua organisasi satu akun (pemilih konteks, masuk, kembali ke akun). Skrip balik: `rollback/040.sql` (diuji).

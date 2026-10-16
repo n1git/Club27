@@ -1,5 +1,6 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listMemberClubs } from "@/lib/data/member-clubs";
+import { listContexts } from "@/lib/auth/contexts";
 import type { AppRole } from "@/lib/auth/roles";
 
 type One<T> = T | T[] | null;
@@ -13,7 +14,7 @@ export interface Certification {
 }
 
 export type ProfileData =
-  | { kind: "personal"; email: string; fullName: string; username: string }
+  | { kind: "personal"; email: string; fullName: string; username: string; contexts: { key: string; label: string; detail: string }[] }
   | {
       kind: "owner";
       email: string;
@@ -61,12 +62,19 @@ export async function getProfileData(ids: {
     .maybeSingle();
   if (!account) return null;
   if (ids.personal) {
-    return { kind: "personal", email: account.email, fullName: account.full_name, username: account.username };
+    const { entries } = await listContexts(ids.accountId);
+    return {
+      kind: "personal",
+      email: account.email,
+      fullName: account.full_name,
+      username: account.username,
+      contexts: entries.map((e) => ({ key: e.key, label: e.label, detail: e.detail })),
+    };
   }
 
   if (ids.ownerId) {
     const { data: owner } = await supabase
-      .from("org_owners")
+      .from("organization_members")
       .select("organization_id, organizations(name)")
       .eq("id", ids.ownerId)
       .maybeSingle();

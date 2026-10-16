@@ -44,7 +44,7 @@ export async function resetUserPassword(
       .select("id", { count: "exact", head: true })
       .eq("account_id", profile.account_id)
       .neq("id", profile.id),
-    supabase.from("org_owners").select("id", { count: "exact", head: true }).eq("account_id", profile.account_id),
+    supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("account_id", profile.account_id),
   ]);
   if (otherProfiles || owners) {
     return { ok: false, error: "Akun ini juga terhubung ke konteks lain. Kata sandi hanya bisa diatur ulang oleh pemiliknya." };

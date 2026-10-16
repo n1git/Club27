@@ -133,7 +133,7 @@ export async function resetMemberPassword(_prevState: ActionState, formData: For
       .select("id", { count: "exact", head: true })
       .eq("account_id", own.account_id)
       .neq("id", member.profile_id),
-    supabase.from("org_owners").select("id", { count: "exact", head: true }).eq("account_id", own.account_id),
+    supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("account_id", own.account_id),
   ]);
   if (otherProfiles || owners) {
     return { ok: false, error: "Akun ini juga terhubung ke klub lain. Kata sandi hanya bisa diatur ulang oleh pemiliknya." };

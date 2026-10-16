@@ -69,7 +69,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "id, tenant_id, role, is_active, full_name, sessions_valid_after, owner_id, member_account_id, account_id, is_head_coach, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end))), org_owners(is_active), member_accounts(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
+      "id, tenant_id, role, is_active, full_name, sessions_valid_after, owner_id, member_account_id, account_id, is_head_coach, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end))), organization_members(is_active), member_accounts(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
     )
     .eq("id", session.sub)
     .maybeSingle();
@@ -94,7 +94,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   const billingLocked = isBillingLocked(one(one(tenant.organizations)?.organization_subscriptions ?? null));
   if (billingLocked && !profile.owner_id) return { ok: false, reason: "expired" };
 
-  if (profile.owner_id && !one(profile.org_owners as One<{ is_active: boolean }>)?.is_active) {
+  if (profile.owner_id && !one(profile.organization_members as One<{ is_active: boolean }>)?.is_active) {
     return { ok: false, reason: "deactivated" };
   }
 

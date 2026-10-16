@@ -18,9 +18,9 @@ export async function getOrganizationOverview(organizationId: string, ownerId: s
   const supabase = createAdminSupabaseClient();
   const { data: org } = await supabase
     .from("organizations")
-    .select("name, org_owners!inner(id), organization_subscriptions(club_limit_override, subscription_plans(club_limit))")
+    .select("name, organization_members!inner(id), organization_subscriptions(club_limit_override, subscription_plans(club_limit))")
     .eq("id", organizationId)
-    .eq("org_owners.id", ownerId)
+    .eq("organization_members.id", ownerId)
     .maybeSingle();
   if (!org) return null;
   const sub = org.organization_subscriptions as unknown as {

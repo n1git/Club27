@@ -42,14 +42,9 @@ begin
 
   select id into a from accounts where email = 'owner@t.test';
   select * into r from register_organization('Org A', 'Club A', a, 'standard', 'monthly', 'swimming');
-  assert (select account_id from org_owners where id = r.owner_id) = a, 'owner linked to account';
+  assert (select account_id from organization_members where id = r.owner_id) = a, 'owner linked to account';
   assert (select account_id from profiles where id = r.profile_id) = a, 'owner profile linked to account';
-  assert (select password_hash from org_owners where id = r.owner_id) is null, 'owner has no password of its own';
-
-  begin
-    perform register_organization('Org B', 'Club B', a, 'standard', 'monthly', 'swimming');
-    assert false, 'account cannot own two organizations in phase 1';
-  exception when unique_violation then null; end;
+  assert (select password_hash from organization_members where id = r.owner_id) is null, 'owner has no password of its own';
 
   select id into a from accounts where email = 'owner2@t.test';
   select * into r2 from register_organization('Org C', 'Club C', a, 'standard', 'monthly', 'gym');

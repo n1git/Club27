@@ -72,7 +72,7 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
 
   if (!memberAccountId && values.fullName) {
     if (ownerId) {
-      await supabase.from("org_owners").update({ full_name: values.fullName }).eq("id", ownerId);
+      await supabase.from("organization_members").update({ full_name: values.fullName }).eq("id", ownerId);
       await supabase.from("profiles").update({ full_name: values.fullName }).eq("owner_id", ownerId);
     } else if (isStaff) {
       const { data: before } = await supabase.from("profiles").select("phone").eq("id", session.sub).single();

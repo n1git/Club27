@@ -106,6 +106,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const switcher = tenants.length > 1 ? <LazyTenantSwitcher tenants={tenants} currentId={session.tenantId} /> : null;
   return (
     <AppShell
+      personalSwitch
       navGroups={navGroups}
       fullName={session.fullName}
       profileHref="/admin/profile"

@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         .select("organization_id");
       if (!claimed?.length) continue;
       const { data: owners } = await supabase
-        .from("org_owners")
+        .from("organization_members")
         .select("email")
         .eq("organization_id", row.organization_id)
         .eq("is_active", true);

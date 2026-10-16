@@ -55,7 +55,7 @@ export async function discardUnusedAccount(accountId: string) {
   const supabase = createAdminSupabaseClient();
   const [{ count: profiles }, { count: owners }, { count: members }] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", accountId),
-    supabase.from("org_owners").select("id", { count: "exact", head: true }).eq("account_id", accountId),
+    supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("account_id", accountId),
     supabase.from("member_accounts").select("id", { count: "exact", head: true }).eq("account_id", accountId),
   ]);
   if (!profiles && !owners && !members) await supabase.from("accounts").delete().eq("id", accountId);

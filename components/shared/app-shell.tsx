@@ -1,5 +1,6 @@
 import { BrandIcon } from "./brand-logo";
 import { LogoutButton } from "./logout-button";
+import { PersonalSwitch } from "./context-list";
 import { MobileNav } from "./mobile-nav";
 import { NavGroupsProvider } from "./nav-context";
 import { NavProgressBar, NavProgressProvider } from "./nav-progress";
@@ -14,6 +15,7 @@ export function AppShell({
   roleLabel,
   clubName,
   tenantSwitcher,
+  personalSwitch,
   children,
 }: {
   navGroups: NavGroup[];
@@ -22,6 +24,7 @@ export function AppShell({
   roleLabel: string;
   clubName: string;
   tenantSwitcher?: React.ReactNode;
+  personalSwitch?: boolean;
   children: React.ReactNode;
 }) {
   const menuGroups: NavGroup[] = [
@@ -47,6 +50,7 @@ export function AppShell({
               </div>
               <div className="ml-auto flex items-center gap-2 sm:gap-3">
                 <ThemeToggle />
+                {personalSwitch ? <PersonalSwitch /> : null}
                 <LogoutButton />
               </div>
               <NavProgressBar />

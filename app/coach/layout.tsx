@@ -16,6 +16,7 @@ export default async function CoachLayout({ children }: { children: React.ReactN
   const navGroups: NavGroup[] = [{ items: session.isHeadCoach ? [...NAV_ITEMS, ...HEAD_COACH_NAV_ITEMS] : NAV_ITEMS }];
   return (
     <AppShell
+      personalSwitch
       navGroups={navGroups}
       fullName={session.fullName}
       profileHref="/coach/profile"

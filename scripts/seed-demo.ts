@@ -223,7 +223,7 @@ begin
   delete from locations where tenant_id = any(v_tenants);
   delete from member_accounts where email like '%@${DOMAIN}' and not exists (select 1 from profiles p where p.member_account_id = member_accounts.id);
   delete from tenants where id = any(v_tenants);
-  delete from org_owners where organization_id = any(v_orgs);
+  delete from organization_members where organization_id = any(v_orgs);
   delete from accounts where email like '%@${DOMAIN}';
   delete from organization_subscriptions where organization_id = any(v_orgs);
   delete from organizations where id = any(v_orgs);

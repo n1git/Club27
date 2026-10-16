@@ -50,7 +50,7 @@ async function preparePaymentFor(organizationId: string, ownerId: string) {
   if (!isMidtransConfigured()) return null;
   const [renewal, { data: owner }] = await Promise.all([
     getPendingRenewal(organizationId),
-    createAdminSupabaseClient().from("org_owners").select("full_name, email").eq("id", ownerId).maybeSingle(),
+    createAdminSupabaseClient().from("organization_members").select("full_name, email").eq("id", ownerId).maybeSingle(),
   ]);
   if (!renewal || !owner) return null;
   return preparePayment(renewal, { name: owner.full_name as string, email: owner.email as string });

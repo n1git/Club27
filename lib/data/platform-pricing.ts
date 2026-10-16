@@ -206,7 +206,7 @@ export interface InternalUserRow {
 export async function listInternalUsers(organizationId: string): Promise<InternalUserRow[]> {
   const supabase = createAdminSupabaseClient();
   const [{ data: owners }, { data: staff }] = await Promise.all([
-    supabase.from("org_owners").select("id, full_name, email").eq("organization_id", organizationId).eq("is_active", true),
+    supabase.from("organization_members").select("id, full_name, email").eq("organization_id", organizationId).eq("is_active", true),
     supabase
       .from("profiles")
       .select("id, full_name, email, role, tenants!inner(name, organization_id)")
