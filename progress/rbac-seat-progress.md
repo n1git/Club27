@@ -1,12 +1,12 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai dan diterapkan ke hosted (041). Fase 4 selesai di kode dan diuji lokal (migrasi 042 belum diterapkan ke hosted). Fase 5 berikutnya.
+Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai dan diterapkan ke hosted (041). Fase 4 selesai dan diterapkan ke hosted (042). Fase 5 berikutnya.
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
 - [x] Fase 1 - akun universal dan konteks personal (diterapkan ke hosted)
 - [x] Fase 2 - keanggotaan organisasi dan base role (diterapkan ke hosted)
 - [x] Fase 3 - permission kustom, RLS, dan guard (diterapkan ke hosted)
-- [x] Fase 4 - seat, billing, dan masa tenggang (kode + uji lokal; belum diterapkan ke hosted)
+- [x] Fase 4 - seat, billing, dan masa tenggang (diterapkan ke hosted)
 - [ ] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org
 - [ ] Fase 6 - siklus hapus organisasi (purge nonaktif sampai kebijakan retensi diputuskan)
 
