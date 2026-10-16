@@ -3,7 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 
 export function FinalCta({ trialDays }: { trialDays: number }) {
   return (
-    <section aria-labelledby="mulai-judul" className="dark border-t border-border bg-background py-16 text-foreground sm:py-20">
+    <section aria-labelledby="mulai-judul" className="border-t border-border bg-muted py-16 text-foreground sm:py-20">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 id="mulai-judul" className="text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">

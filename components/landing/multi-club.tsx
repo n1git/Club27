@@ -9,7 +9,7 @@ const SAMPLE_CLUBS = [
 
 export function MultiClub({ plans }: { plans: PricingPlan[] }) {
   return (
-    <section id="multi-klub" aria-labelledby="multi-klub-judul" className="scroll-mt-20 dark border-y border-border bg-background py-16 text-foreground sm:py-24">
+    <section id="multi-klub" aria-labelledby="multi-klub-judul" className="scroll-mt-20 border-y border-border bg-card py-16 text-foreground sm:py-24">
       <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:items-center">
         <div>
           <p className="text-sm font-semibold text-accent-foreground">Multi klub</p>
@@ -34,7 +34,7 @@ export function MultiClub({ plans }: { plans: PricingPlan[] }) {
             ) : null}
           </ul>
         </div>
-        <figure aria-label="Contoh daftar klub milik satu organisasi dengan data contoh" className="rounded-xl border border-border bg-card p-4 sm:p-5">
+        <figure aria-label="Contoh daftar klub milik satu organisasi dengan data contoh" className="rounded-xl border border-border bg-background p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <p className="flex items-center gap-2 font-heading text-sm font-semibold">
               <Building2 className="size-4" aria-hidden />
