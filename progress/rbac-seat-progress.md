@@ -7,7 +7,7 @@ Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riw
 - [x] Fase 2 - keanggotaan organisasi dan base role (diterapkan ke hosted)
 - [x] Fase 3 - permission kustom, RLS, dan guard (diterapkan ke hosted)
 - [x] Fase 4 - seat, billing, dan masa tenggang (diterapkan ke hosted)
-- [ ] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org
+- [x] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org (kode + uji lokal; belum diterapkan ke hosted)
 - [ ] Fase 6 - siklus hapus organisasi (purge nonaktif sampai kebijakan retensi diputuskan)
 
 Basis audit: `main` @ `abbc0b6`, migrasi repo 001-038, query read-only ke Supabase `gmldacyjdbsdofqqaqry` tanggal 2026-10-16.
@@ -148,6 +148,8 @@ Kasus yang diuji:
 - D1: data uji dikosongkan saat cutover, tanpa backfill.
 - D4 (2026-10-19): `trial_days` kedua paket diubah jadi 14 hari.
 - D6 (2026-10-19): masa tenggang read-only, semua pengguna boleh masuk dan membaca; lamanya 1 tahun (bukan 1 bulan), disimpan di `subscription_plans.grace_days`.
+- D8 (2026-10-19): kata sandi sementara untuk staf/pelatih diganti total dengan undangan.
+- D9 (2026-10-19): undangan per klub (peran + klub); undangan co-owner berlaku untuk seluruh organisasi.
 - D12 (2026-10-18): daftar mandiri akun umum tanpa verifikasi email.
 - D13 (2026-10-18): saya menulis skrip perbaikan riwayat; dijalankan hanya setelah owner OK.
 
@@ -237,3 +239,18 @@ Aplikasi:
 Uji: `supabase/tests/seats_phase4.sql` (trial 14 hari 1 seat, seat penuh, perpanjangan dengan seat, prorata bulanan dan tahunan, pembelian idempoten, pengurangan seat periode berikutnya, tenggang baca-saja untuk insert/update/delete, batas 365 hari, semua tabel ber-`tenant_id` punya trigger) dan tes Fase 1-3 (disesuaikan: seat dinaikkan setelah daftar) lolos; uji browser (seat penuh, perpanjangan, beli seat dengan prorata, izin billing, tenggang, terkunci) lolos. `rollback/042.sql` diuji: skema identik dengan sebelum 042.
 
 Perlu diputuskan: perilaku setelah masa tenggang habis (`ended`) saya samakan dengan kunci lama (hanya pemilik dan `billing.view` ke halaman Langganan, lainnya keluar); tidak ada penghapusan data. Kebijakan retensi (D7) tetap untuk Fase 6.
+
+
+## Fase 5 - hasil
+
+Skema (`20250101000043_invitations_resets.sql`): `invitations` (hash token, 7 hari, `staff` per klub dengan peran, atau `owner` se-organisasi), `password_resets` (hash token, 1 jam, `delivered`), `create_invitation`, `accept_invitation` (membuat keanggotaan seat, penugasan klub, dan profil dalam satu transaksi; menolak email berbeda), `transfer_ownership` (hanya `p_owner`, penerima harus `owner` aktif), `consume_password_reset` (ganti sandi, buka kunci, cabut semua sesi, verifikasi email bila tautan terkirim lewat email), `create_tenant_for_owner` kini membuat profil untuk setiap pemilik.
+
+Aplikasi:
+- Staf dan pelatih diundang (`/admin/staff`, `/admin/coaches`), daftar undangan menunggu dengan kirim ulang dan batalkan; penerima membuka `/undangan/<token>`: akun baru (username + kata sandi + persetujuan) atau masuk lalu terima. Pembuatan akun dengan kata sandi sementara untuk staf/pelatih dihapus; aktivasi akun anggota tetap memakai sandi sementara.
+- `/lupa-sandi` dan `/atur-ulang-sandi/<token>` (butuh `EMAIL_API_KEY`; tanpa itu halaman menjelaskan layanan email belum aktif), tombol "Lupa kata sandi?" di login. Tombol admin "atur ulang kata sandi staf" kini membuat tautan yang sama (dan perbaikan: staf berseat sebelumnya selalu ditolak).
+- Autentikasi ulang (`lib/auth/reauth.ts`) untuk undang co-owner dan pindah kepemilikan. Halaman `/admin/klub/pemilik`: daftar pemilik, undang co-owner, pindahkan kepemilikan utama (tercatat di audit).
+- `/akun`: akun mana pun (termasuk anggota) bisa membuat organisasi sendiri; bila email belum terverifikasi dan email aktif, lewat tautan verifikasi.
+
+Uji: `supabase/tests/invitations_phase5.sql` dan tes fase 1-4 lolos; e2e browser (undang staf/pelatih, terima dengan akun baru dan akun lama, tautan sekali pakai, batalkan, reset sandi, sesi lama keluar, co-owner, pindah kepemilikan, buat organisasi dari akun) lolos. `rollback/043.sql` diuji (skema identik dengan sebelum 043).
+
+Belum ada: pencabutan/penonaktifan co-owner dari UI; pengiriman email diuji hanya sebatas fallback tautan karena `EMAIL_API_KEY` tidak ada di lingkungan uji.

@@ -12,6 +12,7 @@ import { TriggerDialog } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PageHeader } from "@/components/ui/page-header";
+import { PendingInvitations } from "@/components/shared/pending-invitations";
 
 export default async function StaffPage() {
   const session = await requirePermission("staff.manage");
@@ -30,8 +31,8 @@ export default async function StaffPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <PageHeader title={<>Staf</>} />
-        <TriggerDialog trigger={<span className={buttonVariants({})}>Tambah Staf</span>}>
-          <h2 className="mb-4 text-xl font-semibold">Tambah Staf</h2>
+        <TriggerDialog trigger={<span className={buttonVariants({})}>Undang Staf</span>}>
+          <h2 className="mb-4 text-xl font-semibold">Undang Staf</h2>
           <StaffForm roles={roles} />
         </TriggerDialog>
       </div>
@@ -102,6 +103,7 @@ export default async function StaffPage() {
           ) : null}
         </TableBody>
       </Table>
+      <PendingInvitations tenantId={session.tenantId} roleIds={roles.map((r) => r.id)} />
     </div>
   );
 }

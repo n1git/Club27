@@ -216,7 +216,8 @@ no new Supabase project or Vercel deployment needed. Two ways in:
   limits: this reveals that the email already has an account; a temporary
   password known to one club's staff stays valid until the person's first
   login; "Atur ulang kata sandi" is refused when the account also belongs to
-  another club. There is no invitation or reset by email.
+  another club. Staff and coaches are not created this way any more; see
+  "Invitations and password reset" below.
 
 Organizations that existed before the billing migration were backfilled
 (see migration `20250101000014_org_billing.sql`): Advanced if any old plan was
@@ -494,6 +495,34 @@ status from `/superadmin`.
   purchases there. The superadmin edits plans, status, trial end and
   club-limit override.
 
+### Invitations and password reset
+
+- **Invitations** (`invitations`, `create_invitation`, `accept_invitation`): an
+  admin with `staff.manage` or `coaches.manage` invites a name and email to
+  one club with a role; the page `/undangan/<token>` lets the person create an
+  account (username and password) or, when the email already has an account,
+  sign in and accept. Only the SHA-256 of the token is stored; links last 7
+  days, work once, and a new invitation to the same club and email replaces the
+  pending one. A paid role takes a seat when accepted (`SW005` when full). With
+  `EMAIL_API_KEY` the link is emailed (and a new account's email counts as
+  verified); otherwise it is shown once to the inviter. A co-owner invitation
+  is organization-wide: the person becomes `owner` and gets an owner profile in
+  every club, and every club created later gives every owner a profile.
+- **Password reset** (`password_resets`, `consume_password_reset`): `/lupa-sandi`
+  emails a one-hour single-use link (hashed token, rate limited per IP and per
+  email, same answer whether or not the email exists); an admin can create the
+  same link for staff from `/admin/staff`. Using it replaces the password,
+  clears lockout and signs every session out.
+- **Re-authentication**: inviting a co-owner and transferring ownership ask for
+  the acting account's password again (`lib/auth/reauth.ts`, five failures per
+  ten minutes lock further attempts).
+- **Ownership transfer** (`/admin/klub/pemilik`, `transfer_ownership`): only the
+  main owner (`p_owner`) can move the role to another active owner; the previous
+  main owner stays an owner; recorded in `audit_log`.
+- **Create an organization from an account** (`/akun`): any signed-in account,
+  including a member, can create its own organization; it keeps its other
+  contexts.
+
 ### Renewals and payment
 
 - Status `expired` is set by `expire_subscriptions` (daily cron
@@ -575,8 +604,7 @@ status from `/superadmin`.
   later.
 - WhatsApp is not integrated. A club's member invoices are marked paid
   manually by an admin; Midtrans is used only for the platform subscription.
-- Admin creates coach accounts (temporary password, changed on first
-  login). Members sign in read-only after an admin or their coach activates
+- Admins invite coaches and staff by link (no temporary password). Members sign in read-only after an admin or their coach activates
   the account; there is no self-registration and no parent role.
 - Not built: taxes and discounts on orders, barcode scanners, receipt printers (the browser prints), returns and partial refunds, supplier purchasing, member-invoice payment gateway, invoices or receipts for the platform itself,
   proration, automatic charging, coupons,

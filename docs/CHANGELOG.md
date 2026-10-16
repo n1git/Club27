@@ -2,6 +2,7 @@
 
 ## 2026-10-19
 
+- Staff, coaches and co-owners now join by invitation link instead of a temporary password; passwords are reset with an emailed one-hour link (`/lupa-sandi`). Moving the main owner role and inviting co-owners ask for your password again, and any account can create its own organization from `/akun`.
 - Seats: price now follows the seats an organization bought instead of counting users. New organizations start a 14-day trial with 1 seat; a full seat count blocks new paid-role staff until seats are added (prorated for the rest of the period) or users are deactivated. Coaches, kasir and members take no seat.
 - After a trial or period ends, everyone can still sign in and read for a year, while changes are rejected until the owner renews.
 - A new `billing.manage` permission lets a role request renewals and seats; `billing.view` opens the subscription page.

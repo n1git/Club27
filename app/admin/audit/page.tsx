@@ -10,7 +10,14 @@ import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/ui/page-header";
 
 const ACTION_LABEL: Record<string, string> = {
-  "password.reset": "Atur ulang kata sandi",
+  "password.reset": "Buat tautan atur ulang kata sandi",
+  "password.reset_by_link": "Kata sandi diatur ulang lewat tautan",
+  "invitation.create": "Buat undangan",
+  "invitation.create_owner": "Undang pemilik",
+  "invitation.accept": "Terima undangan",
+  "invitation.revoke": "Batalkan undangan",
+  "ownership.transfer": "Pindahkan kepemilikan utama",
+  "organization.create_from_account": "Buat organisasi dari akun",
   "password.change": "Ganti kata sandi",
   "staff.role": "Ubah peran staf",
   "staff.activate": "Aktifkan staf",

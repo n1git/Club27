@@ -3,30 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireActionPermission } from "@/lib/auth/guard";
-import { createTenantAccount } from "@/lib/accounts/create";
 import { setStaffProfileActive, setStaffProfileRole } from "@/lib/accounts/staff-seat";
-import { staffSchema } from "@/lib/validations/staff";
 import type { ActionState } from "./types";
-
-export async function createStaff(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  const session = await requireActionPermission("staff.manage");
-  const parsed = staffSchema.safeParse({
-    fullName: formData.get("fullName"),
-    email: formData.get("email"),
-    username: formData.get("username"),
-    phone: formData.get("phone") || undefined,
-    roleId: formData.get("role"),
-  });
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
-  }
-  const { roleId, ...input } = parsed.data;
-  const result = await createTenantAccount(session.tenant_id, roleId, input, "Gagal membuat akun staf");
-  if (!result.ok) return result;
-
-  revalidatePath("/admin/staff");
-  return { ...result, message: "Staf berhasil ditambahkan" };
-}
 
 export async function toggleStaffActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireActionPermission("staff.manage");

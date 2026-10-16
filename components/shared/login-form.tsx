@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,9 @@ export function LoginForm({ next }: { next: string | null }) {
           required
           autoComplete="current-password"
         />
+        <Link href="/lupa-sandi" className="w-fit text-sm text-accent-foreground underline-offset-4 hover:underline">
+          Lupa kata sandi?
+        </Link>
       </div>
       <Button type="submit" disabled={loading}>
         {loading ? "Memproses..." : "Masuk"}

@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import { resetUserPassword } from "@/lib/actions/accounts";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
-import { TempPasswordNotice } from "@/components/shared/temp-password-notice";
+import { InviteLinkNotice } from "@/components/shared/invite-link-notice";
 
 export function ResetPasswordForm({ profileId, label }: { profileId: string; label: string }) {
   const [state, formAction, pending] = useActionState(resetUserPassword, {});
@@ -17,14 +17,14 @@ export function ResetPasswordForm({ profileId, label }: { profileId: string; lab
           <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       ) : null}
-      <TempPasswordNotice password={state.tempPassword} />
+      <InviteLinkNotice link={state.link} message={state.ok ? state.message : undefined} />
       <ActionSubmitButton
         variant="outline"
         className="w-fit"
         disabled={pending}
-        confirmMessage={`Atur ulang kata sandi ${label}? Kata sandi lama langsung tidak berlaku dan semua sesinya keluar.`}
+        confirmMessage={`Buat tautan atur ulang kata sandi ${label}? Tautan baru menggantikan tautan lama.`}
       >
-        {pending ? "Memproses..." : `Atur ulang kata sandi ${label}`}
+        {pending ? "Memproses..." : `Kirim tautan atur ulang ${label}`}
       </ActionSubmitButton>
     </form>
   );

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { verifyPasswordOrDummy } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
-import { listContexts, personalTarget, type ContextTarget } from "@/lib/auth/contexts";
+import { resolveTarget } from "@/lib/auth/contexts";
 import { loginSchema, LOGIN_ERROR } from "@/lib/validations/auth";
 import { isRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { isCrossSite, readJsonBody } from "@/lib/auth/request";
@@ -13,15 +13,6 @@ const LOCKOUT_MINUTES = 15;
 const GENERIC_ERROR = LOGIN_ERROR;
 const UNVERIFIED_ERROR = "Email pendaftaran belum diverifikasi. Buka tautan verifikasi di email Anda.";
 const DEACTIVATED_ERROR = `Akses klub Anda sedang dinonaktifkan. Data klub tetap tersimpan. Hubungi admin platform ${APP_NAME} untuk mengaktifkannya kembali.`;
-
-async function resolveTarget(account: LoginAccount): Promise<ContextTarget | "deactivated" | "unverified"> {
-  const { entries, unverified, blocked } = await listContexts(account.id);
-  if (entries.length === 1) return entries[0].target;
-  if (entries.length > 1) return personalTarget(account);
-  if (unverified) return "unverified";
-  if (blocked) return "deactivated";
-  return personalTarget(account);
-}
 
 interface LoginAccount {
   id: string;

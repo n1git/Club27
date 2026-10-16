@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { requirePermission } from "@/lib/auth/guard";
-import { getTenantRoles } from "@/lib/data/roles";
+import { getTenantRoles, isInstructorRole } from "@/lib/data/roles";
+import { PendingInvitations } from "@/components/shared/pending-invitations";
 import { certificationWarningDate } from "@/lib/certifications";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,8 @@ export default async function CoachesPage({
   const { q, status } = await searchParams;
   const user = await requirePermission("coaches.manage");
   const supabase = await createServerSupabaseClient();
-  const roleById = new Map((await getTenantRoles(user.tenantId)).map((r) => [r.id, r]));
+  const tenantRoles = await getTenantRoles(user.tenantId);
+  const roleById = new Map(tenantRoles.map((r) => [r.id, r]));
   let query = supabase
     .from("instructors")
     .select("id, full_name, email, phone, is_active, specialization, org_role_id")
@@ -48,7 +50,7 @@ export default async function CoachesPage({
       <div className="flex items-center justify-between">
         <PageHeader title={<>Pelatih</>} />
         <Link href="/admin/coaches/new" className={buttonVariants({})}>
-          Tambah Pelatih
+          Undang Pelatih
         </Link>
       </div>
       <FramedCard
@@ -132,6 +134,7 @@ export default async function CoachesPage({
           </TableBody>
         </Table>
       </FramedCard>
+      <PendingInvitations tenantId={user.tenantId} roleIds={tenantRoles.filter(isInstructorRole).map((r) => r.id)} />
     </div>
   );
 }

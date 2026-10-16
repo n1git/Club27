@@ -8,19 +8,20 @@ export interface OwnerContext {
   organizationId: string;
   profileId: string;
   tenantId: string;
+  baseRole: "p_owner" | "owner";
 }
 
 export async function loadOwner(profileId: string, tenantId: string): Promise<OwnerContext | null> {
   const { data } = await createAdminSupabaseClient()
     .from("profiles")
-    .select("owner_id, account_id, organization_members(id, organization_id, is_active)")
+    .select("owner_id, account_id, organization_members(id, organization_id, is_active, base_role)")
     .eq("id", profileId)
     .eq("tenant_id", tenantId)
     .not("owner_id", "is", null)
     .maybeSingle();
-  const owner = data?.organization_members as unknown as { id: string; organization_id: string; is_active: boolean } | null;
+  const owner = data?.organization_members as unknown as { id: string; organization_id: string; is_active: boolean; base_role: "p_owner" | "owner" } | null;
   if (!owner?.is_active) return null;
-  return { ownerId: owner.id, accountId: data!.account_id as string, organizationId: owner.organization_id, profileId, tenantId };
+  return { ownerId: owner.id, accountId: data!.account_id as string, organizationId: owner.organization_id, profileId, tenantId, baseRole: owner.base_role };
 }
 
 export async function requireOwner() {
@@ -34,5 +35,11 @@ export async function requireOwnerAction(options: { allowBillingLocked?: boolean
   const session = await requireActionRole("owner", options);
   const owner = await loadOwner(session.sub, session.tenant_id);
   if (!owner) throw new UnauthorizedError("Hanya pemilik organisasi yang dapat melakukan aksi ini");
+  return owner;
+}
+
+export async function requirePrimaryOwnerAction(): Promise<OwnerContext> {
+  const owner = await requireOwnerAction();
+  if (owner.baseRole !== "p_owner") throw new UnauthorizedError("Hanya pemilik utama yang dapat melakukan aksi ini");
   return owner;
 }

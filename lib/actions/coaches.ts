@@ -3,36 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { createTenantAccount } from "@/lib/accounts/create";
 import { setStaffProfileActive, setStaffProfileRole } from "@/lib/accounts/staff-seat";
-import { getTenantRoles, isInstructorRole } from "@/lib/data/roles";
-import { certificationSchema, coachSchema, coachUpdateSchema } from "@/lib/validations/coaches";
-import { PLAN_LIMIT_CODES, type ActionState } from "./types";
-
-export async function createCoach(
-  _prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
-  const session = await requireActionPermission("coaches.manage");
-
-  const parsed = coachSchema.safeParse({
-    fullName: formData.get("fullName"),
-    email: formData.get("email"),
-    username: formData.get("username"),
-    phone: formData.get("phone") || undefined,
-  });
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
-  }
-  const roles = (await getTenantRoles(session.tenant_id)).filter(isInstructorRole);
-  const defaultRole = roles.find((r) => r.presetKey === "pelatih") ?? roles[0];
-  if (!defaultRole) return { ok: false, error: "Belum ada peran pelatih. Buat peran dengan izin menjadi pelatih terlebih dulu." };
-  const result = await createTenantAccount(session.tenant_id, defaultRole.id, parsed.data, "Gagal membuat akun pelatih");
-  if (!result.ok) return result;
-
-  revalidatePath("/admin/coaches");
-  return { ...result, message: "Pelatih berhasil ditambahkan" };
-}
+import { certificationSchema, coachUpdateSchema } from "@/lib/validations/coaches";
+import { type ActionState } from "./types";
 
 export async function updateCoach(
   coachId: string,

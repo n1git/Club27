@@ -137,3 +137,16 @@ export function personalTarget(account: { id: string; email: string; full_name: 
     redirectTo: PERSONAL_HOME,
   };
 }
+
+export async function resolveTarget(account: {
+  id: string;
+  email: string;
+  full_name: string;
+}): Promise<ContextTarget | "deactivated" | "unverified"> {
+  const { entries, unverified, blocked } = await listContexts(account.id);
+  if (entries.length === 1) return entries[0].target;
+  if (entries.length > 1) return personalTarget(account);
+  if (unverified) return "unverified";
+  if (blocked) return "deactivated";
+  return personalTarget(account);
+}

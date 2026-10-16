@@ -88,6 +88,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       ? [{ href: "/admin/klub/langganan", label: "Langganan", icon: "orgBilling" } satisfies NavItem]
       : []),
     ...(owner ? [{ href: "/admin/peran", label: "Peran", icon: "roles" } satisfies NavItem] : []),
+    ...(owner ? [{ href: "/admin/klub/pemilik", label: "Pemilik", icon: "staff" } satisfies NavItem] : []),
   ];
   const navGroups: NavGroup[] = [
     ...(orgItems.length > 0 ? [{ label: "Organisasi", items: orgItems }] : []),

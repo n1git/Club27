@@ -10,8 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useActionToast } from "@/components/shared/use-action-toast";
-import { TempPasswordNotice } from "@/components/shared/temp-password-notice";
-import { UsernameField } from "@/components/shared/username-field";
+import { InviteLinkNotice } from "@/components/shared/invite-link-notice";
 import type { SeatUsage } from "@/lib/data/platform-pricing";
 
 export function AccountForm({
@@ -25,7 +24,7 @@ export function AccountForm({
 }) {
   const title = `${noun[0].toUpperCase()}${noun.slice(1)}`;
   const [state, formAction, pending] = useActionState(action, {});
-  useActionToast(state, `${title} berhasil ditambahkan`);
+  useActionToast(state, `Undangan ${noun} dibuat`);
   const formRef = useRef<HTMLFormElement>(null);
   const confirmed = useRef(false);
   const [full, setFull] = useState<SeatUsage | null>(null);
@@ -57,7 +56,7 @@ export function AccountForm({
           <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       ) : null}
-      <TempPasswordNotice password={state.tempPassword} />
+      <InviteLinkNotice link={state.link} message={state.message} />
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="fullName">Nama {title}</Label>
         <Input id="fullName" name="fullName" required maxLength={200} />
@@ -65,11 +64,6 @@ export function AccountForm({
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" required />
-      </div>
-      <UsernameField emailName="email" error={state.fieldErrors?.username} />
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="phone">Telepon</Label>
-        <Input id="phone" name="phone" maxLength={30} />
       </div>
       {roleOptions ? (
         <div className="flex flex-col gap-1.5">
@@ -106,7 +100,7 @@ export function AccountForm({
         </Alert>
       ) : (
         <Button type="submit" disabled={pending || checking} className="w-fit">
-          {pending || checking ? "Memproses..." : `Tambah ${title}`}
+          {pending || checking ? "Memproses..." : `Undang ${title}`}
         </Button>
       )}
     </form>
