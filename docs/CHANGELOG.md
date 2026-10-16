@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-16
+
+- Search metadata: the landing page has its own title and description, every public page has its own canonical, Open Graph and Twitter tags (`lib/seo.ts`), `/login` is `noindex` and left out of the sitemap, the sitemap carries `lastmod`, and the product name now reads "27 Club".
+
 ## 2026-10-15 (kecepatan)
 
 - Moving between list and settings pages is served from a 60 s router cache; pages with money, check-in, attendance, booking availability and dashboard figures are always refetched. Any save clears the cache, and login, register and logout reload the page so one account never sees another's cached pages.

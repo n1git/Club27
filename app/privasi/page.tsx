@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
+import { pageMetadata } from "@/lib/seo";
 import { LEGAL_DOMICILE, LEGAL_OPERATORS, LegalContact, LegalPage } from "@/components/landing/legal-page";
 import { PRIVACY_VERSION } from "@/lib/privacy";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Kebijakan Privasi",
   description: `Kebijakan privasi ${APP_NAME}: data yang diproses, tujuannya, dan hak Anda.`,
-  alternates: { canonical: "/privasi" },
-};
+  path: "/privasi",
+});
 
 const link = "font-medium text-accent-foreground underline-offset-4 hover:underline";
 

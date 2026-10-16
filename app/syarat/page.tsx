@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { APP_NAME } from "@/lib/config";
+import { pageMetadata } from "@/lib/seo";
 import { LEGAL_DOMICILE, LEGAL_OPERATORS, LegalContact, LegalPage } from "@/components/landing/legal-page";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Syarat & Ketentuan",
   description: `Syarat dan ketentuan penggunaan ${APP_NAME}.`,
-  alternates: { canonical: "/syarat" },
-};
+  path: "/syarat",
+});
 
 const link = "font-medium text-accent-foreground underline-offset-4 hover:underline";
 

@@ -6,14 +6,16 @@ import { captchaSiteKey } from "@/lib/captcha";
 import { AuthPageShell } from "@/components/shared/auth-page-shell";
 import { RegisterClubForm } from "@/components/shared/register-club-form";
 import { APP_NAME } from "@/lib/config";
+import { pageMetadata } from "@/lib/seo";
 import { getActivePlans } from "@/lib/data/platform-pricing";
 import { getReadyClubTypes } from "@/lib/club-type";
 import { BILLING_PERIODS, PLAN_CODES, type BillingPeriod, type PlanCode } from "@/lib/pricing";
 
-export const metadata: Metadata = {
-  title: `Daftarkan klub | ${APP_NAME}`,
-  description: `Daftarkan klub renang Anda di ${APP_NAME} dan pilih paket langganan.`,
-};
+export const metadata: Metadata = pageMetadata({
+  title: "Daftarkan klub",
+  description: `Daftarkan klub olahraga Anda di ${APP_NAME}, lalu pilih jenis klub, paket, dan periode langganan.`,
+  path: "/daftar",
+});
 
 export default async function RegisterClubPage({
   searchParams,

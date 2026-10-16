@@ -1,4 +1,4 @@
-# 27club
+# 27 Club
 
 Multi-tenant sports club management platform (swimming, gym, tennis, padel, pilates, yoga and more): members, scheduling, attendance, billing, cash ledger, coach payroll, facility booking, point of sale and gym check-in. One deployment serves many organizations; each owns one or more clubs with isolated data. Members sign in read-only.
 
@@ -12,7 +12,7 @@ Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Secur
    - `SUPABASE_JWT_SECRET`: the legacy HS256 JWT secret (Project Settings → API → JWT Keys).
    - `CRON_SECRET`: any random string; Vercel Cron sends it as a bearer token.
    - `SUPERADMIN_JWT_SECRET`: signs the superadmin session (TOTP is mandatory).
-   - Optional: `NEXT_PUBLIC_APP_NAME` (default "27club"), `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_WHATSAPP`.
+   - Optional: `NEXT_PUBLIC_APP_NAME` (default "27 Club"), `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_WHATSAPP`.
 3. Create the first organization, owner and club:
    ```bash
    SEED_TENANT_NAME="My Club" SEED_ADMIN_EMAIL=owner@example.com SEED_ADMIN_PASSWORD=ChangeMe123 npm run seed:admin

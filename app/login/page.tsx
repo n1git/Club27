@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AuthPageShell } from "@/components/shared/auth-page-shell";
 import { LoginForm } from "@/components/shared/login-form";
 import { APP_NAME } from "@/lib/config";
 import { safeNextPath } from "@/lib/auth/next-path";
+
+export const metadata: Metadata = { title: "Masuk", robots: { index: false, follow: true } };
 
 const NOTICES: Record<string, string> = {
   suspended: `Akses klub Anda sedang dinonaktifkan. Data klub tetap tersimpan. Hubungi admin platform ${APP_NAME} untuk mengaktifkannya kembali.`,

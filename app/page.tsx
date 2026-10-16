@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { APP_NAME } from "@/lib/config";
+import { pageMetadata } from "@/lib/seo";
 import { getSession } from "@/lib/auth/session";
 import { roleHome } from "@/lib/auth/roles";
 import { getPublicClubTypes } from "@/lib/club-type";
@@ -16,9 +18,12 @@ import { Faq } from "@/components/landing/faq";
 import { FinalCta } from "@/components/landing/final-cta";
 import { JsonLd } from "@/components/landing/json-ld";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-};
+export const metadata: Metadata = pageMetadata({
+  absoluteTitle: `${APP_NAME}: aplikasi manajemen klub olahraga`,
+  description:
+    "Aplikasi manajemen klub olahraga: kelola anggota, jadwal, booking fasilitas, tagihan, kasir, dan buku kas dalam satu tempat.",
+  path: "/",
+});
 
 export default async function Home() {
   const session = await getSession();

@@ -1,4 +1,4 @@
-# 27club: architecture and feature notes
+# 27 Club: architecture and feature notes
 
 ## Multi-tenancy model
 
