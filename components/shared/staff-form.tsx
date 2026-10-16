@@ -1,11 +1,9 @@
 "use client";
 
 import { createStaff } from "@/lib/actions/staff";
-import { ROLE_LABEL, STAFF_ROLES } from "@/lib/auth/roles";
 import { AccountForm } from "@/components/shared/account-form";
 
-const ROLE_OPTIONS = STAFF_ROLES.map((role) => ({ value: role, label: ROLE_LABEL[role] }));
-
-export function StaffForm() {
-  return <AccountForm action={createStaff} noun="staf" roleOptions={ROLE_OPTIONS} />;
+export function StaffForm({ roles }: { roles: { id: string; name: string; isPaid: boolean }[] }) {
+  const options = roles.map((r) => ({ value: r.id, label: r.isPaid ? `${r.name} (berbayar)` : r.name, paid: r.isPaid }));
+  return <AccountForm action={createStaff} noun="staf" roleOptions={options} />;
 }

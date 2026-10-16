@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isModuleReady } from "@/lib/modules";
 import { productSchema } from "@/lib/validations/commerce";
@@ -27,7 +27,7 @@ function refresh() {
 }
 
 export async function createProduct(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("pos.products_manage");
   if (!(await isModuleReady("pos"))) return MODULE_ERROR;
   const parsed = parse(formData);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
@@ -47,7 +47,7 @@ export async function createProduct(_prevState: ActionState, formData: FormData)
 }
 
 export async function updateProduct(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("pos.products_manage");
   if (!(await isModuleReady("pos"))) return MODULE_ERROR;
   const id = z.string().uuid().safeParse(formData.get("productId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
@@ -73,7 +73,7 @@ export async function updateProduct(_prevState: ActionState, formData: FormData)
 }
 
 export async function setProductActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("pos.products_manage");
   const parsed = z
     .object({ productId: z.string().uuid(), isActive: z.enum(["true", "false"]) })
     .safeParse({ productId: formData.get("productId"), isActive: formData.get("isActive") });

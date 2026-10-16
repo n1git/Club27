@@ -14,7 +14,7 @@ export const coachUpdateSchema = z.object({
   phone: phoneField.optional(),
   specialization: z.string().trim().max(200, "Spesialisasi terlalu panjang").optional(),
   sessionRate: z.coerce.number().nonnegative("Tarif per sesi tidak valid").optional(),
-  isHeadCoach: z.boolean(),
+  roleId: z.string().uuid("Pilih peran pelatih"),
 });
 
 export const certificationSchema = z.object({

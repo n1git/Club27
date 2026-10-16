@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { memberSchema } from "@/lib/validations/members";
 import { isMinor, PRIVACY_VERSION } from "@/lib/privacy";
@@ -19,7 +19,7 @@ export async function searchDuplicateMembers(
   fullName: string,
   dateOfBirth: string
 ): Promise<DuplicateMemberMatch[]> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("members.create");
   if (!fullName.trim()) return [];
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("search_similar_members", {
@@ -57,7 +57,7 @@ function memberColumns(input: NonNullable<ReturnType<typeof parseMember>["data"]
 }
 
 export async function createMember(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  const session = await requireActionRole(["admin", "receptionist"]);
+  const session = await requireActionPermission("members.create");
 
   const parsed = parseMember(formData);
   if (!parsed.success) {
@@ -101,7 +101,7 @@ export async function updateMember(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("members.update_all");
 
   const parsed = parseMember(formData);
   if (!parsed.success) {
@@ -121,7 +121,7 @@ export async function updateMember(
 }
 
 export async function toggleMemberActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("members.change_status");
   const memberId = String(formData.get("memberId"));
   const isActive = formData.get("isActive") === "true";
 
@@ -140,7 +140,7 @@ export async function toggleMemberActive(_prevState: ActionState, formData: Form
 }
 
 export async function reassignMemberCoach(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("coach");
+  await requireActionPermission("members.reassign_coach");
   const memberId = String(formData.get("memberId"));
   const coachId = String(formData.get("coachId"));
   if (!coachId) return { ok: false, error: "Pilih pelatih" };

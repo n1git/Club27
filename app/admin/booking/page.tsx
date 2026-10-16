@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getClubTerms } from "@/lib/club-type";
 import { getAllResourceHours, getBookingsInRange, getResources } from "@/lib/data/booking";
 import { addDays, buildCells, mondayOf, type GridColumn } from "@/lib/booking-grid";
@@ -24,7 +24,7 @@ export default async function BookingPage({
 }: {
   searchParams: Promise<{ tanggal?: string; tampilan?: string; fasilitas?: string }>;
 }) {
-  await requireRole(["admin", "receptionist"]);
+  await requirePermission("resource_bookings.view");
   const sp = await searchParams;
   const today = getJakartaDateString();
   const date = sp.tanggal && DATE_RE.test(sp.tanggal) && !Number.isNaN(Date.parse(sp.tanggal)) ? sp.tanggal : today;

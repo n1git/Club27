@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isModuleReady } from "@/lib/modules";
 import { CHECKIN_ERROR_CODES } from "@/lib/checkin";
@@ -18,7 +18,7 @@ function firstError(error: z.ZodError) {
 }
 
 export async function createCheckinPoint(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("checkin.manage");
   if (!(await isModuleReady("checkin"))) return MODULE_ERROR;
 
   const parsed = z
@@ -46,7 +46,7 @@ export async function createCheckinPoint(_prevState: ActionState, formData: Form
 }
 
 export async function renameCheckinPoint(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("checkin.manage");
   const parsed = z
     .object({ pointId: idSchema, name: nameSchema })
     .safeParse({ pointId: formData.get("pointId"), name: formData.get("name") });
@@ -67,7 +67,7 @@ export async function renameCheckinPoint(_prevState: ActionState, formData: Form
 }
 
 export async function setCheckinPointActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("checkin.manage");
   const parsed = z
     .object({ pointId: idSchema, isActive: z.enum(["true", "false"]) })
     .safeParse({ pointId: formData.get("pointId"), isActive: formData.get("isActive") });
@@ -86,7 +86,7 @@ export async function setCheckinPointActive(_prevState: ActionState, formData: F
 }
 
 export async function fetchCheckinToken(pointId: string): Promise<{ token?: string; error?: string }> {
-  await requireActionRole("admin");
+  await requireActionPermission("checkin.manage");
   if (!idSchema.safeParse(pointId).success) return { error: "Titik tidak valid" };
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("checkin_token", { p_point_id: pointId });
@@ -95,7 +95,7 @@ export async function fetchCheckinToken(pointId: string): Promise<{ token?: stri
 }
 
 export async function manualCheckin(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "coach"]);
+  await requireActionPermission(["checkin.record_all", "checkin.record_assigned"]);
   if (!(await isModuleReady("checkin"))) return MODULE_ERROR;
 
   const parsed = z

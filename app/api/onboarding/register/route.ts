@@ -145,7 +145,7 @@ export async function POST(request: Request) {
     accountId: account.id,
     email: ownerEmail,
     fullName: ownerFullName,
-    role: "admin",
+    role: "owner",
     tenantId: created.tenant_id,
     orgId: created.organization_id,
   });

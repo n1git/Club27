@@ -94,6 +94,36 @@ sebagai"). `switchContext` (`lib/actions/context.ts`) mints a new JWT for the
 chosen entry or for `personal`; the header button "Akun saya" goes back to
 `/akun`. The older club switchers still move between clubs of one context.
 
+### Roles and permissions
+
+Authorization is permission based; no policy, SQL function or page checks a role
+name. `permissions` is a fixed catalog (about 55 codes such as `members.view_all`,
+`pos.sell`, `payroll.manage`; `lib/auth/permissions.ts` mirrors it) and each
+organization has its own roles (`organization_roles`, `role_permissions`), seeded
+from `role_presets` (Admin, Resepsionis, Keuangan, Kepala Pelatih, Pelatih,
+Kasir) when the organization is created and editable by the owner at
+`/admin/peran`. A profile has `role` `owner` (p_owner and owner base roles hold
+every permission), `staff` (one organization role in `org_role_id`) or `member`.
+Owner-only permissions (`roles.manage`) can never be put in a role. Permissions
+are not in the JWT: `has_permission(code)` in SQL and `profile_permissions()` for
+the server read them live, so a role change, a deactivation or a removed club
+assignment applies on the next request.
+
+A role is paid or free. A paid role (Admin, Resepsionis, Keuangan by default) needs
+an active `organization_members` row with base role `staff` and an
+`organization_member_clubs` assignment for the club (enforced by a trigger and
+by `has_permission`), and that membership is the seat. Free roles (Pelatih,
+Kepala Pelatih, Kasir) are frontend roles and use no seat. A coach is a staff
+profile whose role holds `classes.instruct` (view `instructors`); it needs no
+`members` row. `lib/accounts/staff-seat.ts` keeps memberships in step when staff
+are created, deactivated or change role.
+
+Pages: the proxy only separates contexts (`canAccessPath`); each page and action
+calls `requirePermission` / `requireActionPermission` (`lib/auth/guard.ts`), the
+admin `template.tsx` checks the path against `adminPathAllowed`, and the menu is
+filtered with the same rules. Where a user lands after login comes from
+`staffHome(permissions)`.
+
 The **personal** context has no `tenant_id`, so every club policy returns zero
 rows for it (`supabase/tests/accounts_phase1.sql` checks every RLS table). It
 lands on `/akun` (profile, change password). Anyone can create an account at

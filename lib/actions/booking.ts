@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission, requireActionRole } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { bookingErrorMessage } from "@/lib/booking";
 import { isoSchema } from "@/lib/validations/booking";
@@ -17,7 +17,7 @@ function revalidateBooking() {
 const idSchema = z.string().uuid("Data tidak valid");
 
 export async function bookResource(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("resource_bookings.manage");
   const kind = formData.get("who");
   const parsed = z
     .object({
@@ -75,7 +75,7 @@ export async function bookResourceAsMember(_prevState: ActionState, formData: Fo
 }
 
 export async function cancelBooking(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist", "member"]);
+  await requireActionPermission("resource_bookings.manage", { orMember: true });
   const id = idSchema.safeParse(formData.get("bookingId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
@@ -86,7 +86,7 @@ export async function cancelBooking(_prevState: ActionState, formData: FormData)
 }
 
 export async function setBookingStatus(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("resource_bookings.manage");
   const parsed = z
     .object({ bookingId: idSchema, status: z.enum(["completed", "no_show"]) })
     .safeParse({ bookingId: formData.get("bookingId"), status: formData.get("status") });

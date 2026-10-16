@@ -24,14 +24,14 @@ export async function loadOwner(profileId: string, tenantId: string): Promise<Ow
 }
 
 export async function requireOwner() {
-  const user = await requireRole("admin");
+  const user = await requireRole("owner");
   const owner = await loadOwner(user.id, user.tenantId);
   if (!owner) redirect("/admin");
   return { ...user, ...owner };
 }
 
 export async function requireOwnerAction(options: { allowBillingLocked?: boolean } = {}): Promise<OwnerContext> {
-  const session = await requireActionRole("admin", options);
+  const session = await requireActionRole("owner", options);
   const owner = await loadOwner(session.sub, session.tenant_id);
   if (!owner) throw new UnauthorizedError("Hanya pemilik organisasi yang dapat melakukan aksi ini");
   return owner;

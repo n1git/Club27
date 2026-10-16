@@ -2,7 +2,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { BillingPeriod, PlanCode, PricingPlan, Quote } from "@/lib/pricing";
 import type { PlatformSubscriptionStatus } from "@/lib/validations/superadmin";
-import { ROLE_LABEL, type AppRole } from "@/lib/auth/roles";
 
 export interface PlatformModule {
   code: string;
@@ -204,32 +203,23 @@ export interface InternalUserRow {
 }
 
 export async function listInternalUsers(organizationId: string): Promise<InternalUserRow[]> {
-  const supabase = createAdminSupabaseClient();
-  const [{ data: owners }, { data: staff }] = await Promise.all([
-    supabase.from("organization_members").select("id, full_name, email").eq("organization_id", organizationId).eq("is_active", true),
-    supabase
-      .from("profiles")
-      .select("id, full_name, email, role, tenants!inner(name, organization_id)")
-      .eq("tenants.organization_id", organizationId)
-      .is("owner_id", null)
-      .in("role", ["admin", "coach", "receptionist", "finance"])
-      .eq("is_active", true)
-      .order("full_name"),
-  ]);
-  return [
-    ...(owners ?? []).map((o) => ({
-      key: `owner-${o.id}`,
-      name: o.full_name as string,
-      email: o.email as string,
-      roleLabel: "Pemilik",
-      clubName: null,
-    })),
-    ...(staff ?? []).map((p) => ({
-      key: `profile-${p.id}`,
-      name: p.full_name as string,
-      email: p.email as string,
-      roleLabel: ROLE_LABEL[p.role as AppRole],
-      clubName: (p.tenants as unknown as { name: string }).name,
-    })),
-  ];
+  const { data } = await createAdminSupabaseClient()
+    .from("organization_members")
+    .select("id, full_name, email, base_role, organization_member_clubs(tenants(name))")
+    .eq("organization_id", organizationId)
+    .eq("is_active", true)
+    .order("full_name");
+  const labels: Record<string, string> = { p_owner: "Pemilik utama", owner: "Pemilik", staff: "Staf" };
+  return (data ?? []).map((m) => {
+    const clubs = ((m.organization_member_clubs as unknown as { tenants: { name: string } | { name: string }[] | null }[] | null) ?? [])
+      .map((c) => (Array.isArray(c.tenants) ? c.tenants[0]?.name : c.tenants?.name))
+      .filter(Boolean);
+    return {
+      key: `member-${m.id}`,
+      name: m.full_name as string,
+      email: m.email as string,
+      roleLabel: labels[m.base_role as string] ?? "Staf",
+      clubName: m.base_role === "staff" ? clubs.join(", ") || null : null,
+    };
+  });
 }

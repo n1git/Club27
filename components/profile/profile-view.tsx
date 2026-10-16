@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { updateOwnProfile } from "@/lib/actions/profile";
-import { ROLE_LABEL } from "@/lib/auth/roles";
 import { formatJakartaDate } from "@/lib/format";
 import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import type { BillingPeriod } from "@/lib/pricing";
@@ -39,7 +38,7 @@ function accountItems(data: ProfileData) {
   if (data.kind === "staff") {
     items.push(
       { label: "Klub", value: data.clubName },
-      { label: "Peran", value: data.isHeadCoach ? `${ROLE_LABEL[data.role]} (kepala pelatih)` : ROLE_LABEL[data.role] }
+      { label: "Peran", value: data.roleName }
     );
   }
   return items;

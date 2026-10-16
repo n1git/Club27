@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createTenantAccount } from "@/lib/accounts/create";
+import { setStaffProfileActive, setStaffProfileRole } from "@/lib/accounts/staff-seat";
+import { getTenantRoles, isInstructorRole } from "@/lib/data/roles";
 import { certificationSchema, coachSchema, coachUpdateSchema } from "@/lib/validations/coaches";
 import { PLAN_LIMIT_CODES, type ActionState } from "./types";
 
@@ -11,7 +13,7 @@ export async function createCoach(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await requireActionRole("admin");
+  const session = await requireActionPermission("coaches.manage");
 
   const parsed = coachSchema.safeParse({
     fullName: formData.get("fullName"),
@@ -22,7 +24,10 @@ export async function createCoach(
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
   }
-  const result = await createTenantAccount(session.tenant_id, "coach", parsed.data, "Gagal membuat akun pelatih");
+  const roles = (await getTenantRoles(session.tenant_id)).filter(isInstructorRole);
+  const defaultRole = roles.find((r) => r.presetKey === "pelatih") ?? roles[0];
+  if (!defaultRole) return { ok: false, error: "Belum ada peran pelatih. Buat peran dengan izin menjadi pelatih terlebih dulu." };
+  const result = await createTenantAccount(session.tenant_id, defaultRole.id, parsed.data, "Gagal membuat akun pelatih");
   if (!result.ok) return result;
 
   revalidatePath("/admin/coaches");
@@ -34,14 +39,14 @@ export async function updateCoach(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole("admin");
+  const session = await requireActionPermission("coaches.manage");
 
   const parsed = coachUpdateSchema.safeParse({
     fullName: formData.get("fullName"),
     phone: formData.get("phone") || undefined,
     specialization: formData.get("specialization") || undefined,
     sessionRate: formData.get("sessionRate") || undefined,
-    isHeadCoach: formData.get("isHeadCoach") === "on",
+    roleId: formData.get("roleId"),
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
@@ -55,14 +60,15 @@ export async function updateCoach(
       phone: parsed.data.phone ?? null,
       specialization: parsed.data.specialization ?? null,
       session_rate: parsed.data.sessionRate ?? null,
-      is_head_coach: parsed.data.isHeadCoach,
     })
     .eq("id", coachId)
-    .eq("role", "coach");
+    .eq("role", "staff");
 
   if (error) {
     return { ok: false, error: "Gagal memperbarui data pelatih" };
   }
+  const roleFailure = await setStaffProfileRole(session.tenant_id, coachId, parsed.data.roleId, true);
+  if (roleFailure) return { ok: false, error: roleFailure };
 
   revalidatePath("/admin/coaches");
   revalidatePath(`/admin/coaches/${coachId}`);
@@ -70,20 +76,12 @@ export async function updateCoach(
 }
 
 export async function toggleCoachActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  const session = await requireActionPermission("coaches.manage");
   const coachId = String(formData.get("coachId"));
   const isActive = formData.get("isActive") === "true";
 
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("profiles")
-    .update({ is_active: isActive })
-    .eq("id", coachId)
-    .eq("role", "coach")
-    .select("id");
-  if (error || !data?.length) {
-    return { ok: false, error: error && PLAN_LIMIT_CODES.has(error.code) ? error.message : "Gagal memperbarui status pelatih" };
-  }
+  const failure = await setStaffProfileActive(session.tenant_id, coachId, isActive);
+  if (failure) return { ok: false, error: failure };
 
   revalidatePath("/admin/coaches");
   revalidatePath(`/admin/coaches/${coachId}`);
@@ -91,7 +89,7 @@ export async function toggleCoachActive(_prevState: ActionState, formData: FormD
 }
 
 export async function addCertification(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("coaches.manage");
   const parsed = certificationSchema.safeParse({
     coachId: formData.get("coachId"),
     name: formData.get("name"),
@@ -117,7 +115,7 @@ export async function addCertification(_prevState: ActionState, formData: FormDa
 }
 
 export async function deleteCertification(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("coaches.manage");
   const certificationId = String(formData.get("certificationId"));
   const coachId = String(formData.get("coachId"));
 

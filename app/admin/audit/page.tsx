@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { loadOwner } from "@/lib/auth/owner";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { formatJakartaDateTime } from "@/lib/format";
@@ -49,7 +49,7 @@ function formatDetails(details: Record<string, unknown>) {
 }
 
 export default async function AuditPage({ searchParams }: { searchParams: Promise<{ page?: string; scope?: string }> }) {
-  const user = await requireRole("admin");
+  const user = await requirePermission("audit.view");
   const params = await searchParams;
   const owner = await loadOwner(user.id, user.tenantId);
   const orgScope = Boolean(owner) && params.scope === "org";

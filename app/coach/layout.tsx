@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/guard";
+import { loadRoleLabel, requireRole } from "@/lib/auth/guard";
 import { getCurrentTenant } from "@/lib/data/tenant";
 import { AppShell } from "@/components/shared/app-shell";
 import type { NavGroup, NavItem } from "@/components/shared/nav-types";
@@ -11,16 +11,16 @@ const HEAD_COACH_NAV_ITEMS: NavItem[] = [
 ];
 
 export default async function CoachLayout({ children }: { children: React.ReactNode }) {
-  const session = await requireRole("coach");
+  const session = await requireRole(["owner", "staff"]);
   const tenant = await getCurrentTenant();
-  const navGroups: NavGroup[] = [{ items: session.isHeadCoach ? [...NAV_ITEMS, ...HEAD_COACH_NAV_ITEMS] : NAV_ITEMS }];
+  const navGroups: NavGroup[] = [{ items: session.permissions.has("members.view_all") ? [...NAV_ITEMS, ...HEAD_COACH_NAV_ITEMS] : NAV_ITEMS }];
   return (
     <AppShell
       personalSwitch
       navGroups={navGroups}
       fullName={session.fullName}
       profileHref="/coach/profile"
-      roleLabel={session.isHeadCoach ? "Kepala Pelatih" : "Pelatih"}
+      roleLabel={await loadRoleLabel(session.id, session.role)}
       clubName={tenant?.name ?? APP_NAME}
     >
       {children}

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { payrollRunSchema, payrollPreviewSchema } from "@/lib/validations/payroll";
 import { parseJakartaLocalInput } from "@/lib/format";
@@ -11,7 +11,7 @@ export async function createPayrollRun(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("payroll.manage");
 
   const parsed = payrollRunSchema.safeParse({
     coachId: formData.get("coachId"),
@@ -59,7 +59,7 @@ export async function previewPayrollSessions(
   periodStart: string,
   periodEnd: string
 ): Promise<PayrollSessionPreview | null> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("payroll.manage");
   const parsed = payrollPreviewSchema.safeParse({ coachId, periodStart, periodEnd });
   if (!parsed.success) return null;
 
@@ -69,7 +69,7 @@ export async function previewPayrollSessions(
 
   const supabase = await createServerSupabaseClient();
   const [{ data: coach }, { count }] = await Promise.all([
-    supabase.from("profiles").select("session_rate").eq("id", id).eq("role", "coach").maybeSingle(),
+    supabase.from("instructors").select("session_rate").eq("id", id).maybeSingle(),
     supabase
       .from("classes")
       .select("id", { count: "exact", head: true })

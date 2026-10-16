@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSession } from "@/lib/auth/session";
+import { currentPermissions } from "@/lib/auth/guard";
 import { getActiveCoaches, getLocations } from "@/lib/data/lookups";
 import { BackLink } from "@/components/shared/back-link";
 import { MemberEditForm } from "@/components/members/member-edit-form";
@@ -27,9 +27,9 @@ export default async function MemberDetailPage({
       .maybeSingle(),
     getLocations(),
     getActiveCoaches(),
-    getSession(),
+    currentPermissions(),
   ]);
-  const portalReady = session?.app_role === "admin" && (await isModuleReady("member_portal"));
+  const portalReady = session.has("members.portal") && (await isModuleReady("member_portal"));
   const checkinOn = await isModuleReady("checkin");
 
   if (!member) notFound();
@@ -42,11 +42,11 @@ export default async function MemberDetailPage({
         member={member}
         locations={locations}
         coaches={coaches}
-        canChangeStatus={session?.app_role === "admin"}
+        canChangeStatus={session.has("members.change_status")}
       />
       {portalReady && member.is_active ? <MemberPortalAccess memberId={member.id} hasAccount={Boolean(member.profile_id)} /> : null}
       {checkinOn ? <MemberVisits memberId={member.id} /> : null}
-      {session?.app_role === "admin" ? <MemberPrivacy memberId={member.id} /> : null}
+      {session.has("members.privacy") ? <MemberPrivacy memberId={member.id} /> : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { manualAdjustmentSchema } from "@/lib/validations/cash-ledger";
 import { type ActionState } from "./types";
@@ -10,7 +10,7 @@ export async function addManualAdjustment(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("cash_ledger.manage");
 
   const requestId = String(formData.get("requestId") ?? "");
   if (!/^[0-9a-f-]{36}$/i.test(requestId)) return { ok: false, error: "Data tidak valid" };

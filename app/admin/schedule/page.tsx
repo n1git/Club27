@@ -2,7 +2,7 @@ import { Pagination } from "@/components/shared/pagination";
 import { pageRange } from "@/lib/pagination";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSession } from "@/lib/auth/session";
+import { currentPermissions } from "@/lib/auth/guard";
 import {
   getActiveCoaches,
   getLocations,
@@ -49,7 +49,7 @@ export default async function SchedulePage({
   const [supabase, session, coaches, locations, classTypes] = await Promise.all(
     [
       createServerSupabaseClient(),
-      getSession(),
+      currentPermissions(),
       getActiveCoaches(),
       getLocations(),
       getClassTypes(),
@@ -74,7 +74,7 @@ export default async function SchedulePage({
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <PageHeader title={<>Jadwal Kelas</>} />
-        {session?.app_role === "admin" ? (
+        {session.has("schedule.manage") ? (
           <Link href="/admin/schedule/new" className={buttonVariants({})}>
             Tambah Kelas
           </Link>

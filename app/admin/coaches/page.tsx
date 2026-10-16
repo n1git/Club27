@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { requirePermission } from "@/lib/auth/guard";
+import { getTenantRoles } from "@/lib/data/roles";
 import { certificationWarningDate } from "@/lib/certifications";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +23,12 @@ export default async function CoachesPage({
   searchParams: Promise<{ q?: string; status?: string }>;
 }) {
   const { q, status } = await searchParams;
+  const user = await requirePermission("coaches.manage");
   const supabase = await createServerSupabaseClient();
+  const roleById = new Map((await getTenantRoles(user.tenantId)).map((r) => [r.id, r]));
   let query = supabase
-    .from("profiles")
-    .select(
-      "id, full_name, email, phone, is_active, specialization, is_head_coach",
-    )
-    .eq("role", "coach")
+    .from("instructors")
+    .select("id, full_name, email, phone, is_active, specialization, org_role_id")
     .order("full_name");
   if (q) query = query.ilike("full_name", `%${q}%`);
   if (status) query = query.eq("is_active", status === "active");
@@ -90,8 +91,8 @@ export default async function CoachesPage({
                 <TableCell>
                   <span className="flex flex-wrap items-center gap-2">
                     {coach.full_name}
-                    {coach.is_head_coach ? (
-                      <Badge variant="outline">Kepala Pelatih</Badge>
+                    {roleById.get(coach.org_role_id)?.presetKey !== "pelatih" ? (
+                      <Badge variant="outline">{roleById.get(coach.org_role_id)?.name}</Badge>
                     ) : null}
                     {expiringCoachIds.has(coach.id) ? (
                       <Badge variant="warning">

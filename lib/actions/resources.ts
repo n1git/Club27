@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isModuleReady } from "@/lib/modules";
 import { bookingErrorMessage } from "@/lib/booking";
@@ -34,7 +34,7 @@ function fromForm(formData: FormData) {
 }
 
 export async function createResource(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("resources.manage");
   if (!(await isModuleReady("resource_booking"))) return MODULE_ERROR;
   const parsed = resourceSchema.safeParse(fromForm(formData));
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
@@ -65,7 +65,7 @@ export async function createResource(_prevState: ActionState, formData: FormData
 }
 
 export async function createResourcesBulk(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("resources.manage");
   if (!(await isModuleReady("resource_booking"))) return MODULE_ERROR;
   const count = z.coerce.number().int().min(1, "Jumlah minimal 1").max(50, "Jumlah maksimal 50").safeParse(formData.get("count"));
   if (!count.success) return { ok: false, error: count.error.issues[0]?.message ?? "Data tidak valid" };
@@ -105,7 +105,7 @@ export async function createResourcesBulk(_prevState: ActionState, formData: For
 }
 
 export async function updateResource(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("resources.manage");
   if (!(await isModuleReady("resource_booking"))) return MODULE_ERROR;
   const id = z.string().uuid().safeParse(formData.get("resourceId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
@@ -135,7 +135,7 @@ export async function updateResource(_prevState: ActionState, formData: FormData
 }
 
 export async function setResourceActive(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("resources.manage");
   const parsed = z
     .object({ resourceId: z.string().uuid(), isActive: z.enum(["true", "false"]) })
     .safeParse({ resourceId: formData.get("resourceId"), isActive: formData.get("isActive") });
@@ -152,7 +152,7 @@ export async function setResourceActive(_prevState: ActionState, formData: FormD
 }
 
 export async function setResourceHours(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("resources.manage");
   if (!(await isModuleReady("resource_booking"))) return MODULE_ERROR;
   const id = z.string().uuid().safeParse(formData.get("resourceId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };

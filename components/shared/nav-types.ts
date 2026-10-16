@@ -21,6 +21,7 @@ export type NavIconKey =
   | "audit"
   | "club"
   | "orgBilling"
+  | "roles"
   | "home"
   | "visits"
   | "switchClub"

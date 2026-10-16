@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { parseJakartaLocalInput } from "@/lib/format";
 import { classSchema } from "@/lib/validations/schedule";
@@ -13,7 +13,7 @@ export async function createClass(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("schedule.manage");
 
   const parsed = classSchema.safeParse({
     instructorId: formData.get("instructorId"),
@@ -68,7 +68,7 @@ export async function createClass(
 }
 
 export async function deleteClass(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("schedule.manage");
   const classId = String(formData.get("classId"));
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.from("classes").delete().eq("id", classId).select("id");
@@ -83,13 +83,13 @@ export async function addBooking(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await requireActionRole(["admin", "receptionist"]);
+  const session = await requireActionPermission("bookings.manage_all");
   const memberId = String(formData.get("memberId") ?? "");
   if (!memberId) {
     return { ok: false, error: "Pilih anggota yang akan didaftarkan" };
   }
   const late = formData.get("lateAttendance") === "on";
-  if (late && session.app_role !== "admin") {
+  if (late && !session.permissions.has("bookings.override_rules")) {
     return { ok: false, error: "Hanya admin yang bisa mencatat kehadiran susulan" };
   }
 
@@ -103,7 +103,7 @@ export async function addBooking(
   if (error) {
     if (error.code === "SW003") return { ok: false, error: error.message };
     if (error.code === "BK001" || error.code === "BK002") {
-      const hint = session.app_role === "admin" ? " Centang \"Catat kehadiran susulan\" bila memang perlu." : "";
+      const hint = session.permissions.has("bookings.override_rules") ? " Centang \"Catat kehadiran susulan\" bila memang perlu." : "";
       return { ok: false, error: `${error.message}.${hint}` };
     }
     if (error.code === "23505") {
@@ -120,7 +120,7 @@ export async function addBooking(
 }
 
 export async function removeBooking(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("bookings.manage_all");
   const bookingId = String(formData.get("bookingId"));
   const classId = String(formData.get("classId"));
   const supabase = await createServerSupabaseClient();
@@ -136,7 +136,7 @@ const substituteSchema = z.object({
 });
 
 export async function setClassSubstitute(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "coach"]);
+  await requireActionPermission(["schedule.manage", "schedule.set_substitute"]);
   const parsed = substituteSchema.safeParse({
     classId: formData.get("classId"),
     substituteId: formData.get("substituteId") ?? "",

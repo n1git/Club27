@@ -1,11 +1,11 @@
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getProducts, getUnpaidBookings } from "@/lib/data/commerce";
 import { isModuleReady } from "@/lib/modules";
 import { PosTerminal } from "@/components/pos/pos-terminal";
 import { PageHeader } from "@/components/ui/page-header";
 
 export default async function CashierPage() {
-  await requireRole(["admin", "receptionist"]);
+  await requirePermission("pos.sell");
   const bookingOn = await isModuleReady("resource_booking");
   const [products, bookings] = await Promise.all([
     getProducts({ activeOnly: true }),

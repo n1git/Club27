@@ -50,13 +50,13 @@ begin
   select * into r2 from register_organization('Org C', 'Club C', a, 'standard', 'monthly', 'gym');
 
   begin
-    insert into profiles (tenant_id, role, full_name, email, account_id)
-    values (r.tenant_id, 'coach', 'C', 'someone@t.test', (select id from accounts where email = 'plain@t.test'));
+    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
+    values (r.tenant_id, 'staff', (select id from organization_roles where organization_id = r.organization_id and preset_key = 'pelatih'), 'C', 'someone@t.test', (select id from accounts where email = 'plain@t.test'));
     assert false, 'profile email must match account email';
   exception when raise_exception then null; end;
 
-  insert into profiles (tenant_id, role, full_name, email, account_id)
-  values (r.tenant_id, 'coach', 'Plain', 'plain@t.test', (select id from accounts where email = 'plain@t.test'));
+  insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
+  values (r.tenant_id, 'staff', (select id from organization_roles where organization_id = r.organization_id and preset_key = 'pelatih'), 'Plain', 'plain@t.test', (select id from accounts where email = 'plain@t.test'));
 
   insert into members (tenant_id, full_name, date_of_birth) values (r.tenant_id, 'Member One', '2010-01-01') returning id into v_member;
   select out_profile_id into v_profile from activate_member_account(v_member, (select id from accounts where email = 'member@t.test'));
@@ -79,23 +79,23 @@ declare
   p uuid; t uuid; a uuid; o uuid;
 begin
   select id, tenant_id, account_id into p, t, a from profiles where owner_id is not null and email = 'owner@t.test';
-  perform pg_temp.claims(p, t::text, 'admin', a);
+  perform pg_temp.claims(p, t::text, 'owner', a);
   assert is_active_user(), 'active owner';
-  perform pg_temp.claims(p, t::text, 'admin', a, extract(epoch from now())::bigint - 3600);
+  perform pg_temp.claims(p, t::text, 'owner', a, extract(epoch from now())::bigint - 3600);
   update accounts set sessions_valid_after = now() - interval '10 minutes' where id = a;
   assert not is_active_user(), 'token older than account revocation is rejected';
-  perform pg_temp.claims(p, t::text, 'admin', a);
+  perform pg_temp.claims(p, t::text, 'owner', a);
   assert is_active_user(), 'fresh token passes after revocation';
   update accounts set is_active = false where id = a;
   assert not is_active_user(), 'inactive account is rejected';
   update accounts set is_active = true where id = a;
   perform set_config('request.jwt.claims', '', true);
   update profiles set account_id = null where id = p;
-  perform pg_temp.claims(p, t::text, 'admin', a);
+  perform pg_temp.claims(p, t::text, 'owner', a);
   assert not is_active_user(), 'profile without account is rejected';
   perform set_config('request.jwt.claims', '', true);
   update profiles set account_id = a where id = p;
-  perform pg_temp.claims(p, t::text, 'admin', a);
+  perform pg_temp.claims(p, t::text, 'owner', a);
   assert is_active_user(), 'restored';
 end $$;
 
@@ -140,7 +140,7 @@ begin
   p := current_setting('t.owner_profile')::uuid;
   t := current_setting('t.owner_tenant')::uuid;
   a := current_setting('t.owner_account')::uuid;
-  perform pg_temp.claims(p, t::text, 'admin', a);
+  perform pg_temp.claims(p, t::text, 'owner', a);
   select count(*) into n from tenants;
   assert n = 1, 'owner sees only its own club';
   begin
@@ -148,8 +148,8 @@ begin
     assert false, 'a club user cannot relink a profile to another account';
   exception when raise_exception then null; end;
   begin
-    insert into profiles (tenant_id, role, full_name, email, account_id)
-    values (t, 'coach', 'X', 'plain@t.test', current_setting('t.plain')::uuid);
+    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
+    values (t, 'staff', gen_random_uuid(), 'X', 'plain@t.test', current_setting('t.plain')::uuid);
     assert false, 'a club user cannot insert a profile with an account link';
   exception when raise_exception then null; end;
   begin

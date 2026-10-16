@@ -5,6 +5,7 @@ import { updateCoach, toggleCoachActive } from "@/lib/actions/coaches";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useActionToast } from "@/components/shared/use-action-toast";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
@@ -19,10 +20,10 @@ export interface CoachDetail {
   is_active: boolean;
   specialization: string | null;
   session_rate: number | string | null;
-  is_head_coach: boolean;
+  org_role_id: string;
 }
 
-export function CoachEditForm({ coach }: { coach: CoachDetail }) {
+export function CoachEditForm({ coach, roles }: { coach: CoachDetail; roles: { id: string; name: string }[] }) {
   const updateCoachWithId = updateCoach.bind(null, coach.id);
   const [state, formAction, pending] = useActionState(updateCoachWithId, {});
   useActionToast(state, "Perubahan disimpan");
@@ -58,10 +59,16 @@ export function CoachEditForm({ coach }: { coach: CoachDetail }) {
             defaultValue={coach.session_rate === null ? "" : Number(coach.session_rate)}
           />
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="isHeadCoach" defaultChecked={coach.is_head_coach} className="size-4" />
-          Kepala pelatih (melihat semua anggota dan kelas, menetapkan pelatih pengganti)
-        </label>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="roleId">Peran</Label>
+          <Select id="roleId" name="roleId" defaultValue={coach.org_role_id}>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </Select>
+        </div>
         <Button type="submit" disabled={pending} className="w-fit">
           {pending ? "Menyimpan..." : "Simpan Perubahan"}
         </Button>

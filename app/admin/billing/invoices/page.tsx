@@ -1,7 +1,7 @@
 import { Pagination } from "@/components/shared/pagination";
 import { pageRange } from "@/lib/pagination";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { getSession } from "@/lib/auth/session";
+import { currentPermissions } from "@/lib/auth/guard";
 import { markInvoicePaid, voidInvoice } from "@/lib/actions/billing";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { ListFilters } from "@/components/shared/list-filters";
@@ -42,9 +42,9 @@ export default async function InvoicesPage({
   const { page, from, to } = pageRange(pageParam);
   const [supabase, session] = await Promise.all([
     createServerSupabaseClient(),
-    getSession(),
+    currentPermissions(),
   ]);
-  const canManage = session?.app_role !== "receptionist";
+  const canManage = session.has("invoices.manage");
   let query = supabase
     .from("invoices")
     .select(

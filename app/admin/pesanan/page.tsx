@@ -1,7 +1,7 @@
 import { Pagination } from "@/components/shared/pagination";
 import { pageRange } from "@/lib/pagination";
 import Link from "next/link";
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getOrders } from "@/lib/data/commerce";
 import { ORDER_STATUS_LABEL } from "@/lib/commerce";
 import { formatJakartaDateTime, formatRupiahFull } from "@/lib/format";
@@ -20,7 +20,7 @@ const FILTERS = [
 ];
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<{ status?: string; page?: string }> }) {
-  const session = await requireRole(["admin", "receptionist", "finance"]);
+  const session = await requirePermission("pos.orders_view");
   const { status, page: pageParam } = await searchParams;
   const { page, from, to } = pageRange(pageParam);
   const active = FILTERS.some((f) => f.value === status) ? (status ?? "") : "";
@@ -29,7 +29,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={<>Pesanan</>} subtitle={<>Riwayat penjualan dan pembayarannya.</>}>
-        {session.role !== "finance" ? (
+        {session.permissions.has("pos.sell") ? (
           <Link href="/admin/kasir" className={buttonVariants()}>
             Buka kasir
           </Link>

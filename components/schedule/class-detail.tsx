@@ -3,7 +3,6 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { deleteClass, removeBooking } from "@/lib/actions/schedule";
 import { markAttendance } from "@/lib/actions/attendance";
 import { getActiveCoaches } from "@/lib/data/lookups";
-import type { AppRole } from "@/lib/auth/roles";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { ActionForm } from "@/components/shared/action-form";
 import { Button } from "@/components/ui/button";
@@ -31,9 +30,9 @@ interface BookingRow {
   members: { id: string; full_name: string };
 }
 
-export async function ClassDetail({ id, role, variant }: { id: string; role: AppRole; variant: "page" | "modal" }) {
+export async function ClassDetail({ id, canManage, variant }: { id: string; canManage: boolean; variant: "page" | "modal" }) {
   const supabase = await createServerSupabaseClient();
-  const isAdmin = role === "admin";
+  const isAdmin = canManage;
 
   const [{ data: cls }, { data: bookings }, coaches] = await Promise.all([
     supabase

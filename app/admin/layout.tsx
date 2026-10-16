@@ -1,4 +1,5 @@
-import { requireRole } from "@/lib/auth/guard";
+import { loadRoleLabel, requireRole } from "@/lib/auth/guard";
+import { adminPathAllowed } from "@/lib/auth/permissions";
 import { getCurrentTenant } from "@/lib/data/tenant";
 import { AppShell } from "@/components/shared/app-shell";
 import type { NavGroup, NavItem } from "@/components/shared/nav-types";
@@ -6,7 +7,6 @@ import { APP_NAME } from "@/lib/config";
 import { loadOwner } from "@/lib/auth/owner";
 import { getSwitchableTenants } from "@/lib/data/organization";
 import { LazyTenantSwitcher } from "@/components/organization/lazy-tenant-switcher";
-import { canAccessPath, ROLE_LABEL, STAFF_ROLES } from "@/lib/auth/roles";
 import { getEnabledModules } from "@/lib/modules";
 import { getClubTerms } from "@/lib/club-type";
 
@@ -64,16 +64,17 @@ const adminGroups = (resourceLabel: string): AdminNavGroup[] => [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await requireRole(STAFF_ROLES);
+  const session = await requireRole(["owner", "staff"]);
   const tenant = await getCurrentTenant();
   const [enabled, terms] = await Promise.all([getEnabledModules(), getClubTerms()]);
-  const owner = session.role === "admin" ? await loadOwner(session.id, session.tenantId) : null;
+  const owner = session.role === "owner" ? await loadOwner(session.id, session.tenantId) : null;
+  const roleLabel = await loadRoleLabel(session.id, session.role);
   const tenants = owner ? await getSwitchableTenants(owner.ownerId) : [];
   const visible = adminGroups(terms.resource)
     .map((group) => ({
       label: group.label,
       items: group.items.filter(
-        (item) => (!item.module || enabled.has(item.module)) && (owner || canAccessPath(session.role, item.href))
+        (item) => (!item.module || enabled.has(item.module)) && (owner || adminPathAllowed(false, session.permissions, item.href))
       ),
     }))
     .filter((group) => group.items.length > 0);
@@ -88,6 +89,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             items: [
               { href: "/admin/klub", label: "Klub", icon: "club", exact: true },
               { href: "/admin/klub/langganan", label: "Langganan", icon: "orgBilling" },
+              { href: "/admin/peran", label: "Peran", icon: "roles" },
             ] satisfies NavItem[],
           },
         ]
@@ -110,7 +112,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       navGroups={navGroups}
       fullName={session.fullName}
       profileHref="/admin/profile"
-      roleLabel={ROLE_LABEL[session.role]}
+      roleLabel={roleLabel}
       clubName={tenant?.name ?? APP_NAME}
       tenantSwitcher={switcher}
     >

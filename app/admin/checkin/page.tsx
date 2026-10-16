@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { requireModule } from "@/lib/modules";
 import { getCheckinOverview } from "@/lib/data/checkin";
 import { getLocations } from "@/lib/data/lookups";
@@ -23,7 +23,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { RefreshOnFocus } from "@/components/shared/refresh-on-focus";
 
 export default async function CheckinPage() {
-  await requireRole("admin");
+  await requirePermission("checkin.manage");
   await requireModule("checkin");
   const [overview, locations, terms] = await Promise.all([
     getCheckinOverview(),

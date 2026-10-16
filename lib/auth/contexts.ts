@@ -1,6 +1,7 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listMemberClubs } from "@/lib/data/member-clubs";
-import { OWNER_HOME, PERSONAL_HOME, roleHome, ROLE_LABEL, type AppRole } from "@/lib/auth/roles";
+import { staffHome } from "@/lib/auth/permissions";
+import { OWNER_HOME, PERSONAL_HOME, roleHome, type AppRole } from "@/lib/auth/roles";
 
 export interface ContextTarget {
   profileId: string;
@@ -64,7 +65,7 @@ export async function listContexts(accountId: string): Promise<ContextList> {
         profileId: profile.id,
         email: profile.email,
         fullName: profile.full_name,
-        role: "admin",
+        role: "owner",
         tenantId: profile.tenant_id,
         orgId: member.organization_id,
         redirectTo: OWNER_HOME,
@@ -80,7 +81,7 @@ export async function listContexts(accountId: string): Promise<ContextList> {
         key: `club:${club.profileId}`,
         kind: "member",
         label: club.tenantName,
-        detail: ROLE_LABEL.member,
+        detail: "Anggota",
         target: {
           profileId: club.profileId,
           email: club.email,
@@ -96,27 +97,28 @@ export async function listContexts(accountId: string): Promise<ContextList> {
 
   const { data: staff } = await supabase
     .from("profiles")
-    .select("id, role, email, full_name, is_active, tenant_id, tenants(name, is_active, organization_id)")
+    .select("id, role, email, full_name, is_active, tenant_id, tenants(name, is_active, organization_id), organization_roles(name)")
     .eq("account_id", accountId)
-    .is("owner_id", null)
-    .is("member_account_id", null);
+    .eq("role", "staff");
   for (const profile of staff ?? []) {
     identities += 1;
     const tenant = profile.tenants as unknown as TenantJoin;
     if (!profile.is_active || !tenant?.is_active) continue;
+    const { data: granted } = await supabase.rpc("profile_permissions", { p_profile: profile.id });
+    const roleRow = profile.organization_roles as unknown as { name: string } | { name: string }[] | null;
     entries.push({
       key: `club:${profile.id}`,
       kind: "staff",
       label: tenant.name,
-      detail: ROLE_LABEL[profile.role as AppRole],
+      detail: (Array.isArray(roleRow) ? roleRow[0]?.name : roleRow?.name) ?? "Staf",
       target: {
         profileId: profile.id,
         email: profile.email,
         fullName: profile.full_name,
-        role: profile.role as AppRole,
+        role: "staff",
         tenantId: profile.tenant_id,
         orgId: tenant.organization_id,
-        redirectTo: roleHome(profile.role as AppRole),
+        redirectTo: roleHome("staff", staffHome(new Set((granted as string[] | null) ?? []))),
       },
     });
   }

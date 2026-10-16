@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { tenantBrandingSchema } from "@/lib/validations/settings";
 import { PLAN_LIMIT_CODES, type ActionState } from "./types";
@@ -10,7 +10,7 @@ export async function updateTenantBranding(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await requireActionRole("admin");
+  const session = await requireActionPermission("club.settings");
   const parsed = tenantBrandingSchema.safeParse({
     name: formData.get("name"),
     logoUrl: formData.get("logoUrl") || undefined,
@@ -40,7 +40,7 @@ export async function createLocation(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("club.settings");
   const name = String(formData.get("name") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
   if (!name) return { ok: false, error: "Nama lokasi wajib diisi" };
@@ -65,7 +65,7 @@ export async function createClassType(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("club.settings");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   if (!name) return { ok: false, error: "Nama jenis kelas wajib diisi" };

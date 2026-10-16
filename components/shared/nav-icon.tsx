@@ -25,8 +25,7 @@ import {
   Users,
   Wallet,
   ArrowLeftRight,
-  ScrollText,
-} from "lucide-react";
+  ScrollText, ShieldCheck } from "lucide-react";
 import type { NavIconKey } from "./nav-types";
 
 const ICONS: Record<NavIconKey, LucideIcon> = {
@@ -52,6 +51,7 @@ const ICONS: Record<NavIconKey, LucideIcon> = {
   audit: ScrollText,
   club: Building2,
   orgBilling: CreditCard,
+  roles: ShieldCheck,
   home: House,
   visits: History,
   switchClub: ArrowLeftRight,

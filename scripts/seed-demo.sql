@@ -28,7 +28,7 @@ declare
   lasts text[] := array['Santoso','Wijaya','Pratama','Hartono','Kusuma','Saputra','Nugroho','Setiawan','Rahayu','Susanto','Hidayat','Gunawan','Wibowo','Purnama','Siregar','Nasution','Lubis','Simanjuntak','Sembiring','Tarigan','Ginting','Batubara','Harahap','Dalimunthe','Suryani','Maharani','Wardhana','Prasetyo','Kurniawan','Hakim','Sudarmā','Ráhayu'];
   o jsonb; c jsonb; s jsonb; ma jsonb;
   v_org uuid; v_owner uuid; v_tenant uuid; v_owner_profile uuid; v_pid uuid;
-  v_first boolean; v_ci int;
+  v_first boolean; v_ci int; v_acct uuid; v_role uuid; v_paid boolean;
   v_admin uuid; v_finance uuid; v_recep uuid; v_head uuid;
   v_coaches uuid[]; v_loc uuid; v_loc2 uuid; v_ct uuid[]; v_pk_m uuid; v_pk_q uuid; v_pk_s uuid;
   v_n int; v_tid uuid;
@@ -73,9 +73,24 @@ begin
       v_coaches := '{}';
       v_head := null;
       for s in select * from jsonb_array_elements(c -> 'staff') loop
-        insert into profiles (tenant_id, account_id, role, full_name, email, phone, is_head_coach)
-        values (v_tenant, pg_temp.acct(s ->> 'email', s ->> 'name', s ->> 'hash'), s ->> 'role', s ->> 'name', s ->> 'email', '08990000' || lpad((floor(random() * 10000))::int::text, 4, '0'),
-                coalesce((s ->> 'head')::boolean, false))
+        v_acct := pg_temp.acct(s ->> 'email', s ->> 'name', s ->> 'hash');
+        select id, is_paid into v_role, v_paid from organization_roles
+        where organization_id = v_org and preset_key = case s ->> 'role'
+          when 'admin' then 'admin'
+          when 'receptionist' then 'resepsionis'
+          when 'finance' then 'keuangan'
+          else case when coalesce((s ->> 'head')::boolean, false) then 'kepala_pelatih' else 'pelatih' end
+        end;
+        if v_paid then
+          insert into organization_members (organization_id, account_id, email, full_name, base_role)
+          values (v_org, v_acct, s ->> 'email', s ->> 'name', 'staff')
+          on conflict (organization_id, account_id) do nothing;
+          insert into organization_member_clubs (member_id, tenant_id)
+          select id, v_tenant from organization_members where organization_id = v_org and account_id = v_acct
+          on conflict do nothing;
+        end if;
+        insert into profiles (tenant_id, account_id, role, org_role_id, full_name, email, phone)
+        values (v_tenant, v_acct, 'staff', v_role, s ->> 'name', s ->> 'email', '08990000' || lpad((floor(random() * 10000))::int::text, 4, '0'))
         returning id into v_pid;
         if s ->> 'role' = 'admin' then v_admin := v_pid; end if;
         if s ->> 'role' = 'finance' then v_finance := v_pid; end if;
@@ -194,7 +209,7 @@ begin
           select id from invoices where tenant_id = v_tenant and status = 'outstanding' and period_start = v_month_start order by id limit greatest(v_n / 20, 1));
 
         perform pg_temp.act(v_finance, 'finance', v_tenant);
-        for r in select id, coalesce(session_rate, 150000) rate from profiles where tenant_id = v_tenant and role = 'coach' loop
+        for r in select id, coalesce(session_rate, 150000) rate from instructors where tenant_id = v_tenant loop
           perform create_payroll_run(r.id, v_prev_start, v_prev_end, r.rate * 8, case when r.id = v_head then 250000 else 0 end, 0);
         end loop;
         perform pg_temp.clear();

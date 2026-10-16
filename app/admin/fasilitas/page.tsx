@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getClubTerms } from "@/lib/club-type";
 import { getLocations } from "@/lib/data/lookups";
 import { getAllResourceHours, getResources } from "@/lib/data/booking";
@@ -17,7 +17,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 
 export default async function FacilitiesPage() {
-  await requireRole("admin");
+  await requirePermission("resources.manage");
   const [terms, locations, resources, hours] = await Promise.all([
     getClubTerms(),
     getLocations(),

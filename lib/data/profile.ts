@@ -1,7 +1,6 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listMemberClubs } from "@/lib/data/member-clubs";
 import { listContexts } from "@/lib/auth/contexts";
-import type { AppRole } from "@/lib/auth/roles";
 
 type One<T> = T | T[] | null;
 const one = <T>(value: One<T>): T | null => (Array.isArray(value) ? (value[0] ?? null) : value);
@@ -34,9 +33,8 @@ export type ProfileData =
       fullName: string;
       username: string;
       phone: string | null;
-      role: AppRole;
+      roleName: string;
       clubName: string;
-      isHeadCoach: boolean;
       coach: { specialization: string | null; sessionRate: number | null; certifications: Certification[] } | null;
     }
   | {
@@ -124,7 +122,7 @@ export async function getProfileData(ids: {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, phone, role, is_head_coach, specialization, session_rate, tenant_id, tenants(name)")
+    .select("id, phone, role, specialization, session_rate, tenant_id, tenants(name), organization_roles(name)")
     .eq("id", ids.profileId)
     .is("owner_id", null)
     .is("member_account_id", null)
@@ -132,7 +130,8 @@ export async function getProfileData(ids: {
   if (!profile) return null;
 
   let coach: Extract<ProfileData, { kind: "staff" }>["coach"] = null;
-  if (profile.role === "coach") {
+  const { data: granted } = await supabase.rpc("profile_permissions", { p_profile: profile.id });
+  if (((granted as string[] | null) ?? []).includes("classes.instruct")) {
     const { data: certs } = await supabase
       .from("coach_certifications")
       .select("id, name, number, valid_until")
@@ -152,9 +151,8 @@ export async function getProfileData(ids: {
     fullName: account.full_name,
     username: account.username,
     phone: profile.phone,
-    role: profile.role as AppRole,
+    roleName: one(profile.organization_roles as One<{ name: string }>)?.name ?? "Staf",
     clubName: one(profile.tenants as One<{ name: string }>)?.name ?? "-",
-    isHeadCoach: Boolean(profile.is_head_coach),
     coach,
   };
 }

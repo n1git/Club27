@@ -1,11 +1,11 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 berikutnya.
+Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai di kode dan diuji lokal (migrasi 041 belum diterapkan ke hosted). Fase 4 berikutnya.
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
 - [x] Fase 1 - akun universal dan konteks personal (diterapkan ke hosted)
 - [x] Fase 2 - keanggotaan organisasi dan base role (diterapkan ke hosted)
-- [ ] Fase 3 - permission kustom, RLS, dan guard
+- [x] Fase 3 - permission kustom, RLS, dan guard (kode + uji lokal)
 - [ ] Fase 4 - seat, billing, dan masa tenggang
 - [ ] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org
 - [ ] Fase 6 - siklus hapus organisasi (purge nonaktif sampai kebijakan retensi diputuskan)
@@ -195,3 +195,24 @@ Aplikasi:
 - Belum ada UI untuk membuat staf backend, mengubah `base_role`, atau menugaskan klub (Fase 3 dan 5); konteks staf backend muncul setelah ada permission.
 
 Uji: `supabase/tests/organization_members_phase2.sql` (satu `p_owner`, keanggotaan unik, pemindahan kepemilikan, penugasan klub, tabel tertutup untuk klien) dan `accounts_phase1.sql` yang disesuaikan lolos; uji browser menambah dua organisasi satu akun (pemilih konteks, masuk, kembali ke akun). Skrip balik: `rollback/040.sql` (diuji).
+
+## Keputusan D10 dan D11
+
+- D11 (2026-10-18): Keuangan dan Resepsionis berbayar (seat); Pelatih, Kepala Pelatih, Kasir gratis. D10 mengikuti keputusan 5: kasir frontend (gratis) boleh membuka `/admin/kasir` lewat permission.
+
+## Fase 3 - hasil
+
+Skema (`20250101000041_permissions.sql`):
+- Katalog `permissions` (55 kode, `owner_only` untuk `roles.manage`), `organization_roles`, `role_permissions`, preset (`role_presets`, `role_preset_permissions`), `seed_organization_roles(org)` dipanggil `register_organization`. Role berbayar (`is_paid`) wajib punya keanggotaan staf aktif dan penugasan klub (trigger `enforce_profile_role_link` dan `has_permission`).
+- `profiles.role` kini `owner`/`staff`/`member`; `profiles.org_role_id` (wajib untuk staf), `is_head_coach` dihapus. Data lama dikonversi (Admin, Resepsionis, Keuangan, Kepala Pelatih, Pelatih) termasuk keanggotaan staf untuk role berbayar.
+- `has_permission(kode)` (RLS), `profile_permissions(profil)` (server), `is_instructor(profil)`, `current_profile_kind()`, view `instructors`.
+- 44 policy, `member_names`, kebijakan storage promo, dan 26 fungsi/trigger ditulis ulang memakai permission; helper `is_admin`, `is_coach`, `is_receptionist`, `is_finance`, `is_head_coach`, `current_app_role` dihapus. Trigger email lintas jenis identitas dilonggarkan (satu akun boleh owner, staf, dan anggota); `organization_internal_users` menghitung keanggotaan organisasi aktif (dasar seat).
+- Pembatasan kolom: catatan anggota, ganti pelatih, status anggota, dan pelatih pengganti kini punya permission sendiri (`members.edit_notes_*`, `members.reassign_coach`, `members.change_status`, `schedule.set_substitute`).
+
+Aplikasi:
+- `lib/auth/permissions.ts` (katalog, aturan path admin, beranda per permission), `guard.ts` (`requirePermission`, `requireActionPermission`, `requireAdminArea`, `permissionsFor`), JWT `app_role` kini `owner`/`staff`/`member`/`personal`. Semua halaman, aksi, menu, dan layout beralih ke permission.
+- Halaman `/admin/peran` (owner): buat, ubah, hapus role; staf: pilih role, ubah role, nonaktifkan; pelatih memilih role instruktur. `lib/accounts/staff-seat.ts` menjaga keanggotaan staf mengikuti role dan status.
+
+Uji: regresi akses lama-baru pada data demo (7 persona, 32 tabel/view dibaca, 31 penulisan dan fungsi) 0 selisih dari 441; setelah rollback 0 selisih juga. `supabase/tests/permissions_phase3.sql` (role preset, permission pemilik, role berbayar, pencabutan seketika, isolasi organisasi) dan tes Fase 1-2 lolos; uji browser (buat role kustom, staf berbayar dan gratis, ubah role, nonaktifkan) lihat hasil terakhir di bawah. `rollback/041.sql` diuji.
+
+Catatan: seat belum dibatasi atau ditagih (Fase 4); satu akun hanya satu profil per klub (pemilik yang juga pelatih di klubnya sendiri belum bisa).

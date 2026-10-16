@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     accountId: row.account_id,
     email: row.email,
     fullName: row.full_name,
-    role: "admin",
+    role: "owner",
     tenantId: row.tenant_id,
     orgId: row.organization_id,
   });

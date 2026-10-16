@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { requireModule } from "@/lib/modules";
 import { getCurrentTenant } from "@/lib/data/tenant";
 import { getCheckinPointName } from "@/lib/data/checkin";
@@ -10,7 +10,7 @@ import { APP_NAME } from "@/lib/config";
 
 export default async function CheckinScreenPage({ params }: { params: Promise<{ pointId: string }> }) {
   const { pointId } = await params;
-  await requireRole("admin");
+  await requirePermission("checkin.manage");
   await requireModule("checkin");
   const [name, tenant] = await Promise.all([getCheckinPointName(pointId), getCurrentTenant()]);
   if (!name) notFound();

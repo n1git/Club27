@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { requireOwnerAction } from "@/lib/auth/owner";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPendingRenewal, preparePayment, requestRenewal } from "@/lib/billing/renewals";
@@ -38,7 +38,7 @@ export async function submitRenewal(_prevState: ActionState, formData: FormData)
     tenantId: owner.tenantId,
     organizationId: owner.organizationId,
     actorId: owner.profileId,
-    actorRole: "admin",
+    actorRole: "owner",
   });
   const paymentUrl = await preparePaymentFor(owner.organizationId, owner.ownerId);
   revalidatePath("/admin/klub/langganan");
@@ -64,7 +64,7 @@ export async function retryRenewalPayment(_prevState: ActionState): Promise<Acti
 }
 
 export async function previewInternalUserCost(): Promise<InternalUserCostChange | null> {
-  const session = await requireActionRole("admin");
+  const session = await requireActionPermission("staff.manage");
   const { data: tenant } = await createAdminSupabaseClient()
     .from("tenants")
     .select("organization_id")

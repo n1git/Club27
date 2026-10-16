@@ -3,7 +3,7 @@
 import { logAudit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hashPassword, generateTempPassword } from "@/lib/auth/password";
@@ -23,7 +23,7 @@ const activateSchema = z.object({
 
 const resetSchema = z.object({ memberId: z.string().uuid("Anggota tidak valid") });
 
-async function visibleMember(memberId: string, session: { app_role: string; sub: string }) {
+async function visibleMember(memberId: string, session: { sub: string; permissions: ReadonlySet<string> }) {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("members")
@@ -31,7 +31,7 @@ async function visibleMember(memberId: string, session: { app_role: string; sub:
     .eq("id", memberId)
     .maybeSingle();
   if (!data) return null;
-  if (session.app_role === "coach" && data.coach_id !== session.sub) return null;
+  if (!session.permissions.has("members.view_all") && data.coach_id !== session.sub) return null;
   return data as { id: string; coach_id: string | null; profile_id: string | null; full_name: string };
 }
 
@@ -42,7 +42,7 @@ function revalidateMember(memberId: string) {
 }
 
 export async function activateMemberAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  const session = await requireActionRole(["admin", "coach"]);
+  const session = await requireActionPermission("members.portal");
   if (!(await isModuleReady("member_portal"))) return MODULE_ERROR;
 
   const parsed = activateSchema.safeParse({
@@ -109,7 +109,7 @@ export async function activateMemberAccount(_prevState: ActionState, formData: F
 }
 
 export async function resetMemberPassword(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  const session = await requireActionRole(["admin", "coach"]);
+  const session = await requireActionPermission("members.portal");
   if (!(await isModuleReady("member_portal"))) return MODULE_ERROR;
 
   const parsed = resetSchema.safeParse({ memberId: formData.get("memberId") });

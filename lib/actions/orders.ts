@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { commerceErrorMessage } from "@/lib/commerce";
 import { orderPayloadSchema, paymentSchema } from "@/lib/validations/commerce";
@@ -18,7 +18,7 @@ function refresh() {
 }
 
 export async function createOrder(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("pos.sell");
   let raw: unknown;
   try {
     raw = JSON.parse(String(formData.get("payload") ?? ""));
@@ -47,7 +47,7 @@ export async function createOrder(_prevState: ActionState, formData: FormData): 
 }
 
 export async function addOrderPayment(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("pos.sell");
   const id = z.string().uuid().safeParse(formData.get("orderId"));
   const requestId = z.string().uuid().safeParse(formData.get("requestId"));
   const parsed = paymentSchema.safeParse({
@@ -72,7 +72,7 @@ export async function addOrderPayment(_prevState: ActionState, formData: FormDat
 }
 
 export async function voidOrder(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "receptionist"]);
+  await requireActionPermission("pos.sell");
   const id = z.string().uuid().safeParse(formData.get("orderId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
   const reason = z.string().trim().min(5, "Tulis alasan pembatalan, minimal 5 karakter").max(500, "Alasan terlalu panjang").safeParse(formData.get("reason") ?? "");

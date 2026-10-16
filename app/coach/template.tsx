@@ -1,6 +1,6 @@
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 
 export default async function Template({ children }: { children: React.ReactNode }) {
-  await requireRole("coach");
+  await requirePermission("teaching.portal");
   return children;
 }

@@ -21,7 +21,7 @@ export function AccountForm({
 }: {
   action: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
   noun: string;
-  roleOptions?: { value: string; label: string }[];
+  roleOptions?: { value: string; label: string; paid?: boolean }[];
 }) {
   const title = `${noun[0].toUpperCase()}${noun.slice(1)}`;
   const [state, formAction, pending] = useActionState(action, {});
@@ -36,6 +36,8 @@ export function AccountForm({
       confirmed.current = false;
       return;
     }
+    const chosen = new FormData(event.currentTarget).get("role");
+    if (!(roleOptions?.find((o) => o.value === chosen)?.paid ?? false)) return;
     event.preventDefault();
     setChecking(true);
     const preview = await previewInternalUserCost();

@@ -42,7 +42,7 @@ export async function createTenant(_prevState: ActionState, formData: FormData):
     accountId: owner.accountId,
     email: profile.email,
     fullName: profile.full_name,
-    role: "admin",
+    role: "owner",
     tenantId: created.tenant_id,
     orgId: owner.organizationId,
   });
@@ -70,7 +70,7 @@ export async function switchTenant(_prevState: ActionState, formData: FormData):
     accountId: owner.accountId,
     email: target.email,
     fullName: target.full_name,
-    role: "admin",
+    role: "owner",
     tenantId: parsed.data,
     orgId: owner.organizationId,
   });

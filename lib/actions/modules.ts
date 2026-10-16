@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ActionState } from "./types";
 
@@ -12,7 +12,7 @@ const schema = z.object({
 });
 
 export async function setClubModule(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("club.settings");
   const parsed = schema.safeParse({ module: formData.get("module"), enabled: formData.get("enabled") });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
 

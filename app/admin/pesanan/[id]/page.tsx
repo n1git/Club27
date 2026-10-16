@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getOrderDetail } from "@/lib/data/commerce";
 import { getCurrentTenant } from "@/lib/data/tenant";
 import { BackLink } from "@/components/shared/back-link";
@@ -8,11 +8,11 @@ import { Receipt } from "@/components/pos/receipt";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await requireRole(["admin", "receptionist", "finance"]);
+  const session = await requirePermission("pos.orders_view");
   const { id } = await params;
   const [order, tenant] = await Promise.all([getOrderDetail(id), getCurrentTenant()]);
   if (!order) notFound();
-  const canManage = session.role !== "finance";
+  const canManage = session.permissions.has("pos.sell");
 
   return (
     <div className="flex flex-col gap-4">

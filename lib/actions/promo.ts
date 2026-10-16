@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { parseJakartaLocalInput } from "@/lib/format";
 import { promoSchema } from "@/lib/validations/promo";
@@ -12,7 +12,7 @@ export async function createPromo(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await requireActionRole("admin");
+  const session = await requireActionPermission("promo.manage");
 
   const parsed = promoSchema.safeParse({
     title: formData.get("title"),
@@ -60,7 +60,7 @@ export async function createPromo(
 }
 
 export async function deletePromo(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("promo.manage");
   const promoId = String(formData.get("promoId"));
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.from("promo").delete().eq("id", promoId).select("id, image_url");

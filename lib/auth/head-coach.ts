@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { requireRole } from "./guard";
+import { requirePermission } from "./guard";
 
 export async function requireHeadCoach() {
-  const user = await requireRole("coach");
-  if (!user.isHeadCoach) redirect("/coach");
+  const user = await requirePermission("teaching.portal");
+  if (!user.permissions.has("members.view_all")) redirect("/coach");
   return user;
 }

@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getProducts } from "@/lib/data/commerce";
 import { setProductActive } from "@/lib/actions/products";
 import { formatRupiahFull } from "@/lib/format";
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PageHeader } from "@/components/ui/page-header";
 
 export default async function ProductsPage() {
-  await requireRole("admin");
+  await requirePermission("pos.products_manage");
   const products = await getProducts();
   const categories = [...new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))].sort();
 

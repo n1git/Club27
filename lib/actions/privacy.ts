@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ActionState } from "./types";
 
@@ -14,7 +14,7 @@ const schema = z.object({
 });
 
 export async function anonymiseMember(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("admin");
+  await requireActionPermission("members.privacy");
   const parsed = schema.safeParse({
     memberId: formData.get("memberId"),
     reason: formData.get("reason"),

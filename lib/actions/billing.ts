@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { packageSchema, subscriptionSchema, generateInvoicesSchema } from "@/lib/validations/billing";
@@ -12,7 +12,7 @@ export async function createPackage(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("packages.manage");
   const pricingMode = formData.get("pricingMode");
   const parsed = packageSchema.safeParse(
     pricingMode === "session_pack"
@@ -66,7 +66,7 @@ export async function createSubscription(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("subscriptions.manage");
   const parsed = subscriptionSchema.safeParse({
     memberId: formData.get("memberId"),
     packageId: formData.get("packageId"),
@@ -95,7 +95,7 @@ export async function createSubscription(
 }
 
 export async function cancelSubscription(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("subscriptions.manage");
   const subscriptionId = String(formData.get("subscriptionId"));
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
@@ -112,7 +112,7 @@ export async function generateInvoices(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const session = await requireActionRole(["admin", "finance"]);
+  const session = await requireActionPermission("invoices.manage");
   const parsed = generateInvoicesSchema.safeParse({
     periodStart: formData.get("periodStart"),
     periodEnd: formData.get("periodEnd"),
@@ -137,7 +137,7 @@ export async function generateInvoices(
 }
 
 export async function markInvoicePaid(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "finance", "receptionist"]);
+  await requireActionPermission("invoices.collect");
   const invoiceId = String(formData.get("invoiceId"));
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("mark_invoice_paid", { p_invoice_id: invoiceId });
@@ -148,7 +148,7 @@ export async function markInvoicePaid(_prevState: ActionState, formData: FormDat
 }
 
 export async function voidInvoice(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["admin", "finance"]);
+  await requireActionPermission("invoices.manage");
   const invoiceId = String(formData.get("invoiceId"));
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("void_invoice", { p_invoice_id: invoiceId });

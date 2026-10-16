@@ -37,7 +37,7 @@ export async function getOrganizationOverview(organizationId: string, ownerId: s
 
   const [{ data: members }, { data: coaches }] = await Promise.all([
     supabase.from("members").select("tenant_id").in("tenant_id", ids).eq("is_active", true),
-    supabase.from("profiles").select("tenant_id").in("tenant_id", ids).eq("role", "coach").eq("is_active", true),
+    supabase.from("instructors").select("tenant_id").in("tenant_id", ids).eq("is_active", true),
   ]);
   const count = (rows: { tenant_id: string }[] | null, id: string) => (rows ?? []).filter((r) => r.tenant_id === id).length;
 

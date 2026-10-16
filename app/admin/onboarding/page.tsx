@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/auth/guard";
+import { requirePermission } from "@/lib/auth/guard";
 import { getEnabledModules } from "@/lib/modules";
 import { getClubTerms } from "@/lib/club-type";
 import { getLocations } from "@/lib/data/lookups";
@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PageHeader } from "@/components/ui/page-header";
 
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ step?: string }> }) {
-  await requireRole("admin");
+  await requirePermission("club.settings");
   const [{ step: requested }, enabled, terms] = await Promise.all([searchParams, getEnabledModules(), getClubTerms()]);
 
   const steps: OnboardingStep[] = [

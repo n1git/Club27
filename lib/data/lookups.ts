@@ -20,9 +20,8 @@ export async function getClassTypes(): Promise<Lookup[]> {
 export async function getActiveCoaches(): Promise<Lookup[]> {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
-    .from("profiles")
+    .from("instructors")
     .select("id, full_name")
-    .eq("role", "coach")
     .eq("is_active", true)
     .order("full_name");
   return (data ?? []).map((c) => ({ id: c.id, name: c.full_name }));

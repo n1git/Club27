@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActionRole } from "@/lib/auth/guard";
+import { requireActionPermission } from "@/lib/auth/guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { type ActionState } from "./types";
 
 export async function markAttendance(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole(["coach", "admin", "receptionist"]);
+  await requireActionPermission(["bookings.manage_all", "bookings.manage_assigned"]);
   const bookingId = String(formData.get("bookingId"));
   const classId = String(formData.get("classId"));
   const isAttended = formData.get("isAttended") === "true";
@@ -28,7 +28,7 @@ export async function markAttendance(_prevState: ActionState, formData: FormData
 }
 
 export async function updateBookingNotes(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("coach");
+  await requireActionPermission("bookings.manage_assigned");
   const bookingId = String(formData.get("bookingId"));
   const classId = String(formData.get("classId"));
   const notes = String(formData.get("notes") ?? "").trim();
