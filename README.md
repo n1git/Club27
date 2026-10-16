@@ -2,7 +2,9 @@
 
 Multi-tenant sports club management platform (swimming, gym, tennis, padel, pilates, yoga and more): members, scheduling, attendance, billing, cash ledger, coach payroll, facility booking, point of sale and gym check-in. One deployment serves many organizations; each owns one or more clubs with isolated data. Members sign in read-only.
 
-Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Security, Tailwind CSS, Vercel.
+Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Security, Tailwind CSS v4, Vercel. UI in Indonesian; brand "27 Club" (assets in `public/brand/`, tokens in `app/globals.css`).
+
+Public pages: `/` (landing), `/olahraga/<code>` (one page per ready club type, read from the database), `/daftar`, `/login`, `/privasi`, `/syarat`. Roles: platform superadmin (`/superadmin`), club owner and staff (`/admin`), coach (`/coach`), member (`/member`); everyone has `/profile`.
 
 ## Local setup
 
@@ -12,7 +14,7 @@ Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Secur
    - `SUPABASE_JWT_SECRET`: the legacy HS256 JWT secret (Project Settings → API → JWT Keys).
    - `CRON_SECRET`: any random string; Vercel Cron sends it as a bearer token.
    - `SUPERADMIN_JWT_SECRET`: signs the superadmin session (TOTP is mandatory).
-   - Optional: `NEXT_PUBLIC_APP_NAME` (default "27 Club"), `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_WHATSAPP`.
+   - Optional: `NEXT_PUBLIC_APP_NAME` (default "27 Club"), `NEXT_PUBLIC_SITE_URL` (required once a custom domain is attached: canonical, Open Graph, sitemap), `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_CONTACT_WHATSAPP`, `EMAIL_API_KEY` + `EMAIL_FROM` (registration verification), `TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` (captcha), `MIDTRANS_SERVER_KEY` + `MIDTRANS_IS_PRODUCTION` (online subscription payment).
 3. Create the first organization, owner and club:
    ```bash
    SEED_TENANT_NAME="My Club" SEED_ADMIN_EMAIL=owner@example.com SEED_ADMIN_PASSWORD=ChangeMe123 npm run seed:admin
@@ -26,11 +28,12 @@ Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Secur
 
 ## Deploy
 
-Link the repo to a Vercel project and set the same environment variables; `vercel.json` schedules the monthly invoice cron. Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md). Restore: [`docs/RESTORE.md`](docs/RESTORE.md).
+Link the repo to a Vercel project and set the same environment variables; `vercel.json` schedules two crons (monthly invoices, daily subscription expiry and reminders). Full steps: [`docs/DEPLOY.md`](docs/DEPLOY.md). Restore: [`docs/RESTORE.md`](docs/RESTORE.md).
 
 ## More
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): tenancy and auth model, club types and modules, booking, point of sale, check-in, navigation, landing, page layout, platform billing, out-of-scope list.
 - [`docs/CHANGELOG.md`](docs/CHANGELOG.md): changes by date.
 - [`CLAUDE.md`](CLAUDE.md): team notes and technical rules.
+- `progress/`: one progress file per task (status, phases, measurements, landing claims table).
 - `trash/`: retired prototype and finished progress logs; nothing imports it and it can be deleted.
