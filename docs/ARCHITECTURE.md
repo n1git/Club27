@@ -523,6 +523,24 @@ status from `/superadmin`.
   including a member, can create its own organization; it keeps its other
   contexts.
 
+### Deleting an organization
+
+- The main owner (`/admin/klub/hapus`, name + password) calls
+  `request_organization_deletion`: subscription becomes `cancelled` (previous
+  status remembered), every club is switched off, pending invitations are
+  revoked and `purge_after` is set 30 days ahead. Signing in lands on `/akun`,
+  where `cancel_organization_deletion` restores everything until `purge_after`.
+- `purge_candidates()` lists organizations past `purge_after` (`owner_deleted`)
+  and organizations past the grace period (`grace_expired`).
+  `purge_organization(org, execute)` counts what would go by default; with
+  `execute` it needs the candidate state and `platform_flags.purge_enabled`
+  (off), deletes in a fixed order inside one transaction, checks that no row
+  with the organization's `tenant_id` or `organization_id` is left (it rolls
+  back otherwise) and writes `organization_purges`. Nothing calls it on a
+  schedule. Accounts stay; legacy `member_accounts` left without a profile are
+  removed; files in storage buckets are not touched by SQL. `/superadmin/purge`
+  shows candidates and the dry-run counts.
+
 ### Renewals and payment
 
 - Status `expired` is set by `expire_subscriptions` (daily cron

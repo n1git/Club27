@@ -8,7 +8,7 @@ Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riw
 - [x] Fase 3 - permission kustom, RLS, dan guard (diterapkan ke hosted)
 - [x] Fase 4 - seat, billing, dan masa tenggang (diterapkan ke hosted)
 - [x] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org (diterapkan ke hosted)
-- [ ] Fase 6 - siklus hapus organisasi (purge nonaktif sampai kebijakan retensi diputuskan)
+- [x] Fase 6 - siklus hapus organisasi (kode + uji lokal; menunggu OK sebelum push dan terapan hosted)
 
 Basis audit: `main` @ `abbc0b6`, migrasi repo 001-038, query read-only ke Supabase `gmldacyjdbsdofqqaqry` tanggal 2026-10-16.
 Label: **F** = fakta terverifikasi (file/query), **R** = rekomendasi desain, **A** = asumsi/belum terbukti.
@@ -150,6 +150,7 @@ Kasus yang diuji:
 - D6 (2026-10-19): masa tenggang read-only, semua pengguna boleh masuk dan membaca; lamanya 1 tahun (bukan 1 bulan), disimpan di `subscription_plans.grace_days`.
 - D8 (2026-10-19): kata sandi sementara untuk staf/pelatih diganti total dengan undangan.
 - D9 (2026-10-19): undangan per klub (peran + klub); undangan co-owner berlaku untuk seluruh organisasi.
+- D7 (2026-10-19): hapus organisasi dapat dipulihkan 30 hari; tenggang habis (365 hari) hanya masuk daftar purge tanpa hapus otomatis; purge nyata mati.
 - D12 (2026-10-18): daftar mandiri akun umum tanpa verifikasi email.
 - D13 (2026-10-18): saya menulis skrip perbaikan riwayat; dijalankan hanya setelah owner OK.
 
@@ -254,3 +255,14 @@ Aplikasi:
 Uji: `supabase/tests/invitations_phase5.sql` dan tes fase 1-4 lolos; e2e browser (undang staf/pelatih, terima dengan akun baru dan akun lama, tautan sekali pakai, batalkan, reset sandi, sesi lama keluar, co-owner, pindah kepemilikan, buat organisasi dari akun) lolos. `rollback/043.sql` diuji (skema identik dengan sebelum 043).
 
 Belum ada: pencabutan/penonaktifan co-owner dari UI; pengiriman email diuji hanya sebatas fallback tautan karena `EMAIL_API_KEY` tidak ada di lingkungan uji.
+
+
+## Fase 6 - hasil
+
+Skema (`20250101000044_organization_deletion.sql`): kolom `organizations.deletion_*`/`purge_after`, `request_organization_deletion` (hanya `p_owner`, klub nonaktif, 30 hari), `cancel_organization_deletion`, `purge_candidates()` (`owner_deleted`, `grace_expired`), `purge_organization(org, execute=false)` (hitung atau hapus berurutan dalam satu transaksi, memeriksa tidak ada sisa baris di tabel ber-`tenant_id`/`organization_id`, mencatat `organization_purges`), `platform_flags.purge_enabled` (mati), `organization_purges`.
+
+Aplikasi: `/admin/klub/hapus` (nama + kata sandi), `/akun` menampilkan organisasi yang menunggu hapus dengan tombol pulihkan, login tetap bisa masuk ke `/akun` bila satu-satunya organisasi sedang dihapus, `/superadmin/purge` (kandidat + simulasi, tanpa tombol hapus). `/privasi`, `/syarat`, `KAJIAN_PAKET.md`, `CLAUDE.md`, `docs/` diperbarui.
+
+Uji: `supabase/tests/deletion_phase6.sql` (simulasi tidak menghapus, hak p_owner, 30 hari, pulihkan, kandidat, purge nyata hanya bila flag nyala, organisasi lain utuh); purge nyata atas 5 organisasi data demo skala penuh (±21 ribu booking, 7 ribu tagihan) lolos tanpa sisa baris; e2e browser (hapus dengan konfirmasi nama dan kata sandi, mendarat di `/akun`, login ulang, pulihkan) lolos; `rollback/044.sql` diuji.
+
+Batas: file di storage (gambar promo) tidak dihapus oleh SQL; tidak ada ekspor data sebelum hapus.

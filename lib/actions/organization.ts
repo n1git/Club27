@@ -3,6 +3,9 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireActionRole } from "@/lib/auth/guard";
+import { requirePrimaryOwnerAction } from "@/lib/auth/owner";
+import { verifyReauth } from "@/lib/auth/reauth";
+import { revalidatePath } from "next/cache";
 import { createSession } from "@/lib/auth/session";
 import { isKeyRateLimited } from "@/lib/auth/rate-limit";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
@@ -111,4 +114,75 @@ export async function createOrganizationFromAccount(_prevState: ActionState, for
     orgId: created.organization_id,
   });
   redirect("/admin/onboarding");
+}
+
+const deletionSchema = z.object({ confirmName: z.string().trim().min(1, "Ketik nama organisasi untuk mengonfirmasi") });
+
+export async function requestOrganizationDeletion(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const owner = await requirePrimaryOwnerAction();
+  const reauth = await verifyReauth(owner.accountId, formData.get("confirmPassword"));
+  if (reauth) return { ok: false, error: reauth };
+  const parsed = deletionSchema.safeParse({ confirmName: formData.get("confirmName") });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+
+  const supabase = createAdminSupabaseClient();
+  const [{ data: org }, { data: account }] = await Promise.all([
+    supabase.from("organizations").select("name").eq("id", owner.organizationId).maybeSingle(),
+    supabase.from("accounts").select("id, email, full_name").eq("id", owner.accountId).maybeSingle(),
+  ]);
+  if (!org || !account) return { ok: false, error: "Organisasi tidak ditemukan" };
+  if (parsed.data.confirmName !== org.name) return { ok: false, error: "Nama organisasi tidak sama" };
+
+  const { error } = await supabase.rpc("request_organization_deletion", {
+    p_org: owner.organizationId,
+    p_actor_account: owner.accountId,
+  });
+  if (error) {
+    return { ok: false, error: error.code === "DL001" || error.code === "22023" ? error.message : "Gagal meminta penghapusan" };
+  }
+  await logAudit({
+    action: "organization.delete_request",
+    targetType: "organization",
+    targetId: owner.organizationId,
+    tenantId: owner.tenantId,
+    organizationId: owner.organizationId,
+    actorId: owner.profileId,
+    actorRole: "owner",
+  });
+  await createSession({
+    id: account.id as string,
+    accountId: account.id as string,
+    email: account.email as string,
+    fullName: account.full_name as string,
+    role: "personal",
+    tenantId: "",
+    orgId: "",
+  });
+  redirect("/akun");
+}
+
+export async function cancelOrganizationDeletion(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireActionRole(["personal"]);
+  const reauth = await verifyReauth(session.account_id, formData.get("confirmPassword"));
+  if (reauth) return { ok: false, error: reauth };
+  const organizationId = z.string().uuid().safeParse(formData.get("organizationId"));
+  if (!organizationId.success) return { ok: false, error: "Organisasi tidak valid" };
+
+  const { error } = await createAdminSupabaseClient().rpc("cancel_organization_deletion", {
+    p_org: organizationId.data,
+    p_actor_account: session.account_id,
+  });
+  if (error) {
+    return { ok: false, error: error.code === "DL002" || error.code === "OW001" ? error.message : "Gagal memulihkan organisasi" };
+  }
+  await logAudit({
+    action: "organization.delete_cancel",
+    targetType: "organization",
+    targetId: organizationId.data,
+    organizationId: organizationId.data,
+    actorId: session.sub,
+    actorRole: "account",
+  });
+  revalidatePath("/akun");
+  return { ok: true, message: "Organisasi dipulihkan. Masuk lagi untuk membukanya." };
 }

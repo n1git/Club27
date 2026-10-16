@@ -84,8 +84,12 @@ export default function PrivacyPage() {
 
       <h2>8. Masa penyimpanan</h2>
       <p>
-        Data disimpan selama langganan berjalan dan tidak dihapus otomatis saat langganan berakhir, sehingga pemakaian
-        dapat dilanjutkan setelah diperpanjang. Pemilik dapat meminta salinan atau penghapusan data klub kapan saja.
+        Data disimpan selama langganan berjalan. Bila langganan berakhir tanpa perpanjangan, data tetap tersimpan dan
+        hanya bisa dibaca selama satu tahun; setelah itu organisasi dapat dihapus permanen oleh admin platform
+        (penghapusan ini belum berjalan otomatis). Pemilik utama dapat menghapus organisasi kapan saja dari aplikasi:
+        organisasi langsung tidak bisa diakses, dapat dipulihkan dalam 30 hari, lalu data klub di basis data aplikasi
+        (anggota, tagihan, penjualan, jadwal, dan log audit) dihapus permanen. Akun login tiap orang tetap ada. Setelah
+        penghapusan kami menyimpan catatan nama organisasi, waktu, dan jumlah baris yang dihapus, tanpa data pribadi.
         Catatan keuangan dapat disimpan tanpa identitas bila diwajibkan peraturan.
       </p>
 

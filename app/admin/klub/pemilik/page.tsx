@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireOwner } from "@/lib/auth/owner";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listPendingInvitations } from "@/lib/accounts/invitations";
@@ -105,6 +106,15 @@ export default async function OwnersPage() {
             ) : (
               <p className="text-sm text-muted-foreground">Undang pemilik lain lebih dulu untuk bisa memindahkan kepemilikan.</p>
             )}
+          </section>
+          <section className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">Hapus organisasi</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Menghapus seluruh organisasi, klub, anggota, dan datanya.{" "}
+              <Link href="/admin/klub/hapus" className="font-medium text-destructive underline-offset-4 hover:underline">
+                Lanjut ke penghapusan
+              </Link>
+            </p>
           </section>
         </>
       ) : (

@@ -147,6 +147,28 @@ export async function resolveTarget(account: {
   if (entries.length === 1) return entries[0].target;
   if (entries.length > 1) return personalTarget(account);
   if (unverified) return "unverified";
-  if (blocked) return "deactivated";
+  if (blocked) return (await listPendingDeletions(account.id)).length > 0 ? personalTarget(account) : "deactivated";
   return personalTarget(account);
+}
+
+export interface PendingDeletion {
+  organizationId: string;
+  name: string;
+  purgeAfter: string;
+}
+
+export async function listPendingDeletions(accountId: string): Promise<PendingDeletion[]> {
+  const { data } = await createAdminSupabaseClient()
+    .from("organization_members")
+    .select("organization_id, organizations!inner(name, purge_after, deletion_requested_at)")
+    .eq("account_id", accountId)
+    .eq("base_role", "p_owner")
+    .eq("is_active", true)
+    .not("organizations.deletion_requested_at", "is", null)
+    .gt("organizations.purge_after", new Date().toISOString());
+  return (data ?? []).map((row) => {
+    const org = row.organizations as unknown as { name: string; purge_after: string } | { name: string; purge_after: string }[];
+    const one = Array.isArray(org) ? org[0] : org;
+    return { organizationId: row.organization_id as string, name: one.name, purgeAfter: one.purge_after };
+  });
 }

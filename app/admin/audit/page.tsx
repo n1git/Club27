@@ -12,6 +12,9 @@ import { PageHeader } from "@/components/ui/page-header";
 const ACTION_LABEL: Record<string, string> = {
   "password.reset": "Buat tautan atur ulang kata sandi",
   "password.reset_by_link": "Kata sandi diatur ulang lewat tautan",
+  "organization.delete_request": "Minta hapus organisasi",
+  "organization.delete_cancel": "Pulihkan organisasi",
+  "purge.simulate": "Simulasi purge",
   "invitation.create": "Buat undangan",
   "invitation.create_owner": "Undang pemilik",
   "invitation.accept": "Terima undangan",

@@ -56,7 +56,8 @@ export default function TermsPage() {
 
       <h2>5. Penangguhan dan pengakhiran</h2>
       <ul>
-        <li>Bila langganan belum aktif atau berakhir tanpa perpanjangan, akses klub dikunci sampai langganan diperpanjang.</li>
+        <li>Bila langganan berakhir tanpa perpanjangan, semua pengguna masih bisa masuk dan membaca data selama satu tahun, tetapi perubahan ditolak sampai langganan diperpanjang. Setelah itu data dapat dihapus permanen.</li>
+        <li>Pemilik utama dapat menghapus organisasi kapan saja. Organisasi dapat dipulihkan dalam 30 hari; setelah itu datanya dihapus permanen dan tidak bisa dikembalikan.</li>
         <li>Kami dapat menangguhkan layanan bila terjadi pelanggaran berat terhadap syarat ini, dengan pemberitahuan lebih dulu kecuali diperlukan segera untuk mencegah kerugian.</li>
         <li>Anda dapat mengakhiri langganan kapan saja dengan menghubungi kami.</li>
       </ul>

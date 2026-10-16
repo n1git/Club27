@@ -2,11 +2,16 @@ import { ProfilePage } from "@/components/profile/profile-page";
 import { CreateOrganizationForm } from "@/components/shared/create-organization-form";
 import { getActivePlans } from "@/lib/data/platform-pricing";
 import { getReadyClubTypes } from "@/lib/club-type";
+import { PendingDeletions } from "@/components/shared/pending-deletions";
+import { listPendingDeletions } from "@/lib/auth/contexts";
+import { requireValidSession } from "@/lib/auth/guard";
 
 export default async function PersonalPage() {
-  const [plans, clubTypes] = await Promise.all([getActivePlans(), getReadyClubTypes()]);
+  const { profile } = await requireValidSession();
+  const [plans, clubTypes, deletions] = await Promise.all([getActivePlans(), getReadyClubTypes(), listPendingDeletions(profile.accountId)]);
   return (
     <div className="flex flex-col gap-8">
+      <PendingDeletions items={deletions} />
       <ProfilePage roles={["personal"]} />
       {plans.length > 0 ? (
         <section className="flex flex-col gap-3">
