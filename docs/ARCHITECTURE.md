@@ -1,5 +1,43 @@
 # 27 Club: architecture and feature notes
 
+## System overview
+
+One Next.js app (App Router, React 19, Tailwind v4) on Vercel and one
+Supabase project (Postgres) serve every club. There is no Supabase Auth and no
+client-side data layer (Supabase Storage holds only promo images): pages are server
+components that read through a per-request, JWT-bound Supabase client, and
+writes are server actions that call tables or SQL functions under RLS.
+
+```text
+Browser ── proxy.ts (CSP nonce, session check, role gate via canAccessPath)
+   │
+   ▼
+Next.js server (pages, server actions, route handlers)
+   │  own HS256 JWT (httpOnly cookie)           service role: narrow, reviewed uses
+   ▼                                                      │
+Supabase Postgres (RLS, security definer RPCs, triggers) ◀┘
+   ▲
+   ├── Vercel Cron  /api/cron/generate-invoices  (monthly)
+   │                /api/cron/subscriptions      (daily: expire, reminders)
+   ├── Midtrans Snap + notification  /api/payments/midtrans
+   └── Resend (email) and Cloudflare Turnstile (captcha), each optional
+```
+
+Portals: public (`/`, `/olahraga/<code>`, `/daftar`, `/login`, `/privasi`,
+`/syarat`), admin (`/admin`: admin, receptionist, finance and head coach, each limited by `canAccessPath`), coach (`/coach`), member (`/member`, read-only plus booking), and the
+platform superadmin (`/superadmin`, separate session). Folders: `app/` routes
+and server actions entry points, `lib/actions` server actions, `lib/data`
+reads, `lib/auth` session, roles and JWT, `lib/validations` zod schemas
+(mirrored by `CHECK` constraints), `components/` per feature plus `ui/` and
+`shared/`, `supabase/migrations` (001 to 038, applied in order), `scripts/`
+seed and test helpers.
+
+Cross-cutting rules: all times in WIB through `lib/format.ts`; money and
+prices only computed in SQL or on the server; `security definer` functions
+are revoked from `public, anon, authenticated` unless a client calls them;
+`audit_log` is append-only. Styling, loading and caching are in "Look,
+loading and caching" below.
+
 ## Multi-tenancy model
 
 Hierarchy: **organization (owner account) → tenants (clubs) → coaches →
@@ -259,10 +297,12 @@ with no code change.
 `AppShell` takes `navGroups: NavGroup[]` (`components/shared/nav-types.ts`):
 a group is `{ label?, items }` and an item is `{ href, label, icon, exact?,
 primary? }`. `icon` is a string key mapped to a `lucide-react` icon in
-`components/shared/nav-icon.tsx`. Desktop shows the dark sidebar with the
-labelled groups; below `sm` it is a bottom tab bar (the `primary` items, at
+`components/shared/nav-icon.tsx`. `AppShell` also takes `profileHref`: the
+profile link is the first item of the menu (sidebar top, first group of the
+mobile sheet), not in the top bar. Desktop shows the sidebar (it follows the
+light or dark theme) with the labelled groups; below `sm` it is a bottom tab bar (the `primary` items, at
 most four, padded to three, plus "Menu") and the "Menu" button opens a
-full-screen sheet with every group. When a role has five items or fewer
+full-screen sheet with every group (animated open and close, no motion under reduced motion). When a role has five items or fewer
 (coach, member) all of them are tabs and there is no "Menu".
 
 To add a page to the admin menu: add `{ href, label, icon, module? }` to the
@@ -271,12 +311,13 @@ there with `getEnabledModules` and `canAccessPath`), add a new icon key in
 `nav-types.ts` and `nav-icon.tsx` if needed, and mark `primary` only for items
 that belong in the phone tab bar. A group with no visible item is not shown.
 
-## Landing page
+## Landing page and public SEO
 
 `/` is built from `components/landing/` in this order: header (skip link,
-section links, theme toggle, mobile menu), hero with a product preview,
-supported sports, features by job, how it works, multi club, pricing, FAQ,
-final call to action, footer. A signed-in session is redirected to its home.
+section links, theme toggle, mobile menu), dark hero, supported sports,
+features grouped by job, how it works (stepper), multi club, pricing, FAQ
+(ruled list), final call to action, footer. Only the hero is dark; the other
+bands are light. A signed-in session is redirected to its home.
 
 - Live data only: sports come from `club_types` and `club_type_modules`
   (`getPublicClubTypes`), so a status change in the table changes the page;
@@ -285,20 +326,59 @@ final call to action, footer. A signed-in session is redirected to its home.
   `platform_modules`. The pricing picker hands plan, period and users to
   `/daftar?plan=&period=&users=`.
 - Product visuals are the app's own components with sample data and carry a
-  "Contoh data" label. No testimonials, client names, logos or invented
-  figures.
+  "Contoh data" label (`sample-label.tsx`). No testimonials, client names,
+  logos or invented figures.
 - Keeping claims true: every statement on the page has a row in the claims
   table in `progress/landing-rework-progress.md` that points to the code or
   migration proving it. When a feature changes, update the sentence and its
   row together; a `soon` module or club type is shown as "Segera hadir".
-- SEO: `app/sitemap.ts`, `app/robots.ts`, `app/opengraph-image.tsx`, root
-  metadata (canonical, Open Graph, Twitter) and `SoftwareApplication` JSON-LD
-  with offers from live plans. `/privasi` and `/syarat` are drafts with
-  `noindex` and a visible "Draf" notice; they need legal review.
-- Env vars: `NEXT_PUBLIC_SITE_URL` (canonical URL; falls back to the Vercel
-  production URL), `NEXT_PUBLIC_CONTACT_EMAIL` and
-  `NEXT_PUBLIC_CONTACT_WHATSAPP` (digits only). Contact links render only
-  when set; with neither set no contact element exists.
+- Per-sport pages: `/olahraga/<code>` (`app/olahraga/[code]/page.tsx`,
+  `components/landing/sport-page.tsx`, wording in `sport-copy.ts`) is read
+  from `club_types` for ready types; the sign-up button preselects the type
+  (`/daftar?jenis=<code>`). The landing cards link to them and the sitemap
+  lists them. An unknown code returns HTTP 200 with `noindex` (a side effect
+  of the root `loading.tsx`) and the not-found view.
+- SEO: `lib/seo.ts` (`pageMetadata`: title, description, canonical, Open Graph,
+  Twitter per page), `app/sitemap.ts` (with `lastModified`), `app/robots.ts`,
+  `app/opengraph-image.tsx`, and a JSON-LD graph in `components/landing/json-ld.tsx`
+  (Organization, WebSite, SoftwareApplication with offers from live plans).
+  `/login` is `noindex` and not in the sitemap; `/privasi` and `/syarat` are
+  drafts with `noindex` and a visible "Draf" notice and need legal review.
+  `app/not-found.tsx` and `app/error.tsx` are branded (`status-page.tsx`).
+- Env vars: `NEXT_PUBLIC_SITE_URL` (canonical URL; set it once a custom
+  domain is attached, read at build time), `NEXT_PUBLIC_APP_NAME` (keep
+  "27 Club"), `NEXT_PUBLIC_CONTACT_EMAIL` and `NEXT_PUBLIC_CONTACT_WHATSAPP`
+  (digits only). Contact links render only when set.
+- Speed: the landing renders on every request (the CSP nonce makes pages
+  dynamic). Making it static needs a CSP rework and is not done; decide after
+  Core Web Vitals data exists.
+
+## Look, loading and caching
+
+- Brand (`app/globals.css`, `public/brand/`): off-white `#F2F2EE` and
+  near-black `#0E0E0E` surfaces, volt `#C8F31D` for primary buttons, the active
+  item and focus (text on volt is always `#0E0E0E`; use `text-accent-foreground`,
+  `#4D6400` on light and volt on dark, for coloured text, never `text-primary`).
+  Source Sans 3 for text, Barlow Condensed 800 italic (`font-display`) for
+  headings, metric numbers and the hero. Tinted shadows use `--shadow-ink`.
+  The product name reads "27 Club".
+- Loading: every route group has a `loading.tsx` with skeletons
+  (`components/ui/skeleton.tsx`); a delayed spinner and a top progress bar
+  (`components/shared/nav-progress.tsx`, `use-delayed-flag.ts`, `useLinkStatus`)
+  appear only when a navigation is slow.
+- Client cache: `experimental.staleTimes` in `next.config.ts` plus
+  `unstable_dynamicStaleTime = 0` on pages that must always be fresh (money,
+  check-in, attendance, booking availability, dashboard). Other list and
+  settings pages are served from a 60 s router cache; saves, `revalidatePath`
+  and `router.refresh` clear it. Login, registration and logout use
+  `window.location.assign` so one account never sees another's cached pages.
+  `use-full-prefetch.ts` prefetches the pages in `CACHED_PATHS` in full after
+  load; `refresh-on-focus.tsx` refreshes live pages when the window regains focus.
+- Lazy loading: charts (`components/reports/lazy-charts.tsx`), the check-in
+  hourly chart, the QR generator, club and tenant switchers and the toaster
+  (armed after load or first interaction) load on demand; client bundles must
+  not import zod or recharts eagerly. Measurements are in
+  `progress/cache-lazy-progress.md`.
 
 ## Page layout (framed cards)
 
@@ -324,7 +404,7 @@ status from `/superadmin`.
   ```
 - `/superadmin/login` uses its own `superadmin_session` cookie. The JWT
   carries `{ sub, superadmin: true, email, full_name }` with audience
-  `swimma-superadmin`, is never sent to Supabase as a bearer token, and a
+  `club27-superadmin`, is never sent to Supabase as a bearer token, and a
   tenant session JWT is rejected there. Every portal query uses the
   service-role client; the portal groups clubs by organization, edits plans,
   subscription status and the club-limit override, and can deactivate an
@@ -344,13 +424,33 @@ status from `/superadmin`.
   every club of the organization (`set_organization_status`): new logins are
   refused and live sessions lose access immediately. No data is deleted.
   Switching back to **active** or **trial** restores access.
-- The superadmin sets **active** after payment outside the app, with period
-  dates (monthly +1 month, yearly +1 year by default). A period end in the
-  past is only flagged on `/superadmin`; nothing suspends automatically
-  except the trial rule below.
-- Owners read their subscription at `/admin/klub/langganan` and can change
-  plan and period (no proration, no automatic billing); the superadmin edits
-  plans, status, trial end and club-limit override.
+- The superadmin sets **active** with period dates (monthly +1 month,
+  yearly +1 year by default), or an owner's paid renewal does it (see
+  "Renewals and payment").
+- Owners read their subscription at `/admin/klub/langganan` and request
+  renewals there (no proration); the superadmin edits plans, status, trial
+  end and club-limit override.
+
+### Renewals and payment
+
+- Status `expired` is set by `expire_subscriptions` (daily cron
+  `/api/cron/subscriptions`, 07.00 WIB) when a trial or paid period ends.
+  `isBillingLocked` in `checkSession` then sends the owner to
+  `/admin/klub/langganan` and signs other users out with `?expired=1`; server
+  actions are blocked unless marked `allowBillingLocked`. Data is kept.
+- An owner submits a renewal (`request_renewal`, table
+  `subscription_renewals`; plan, period, users, amount from `platform_quote`).
+  With `MIDTRANS_SERVER_KEY` set, the app creates a Midtrans Snap link
+  (`lib/payments/midtrans.ts`, `payment_order_id`, `payment_url`) and the
+  notification handler `/api/payments/midtrans` checks the signature, re-reads
+  the status from the Midtrans API, compares the amount, then calls
+  `confirm_renewal`. Without the key, the superadmin confirms by hand.
+- `confirm_renewal` is idempotent and extends the period from the current end
+  when still active, otherwise from today; a gateway payment is honoured even
+  if the request was cancelled meanwhile.
+- Reminders: a banner 7 days before the end (always for a trial) and, with
+  `EMAIL_API_KEY` set, emails at 7 and 1 days (`subscription_reminders`).
+- Not built: invoices or receipts for the platform itself, proration, refunds.
 
 ### Pricing model
 
@@ -389,13 +489,13 @@ status from `/superadmin`.
 - Swim competition (lomba renang) tracking is intentionally not built, but
   nothing in the schema (e.g. `class_types`) assumes it can't be added
   later.
-- WhatsApp and payment-gateway integrations are left as TODOs — invoices are
-  marked paid manually by an admin for now.
+- WhatsApp is not integrated. A club's member invoices are marked paid
+  manually by an admin; Midtrans is used only for the platform subscription.
 - Admin creates coach accounts (temporary password, changed on first
   login). Members sign in read-only after an admin or their coach activates
   the account; there is no self-registration and no parent role.
-- Not built: taxes and discounts on orders, barcode scanners, receipt printers (the browser prints), returns and partial refunds, supplier purchasing, payment gateway, invoices or receipts for Swimma itself,
-  proration, automatic renewal or suspension at period end, coupons,
+- Not built: taxes and discounts on orders, barcode scanners, receipt printers (the browser prints), returns and partial refunds, supplier purchasing, member-invoice payment gateway, invoices or receipts for the platform itself,
+  proration, automatic charging, coupons,
   per-module pricing, a coach in several clubs, moving a club between
   organizations, self-registration, member self-booking of classes,
   invitations or password reset by email, one person as both coach and

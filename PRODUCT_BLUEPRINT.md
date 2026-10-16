@@ -1,13 +1,39 @@
-# Swimming Club Management System — Product Blueprint
+# 27 Club — Product Blueprint
+
+Dokumen ini adalah visi produk. Bagian "Status implementasi" di bawah menunjukkan apa yang sudah dibangun per 2026-10-17; rancangan teknis yang berlaku ada di `docs/ARCHITECTURE.md`. Bagian 2 sampai 15 mempertahankan rancangan awal (berorientasi klub renang): nama tabel dan alur di sana adalah gambaran, bukan skema aktual.
 
 ## 1. Tujuan Sistem
 
-Sistem terintegrasi untuk mengelola operasional klub renang dari pendaftaran member, membership, jadwal latihan, absensi, evaluasi, billing, keuangan, payroll, inventory, hingga kompetisi.
+Platform multi-klub (SaaS) untuk mengelola operasional klub olahraga: renang, gym, tenis, padel, pilates, yoga, dan olahraga lain yang ditambahkan lewat data. Satu pemilik (organisasi) bisa punya beberapa klub; tiap klub terisolasi di database lewat RLS. Cakupan: pendaftaran member, paket dan langganan, jadwal, absensi, booking fasilitas, check-in gym, penagihan, kas, payroll, kasir, promo, dan portal member. Klub membayar platform lewat langganan per pengguna internal (Standard dan Advanced).
 
-Sistem memiliki 3 portal utama:
-* **Admin Dashboard** — operasional, member, jadwal, keuangan, HR, inventory.
-* **Coach Portal** — jadwal mengajar, absensi member, absensi kerja, evaluasi.
-* **Member/Parent Portal** — data anak, jadwal, kehadiran, pembayaran, membership, promo, kompetisi.
+Portal:
+* **Admin** (`/admin`) — pemilik, admin, resepsionis, keuangan: operasional, member, jadwal, keuangan, payroll, kasir, pengaturan.
+* **Coach** (`/coach`) — jadwal mengajar, member sendiri, absensi.
+* **Member** (`/member`) — baca saja: paket, tagihan, jadwal, kunjungan, pesanan, plus booking fasilitas; tidak ada peran orang tua dan member belum memesan kelas sendiri.
+* **Superadmin** (`/superadmin`) — platform: organisasi, paket harga, status langganan, perpanjangan.
+* **Publik** — landing, halaman per olahraga `/olahraga/<kode>`, pendaftaran klub `/daftar`.
+
+## Status implementasi (2026-10-17)
+
+| Area blueprint | Status | Catatan |
+| :--- | :--- | :--- |
+| Member & CRM | Ada | `members`; akun login member (`member_accounts`), bukan akun orang tua; tanpa data medis terstruktur |
+| Paket & langganan | Ada | bulanan dan paket sesi; sisa sesi dihitung dari absensi atau check-in |
+| Jadwal kelas | Ada | pelatih, kapasitas, pelatih pengganti, fasilitas (`resource_id`) menggantikan kolam dan lane |
+| Private lesson | Belum | booking fasilitas ada, sesi privat per pelatih belum |
+| Absensi member | Ada | pelatih dan admin; koreksi tidak memotong sesi dua kali |
+| Absensi pelatih, timesheet | Belum | payroll memakai periode dan tarif per pelatih |
+| Progress & evaluasi | Belum | |
+| Invoice | Ada | cron bulanan, dibayar manual oleh admin; perubahan lewat fungsi database |
+| Payment gateway | Sebagian | Midtrans Snap hanya untuk langganan platform; invoice member belum |
+| Keuangan | Ada | buku kas append-only, arus kas, laporan pendapatan |
+| HR & payroll | Ada | `payroll_runs`, per pelatih, periode tidak tumpang tindih |
+| Inventory & POS | Ada | produk, stok opsional, kasir, pembayaran terpisah, void |
+| Promo | Ada | kode, periode, batas pakai |
+| Landing & registrasi | Ada | data dari database, daftar mandiri membuat organisasi, langganan, pemilik, dan klub pertama |
+| Kompetisi | Belum | modul masa depan |
+| Notifikasi | Sebagian | email pengingat langganan dan verifikasi pendaftaran; WhatsApp belum |
+| Tambahan di luar blueprint awal | Ada | multi-klub dan multi-olahraga (`club_types`, modul per klub), check-in QR gym, booking fasilitas, portal superadmin, langganan dan perpanjangan, log audit, ekspor data member, SEO publik |
 
 ---
 
@@ -313,6 +339,8 @@ Hanya akses yang diperlukan untuk coaching: Personal schedule, Assigned classes,
 ### Member / Parent
 Akses hanya terhadap data miliknya: Profile, Children, Schedule, Attendance, Membership, Package, Invoice, Payment history, Digital membership card, Progress/evaluation, Competition registration, Promo.
 
+> Aktual: peran `member` baca saja plus booking fasilitas, satu akun per orang. Peran lain yang ada: owner (lintas klub), receptionist, finance, head coach, dan superadmin platform. Akses halaman diatur `canAccessPath`; RLS tetap penjaga utama.
+
 ---
 
 ## 13. Database Blueprint
@@ -447,52 +475,53 @@ Product → POS Sale → Payment → Stock Deduction → Revenue Transaction
 ## 16. System Architecture
 
 ```text
-                    ┌──────────────────┐
-                    │   Landing Page   │
-                    └────────┬─────────┘
-                             │
-              ┌──────────────▼──────────────┐
-              │         Next.js App         │
-              │                             │
-              │ Admin │ Coach │ Parent      │
-              └──────────────┬──────────────┘
-                             │
-                    ┌────────▼────────┐
-                    │    Supabase     │
-                    │                 │
-                    │ Auth            │
-                    │ PostgreSQL      │
-                    │ RLS             │
-                    │ Storage         │
-                    └────────┬────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        ▼                    ▼                    ▼
- Payment Gateway       Notifications         Future APIs
- Midtrans/Xendit       WhatsApp/Email        Competition/etc.
+ Landing / halaman olahraga / daftar
+              │
+┌─────────────▼──────────────┐
+│ Next.js (Vercel)           │
+│ proxy.ts: CSP, sesi, peran │
+│ Admin │ Coach │ Member │ Superadmin
+└─────────────┬──────────────┘
+              │ JWT sendiri (HS256), klien per permintaan
+┌─────────────▼──────────────┐
+│ Supabase Postgres          │
+│ RLS, RPC security definer, │
+│ trigger, Storage (promo)   │
+└─────────────┬──────────────┘
+              │
+   ┌──────────┼───────────────┬──────────────┐
+   ▼          ▼               ▼              ▼
+Midtrans   Vercel Cron     Resend         Turnstile
+(langganan) (invoice,       (email)        (captcha)
+            langganan)
 ```
+
+Detail ada di `docs/ARCHITECTURE.md`.
 
 ---
 
-## 17. Recommended Tech Stack
+## 17. Tech Stack (aktual)
 
-| Layer | Technology |
+| Layer | Teknologi |
 | :--- | :--- |
-| **Framework** | Next.js + TypeScript |
-| **UI** | Tailwind CSS + shadcn/ui |
-| **Database** | PostgreSQL |
-| **Backend** | Supabase |
-| **Authentication** | Supabase Auth |
-| **Authorization** | PostgreSQL RLS |
-| **Data Fetching** | TanStack Query |
-| **Payment** | Midtrans / Xendit |
-| **Hosting** | Vercel |
-| **File Storage** | Supabase Storage |
-| **Notifications** | WhatsApp API / Email provider |
+| **Framework** | Next.js 16 (App Router) + TypeScript, React 19 |
+| **UI** | Tailwind CSS v4, komponen sendiri di `components/ui`, lucide-react, sonner, recharts (dimuat malas) |
+| **Font dan merek** | Source Sans 3, Barlow Condensed 800 italic, hijau volt `#C8F31D` |
+| **Database** | PostgreSQL (Supabase), migrasi di `supabase/migrations` |
+| **Autentikasi** | Sendiri: bcrypt dan JWT (`jose`), bukan Supabase Auth; superadmin wajib TOTP |
+| **Otorisasi** | RLS per `tenant_id` dan peran, fungsi RPC untuk penulisan sensitif |
+| **Validasi** | zod, sama dengan `CHECK` di database |
+| **Data fetching** | Server component dan server action; cache router 60 detik untuk halaman non-kritis |
+| **Pembayaran** | Midtrans Snap (langganan platform) |
+| **Hosting** | Vercel (dua cron) |
+| **File** | Supabase Storage (gambar promo) |
+| **Notifikasi** | Email lewat Resend (opsional); WhatsApp belum |
 
 ---
 
 ## 18. Development Priority
+
+Status per 2026-10-17: Phase 1 selesai (kecuali evaluasi), Phase 2 selesai kecuali timesheet dan notifikasi WhatsApp, Phase 3 selesai, Phase 4 belum. Urutan di bawah adalah rencana awal.
 
 Supaya project tidak berubah menjadi ERP swimming club sebelum punya satu member pun, build bertahap:
 
