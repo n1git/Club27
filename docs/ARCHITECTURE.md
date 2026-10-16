@@ -523,6 +523,17 @@ status from `/superadmin`.
   including a member, can create its own organization; it keeps its other
   contexts.
 
+### Data export
+
+- Owners download everything as a ZIP of CSV files from `/admin/klub/ekspor`
+  (`POST /api/export/organization`: owner session, password re-entered, three
+  per hour, audit-logged, also reachable when the subscription is locked).
+  `lib/export/organization.ts` lists the tables (members, packages, invoices,
+  classes, bookings, orders, cash ledger, payroll, check-ins, staff, roles,
+  audit log and more) and strips password hashes, check-in secrets and tokens;
+  `lib/export/zip.ts` writes the archive without a dependency. A new table with
+  `tenant_id` needs an entry in that list.
+
 ### Deleting an organization
 
 - The main owner (`/admin/klub/hapus`, name + password) calls

@@ -58,4 +58,4 @@ export function isLockedPhase(phase: BillingPhase) {
   return phase === "ended" || phase === "pending" || phase === "unverified";
 }
 
-export const BILLING_OPEN_PATHS = ["/admin/klub/langganan", "/admin/profile"];
+export const BILLING_OPEN_PATHS = ["/admin/klub/langganan", "/admin/klub/ekspor", "/admin/profile"];

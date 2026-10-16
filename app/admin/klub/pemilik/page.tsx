@@ -110,7 +110,11 @@ export default async function OwnersPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-lg font-semibold">Hapus organisasi</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Menghapus seluruh organisasi, klub, anggota, dan datanya.{" "}
+              Menghapus seluruh organisasi, klub, anggota, dan datanya. Unduh dulu datanya di{" "}
+              <Link href="/admin/klub/ekspor" className="font-medium underline underline-offset-4">
+                Ekspor data
+              </Link>
+              .{" "}
               <Link href="/admin/klub/hapus" className="font-medium text-destructive underline-offset-4 hover:underline">
                 Lanjut ke penghapusan
               </Link>

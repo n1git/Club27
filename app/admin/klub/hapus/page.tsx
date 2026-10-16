@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireOwner } from "@/lib/auth/owner";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { DeleteOrganizationForm } from "@/components/organization/delete-organization-form";
@@ -23,6 +24,9 @@ export default async function DeleteOrganizationPage() {
                 <li>Anda punya 30 hari untuk memulihkannya dari halaman Akun saya.</li>
                 <li>Setelah 30 hari, seluruh data klub (anggota, tagihan, kasir, jadwal, log audit) dihapus permanen dan tidak bisa dikembalikan.</li>
                 <li>Akun login setiap orang tetap ada; hanya data organisasi ini yang dihapus.</li>
+                <li>
+                  Unduh salinan datanya lebih dulu di <Link href="/admin/klub/ekspor" className="font-medium underline">Ekspor data</Link>.
+                </li>
               </ul>
             </AlertDescription>
           </Alert>

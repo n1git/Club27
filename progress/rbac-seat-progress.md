@@ -265,4 +265,6 @@ Aplikasi: `/admin/klub/hapus` (nama + kata sandi), `/akun` menampilkan organisas
 
 Uji: `supabase/tests/deletion_phase6.sql` (simulasi tidak menghapus, hak p_owner, 30 hari, pulihkan, kandidat, purge nyata hanya bila flag nyala, organisasi lain utuh); purge nyata atas 5 organisasi data demo skala penuh (±21 ribu booking, 7 ribu tagihan) lolos tanpa sisa baris; e2e browser (hapus dengan konfirmasi nama dan kata sandi, mendarat di `/akun`, login ulang, pulihkan) lolos; `rollback/044.sql` diuji.
 
-Batas: file di storage (gambar promo) tidak dihapus oleh SQL; tidak ada ekspor data sebelum hapus.
+Batas: file di storage (gambar promo) tidak dihapus oleh SQL.
+
+Ekspor data (ditambahkan setelah Fase 6): `/admin/klub/ekspor` -> `POST /api/export/organization` (sesi pemilik, kata sandi ulang, 3 per jam, audit `organization.export`, tetap bisa dibuka saat langganan terkunci); ZIP berisi 25 CSV + `BACA_SAYA.txt`, tanpa hash kata sandi, rahasia titik check-in, dan token. Diuji pada data demo skala penuh (zip valid, tidak ada hash kata sandi, kata sandi salah ditolak). Gambar promo di storage tidak ikut diekspor.
