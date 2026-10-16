@@ -1,6 +1,6 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai dan diterapkan ke hosted (041). Fase 4 selesai dan diterapkan ke hosted (042). Fase 5 selesai dan diterapkan ke hosted (043). Fase 6 berikutnya (tunggu OK Anda).
+Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riwayat migrasi diselaraskan, 039 diterapkan, data uji dikosongkan; paket, modul, jenis klub, superadmin utuh). Fase 2 selesai dan diterapkan ke hosted (040), Fase 3 selesai dan diterapkan ke hosted (041). Fase 4 selesai dan diterapkan ke hosted (042). Fase 5 selesai dan diterapkan ke hosted (043). Fase 6 selesai dan diterapkan ke hosted (044). Tinggal migrasi pembersihan akhir (tunggu OK Anda).
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
 - [x] Fase 1 - akun universal dan konteks personal (diterapkan ke hosted)
@@ -8,7 +8,7 @@ Status: Fase 1 selesai dan diterapkan ke hosted 2026-10-18 setelah OK owner (riw
 - [x] Fase 3 - permission kustom, RLS, dan guard (diterapkan ke hosted)
 - [x] Fase 4 - seat, billing, dan masa tenggang (diterapkan ke hosted)
 - [x] Fase 5 - undangan, reset kata sandi, autentikasi ulang, transfer, upgrade member ke org (diterapkan ke hosted)
-- [x] Fase 6 - siklus hapus organisasi (kode + uji lokal; menunggu OK sebelum push dan terapan hosted)
+- [x] Fase 6 - siklus hapus organisasi (diterapkan ke hosted)
 
 Basis audit: `main` @ `abbc0b6`, migrasi repo 001-038, query read-only ke Supabase `gmldacyjdbsdofqqaqry` tanggal 2026-10-16.
 Label: **F** = fakta terverifikasi (file/query), **R** = rekomendasi desain, **A** = asumsi/belum terbukti.
