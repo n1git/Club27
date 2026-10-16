@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-18
+
+- One account per person: sign-in, password changes and sign-out now work on a single account record shared by owners, staff and members. People can create a free account at `/daftar/akun` before joining a club; it opens a personal page at `/akun`.
+
 ## 2026-10-17
 
 - One page per ready club type at `/olahraga/<code>` (read from the database, so a new sport needs only an SQL insert): heading, summary, the features that type has, its terms, links to the other types, a breadcrumb, and a sign-up button that preselects the club type (`/daftar?jenis=<code>`). The landing cards link to them and the sitemap lists them.

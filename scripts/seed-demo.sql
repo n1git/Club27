@@ -5,6 +5,18 @@ create function pg_temp.act(p_profile uuid, p_role text, p_tenant uuid) returns 
   )::text, true)
 $f$;
 
+create function pg_temp.acct(p_email text, p_name text, p_hash text) returns uuid language plpgsql as $f$
+declare v_id uuid;
+begin
+  select id into v_id from accounts where email = lower(p_email);
+  if v_id is null then
+    insert into accounts (email, full_name, password_hash, email_verified_at)
+    values (lower(p_email), p_name, p_hash, now()) returning id into v_id;
+  end if;
+  return v_id;
+end
+$f$;
+
 create function pg_temp.clear() returns void language sql as $f$
   select set_config('request.jwt.claims', '', true)
 $f$;
@@ -42,7 +54,7 @@ begin
       if v_first then
         select organization_id, tenant_id, owner_id, profile_id into v_org, v_tenant, v_owner, v_owner_profile
         from register_organization(
-          o ->> 'name', c ->> 'name', o #>> '{owner,name}', o #>> '{owner,email}', o #>> '{owner,hash}',
+          o ->> 'name', c ->> 'name', pg_temp.acct(o #>> '{owner,email}', o #>> '{owner,name}', o #>> '{owner,hash}'),
           o ->> 'plan', o ->> 'period', c ->> 'type');
         if o ->> 'status' = 'active' then
           perform set_organization_status(v_org, 'active', 'seed-demo', v_today, null);
@@ -61,11 +73,10 @@ begin
       v_coaches := '{}';
       v_head := null;
       for s in select * from jsonb_array_elements(c -> 'staff') loop
-        insert into profiles (tenant_id, role, full_name, email, phone, must_change_password, is_head_coach)
-        values (v_tenant, s ->> 'role', s ->> 'name', s ->> 'email', '08990000' || lpad((floor(random() * 10000))::int::text, 4, '0'), false,
+        insert into profiles (tenant_id, account_id, role, full_name, email, phone, is_head_coach)
+        values (v_tenant, pg_temp.acct(s ->> 'email', s ->> 'name', s ->> 'hash'), s ->> 'role', s ->> 'name', s ->> 'email', '08990000' || lpad((floor(random() * 10000))::int::text, 4, '0'),
                 coalesce((s ->> 'head')::boolean, false))
         returning id into v_pid;
-        insert into auth_credentials (profile_id, password_hash) values (v_pid, s ->> 'hash');
         if s ->> 'role' = 'admin' then v_admin := v_pid; end if;
         if s ->> 'role' = 'finance' then v_finance := v_pid; end if;
         if s ->> 'role' = 'receptionist' then v_recep := v_pid; end if;
@@ -310,7 +321,7 @@ begin
         begin
           perform activate_member_account(
             (select id from members where tenant_id = v_tenant and is_active and profile_id is null order by created_at, id offset (ma ->> 'idx')::int limit 1),
-            ma ->> 'email', ma ->> 'hash');
+            pg_temp.acct(ma ->> 'email', 'Anggota Demo', ma ->> 'hash'));
         exception when others then
           raise notice 'seed-demo: member account skipped (%): %', ma ->> 'email', sqlerrm;
         end;

@@ -219,12 +219,12 @@ begin
   delete from order_counters where tenant_id = any(v_tenants);
   delete from tenant_module_overrides where tenant_id = any(v_tenants);
   delete from members where tenant_id = any(v_tenants);
-  delete from auth_credentials where profile_id in (select id from profiles where tenant_id = any(v_tenants));
   delete from profiles where tenant_id = any(v_tenants);
   delete from locations where tenant_id = any(v_tenants);
   delete from member_accounts where email like '%@${DOMAIN}' and not exists (select 1 from profiles p where p.member_account_id = member_accounts.id);
   delete from tenants where id = any(v_tenants);
   delete from org_owners where organization_id = any(v_orgs);
+  delete from accounts where email like '%@${DOMAIN}';
   delete from organization_subscriptions where organization_id = any(v_orgs);
   delete from organizations where id = any(v_orgs);
   raise notice 'purge: removed % organizations', array_length(v_orgs, 1);

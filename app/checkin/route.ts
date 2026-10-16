@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
     if (!club) return result("NOT_MEMBER");
     sessionToken = await createSession({
       id: club.profileId,
+      accountId: session.account_id,
       email: club.email,
       fullName: club.fullName,
       role: "member",

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { verifyPasswordOrDummy } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
-import { roleHome, OWNER_HOME, type AppRole } from "@/lib/auth/roles";
+import { roleHome, OWNER_HOME, PERSONAL_HOME, type AppRole } from "@/lib/auth/roles";
 import { loginSchema, LOGIN_ERROR } from "@/lib/validations/auth";
 import { isRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { isCrossSite, readJsonBody } from "@/lib/auth/request";
@@ -14,15 +14,6 @@ const LOCKOUT_MINUTES = 15;
 const GENERIC_ERROR = LOGIN_ERROR;
 const UNVERIFIED_ERROR = "Email pendaftaran belum diverifikasi. Buka tautan verifikasi di email Anda.";
 const DEACTIVATED_ERROR = `Akses klub Anda sedang dinonaktifkan. Data klub tetap tersimpan. Hubungi admin platform ${APP_NAME} untuk mengaktifkannya kembali.`;
-
-interface LoginAccount {
-  table: "org_owners" | "member_accounts" | "auth_credentials";
-  key: "id" | "profile_id";
-  id: string;
-  passwordHash: string;
-  failedCount: number;
-  lockedUntil: string | null;
-}
 
 interface SessionTarget {
   profileId: string;
@@ -36,6 +27,106 @@ interface SessionTarget {
 }
 
 type TenantJoin = { is_active: boolean; organization_id: string; created_at: string } | null;
+
+interface LoginAccount {
+  id: string;
+  email: string;
+  full_name: string;
+  password_hash: string;
+  failed_login_count: number;
+  locked_until: string | null;
+}
+
+async function resolveTarget(
+  supabase: ReturnType<typeof createAdminSupabaseClient>,
+  account: LoginAccount
+): Promise<SessionTarget | "deactivated" | "unverified"> {
+  const { data: owner } = await supabase
+    .from("org_owners")
+    .select("id, organization_id, is_active")
+    .eq("account_id", account.id)
+    .maybeSingle();
+  if (owner) {
+    if (!owner.is_active) return "deactivated";
+    const { data: subscription } = await supabase
+      .from("organization_subscriptions")
+      .select("status")
+      .eq("organization_id", owner.organization_id)
+      .maybeSingle();
+    if (subscription?.status === "pending_verification") return "unverified";
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, email, full_name, tenant_id, tenants(is_active, organization_id, created_at)")
+      .eq("owner_id", owner.id)
+      .eq("is_active", true);
+    const profile = (profiles ?? [])
+      .map((p) => ({ ...p, tenant: p.tenants as unknown as TenantJoin }))
+      .filter((p) => p.tenant?.is_active)
+      .sort((a, b) => a.tenant!.created_at.localeCompare(b.tenant!.created_at))[0];
+    if (!profile) return "deactivated";
+    return {
+      profileId: profile.id,
+      email: profile.email,
+      fullName: profile.full_name,
+      role: "admin",
+      tenantId: profile.tenant_id,
+      orgId: owner.organization_id,
+      redirectTo: OWNER_HOME,
+    };
+  }
+
+  const { data: memberAccount } = await supabase
+    .from("member_accounts")
+    .select("id")
+    .eq("account_id", account.id)
+    .maybeSingle();
+  if (memberAccount) {
+    const clubs = await listMemberClubs(memberAccount.id);
+    const club = clubs[0];
+    if (!club) return "deactivated";
+    return {
+      profileId: club.profileId,
+      email: club.email,
+      fullName: club.fullName,
+      role: "member",
+      tenantId: club.tenantId,
+      orgId: club.orgId,
+      redirectTo: clubs.length > 1 ? "/member/klub" : roleHome("member"),
+      clubPending: clubs.length > 1,
+    };
+  }
+
+  const { data: staff } = await supabase
+    .from("profiles")
+    .select("id, role, email, full_name, is_active, tenant_id, tenants(is_active, organization_id, created_at)")
+    .eq("account_id", account.id)
+    .is("owner_id", null)
+    .is("member_account_id", null)
+    .maybeSingle();
+  if (staff) {
+    const tenant = staff.tenants as unknown as TenantJoin;
+    if (!staff.is_active || !tenant?.is_active) return "deactivated";
+    return {
+      profileId: staff.id,
+      email: staff.email,
+      fullName: staff.full_name,
+      role: staff.role as AppRole,
+      tenantId: staff.tenant_id,
+      orgId: tenant.organization_id,
+      redirectTo: roleHome(staff.role as AppRole),
+    };
+  }
+
+  return {
+    profileId: account.id,
+    email: account.email,
+    fullName: account.full_name,
+    role: "personal",
+    tenantId: "",
+    orgId: "",
+    redirectTo: PERSONAL_HOME,
+  };
+}
 
 export async function POST(request: Request) {
   if (isCrossSite(request)) {
@@ -54,130 +145,20 @@ export async function POST(request: Request) {
 
   const supabase = createAdminSupabaseClient();
 
-  let account: LoginAccount | null = null;
-  let resolveTarget: () => Promise<SessionTarget | "deactivated" | "unverified"> = async () => "deactivated";
-
-  const { data: owner } = await supabase
-    .from("org_owners")
-    .select("id, organization_id, is_active, password_hash, failed_login_count, locked_until")
+  const { data: found } = await supabase
+    .from("accounts")
+    .select("id, email, full_name, is_active, password_hash, failed_login_count, locked_until")
     .eq(identifier.field, identifier.value)
     .maybeSingle();
+  const account: LoginAccount | null = found?.is_active ? (found as LoginAccount) : null;
 
-  const { data: memberAccount } = owner
-    ? { data: null }
-    : await supabase
-        .from("member_accounts")
-        .select("id, is_active, password_hash, failed_login_count, locked_until")
-        .eq(identifier.field, identifier.value)
-        .maybeSingle();
-
-  if (owner?.is_active) {
-    account = {
-      table: "org_owners",
-      key: "id",
-      id: owner.id,
-      passwordHash: owner.password_hash,
-      failedCount: owner.failed_login_count,
-      lockedUntil: owner.locked_until,
-    };
-    resolveTarget = async () => {
-      const { data: subscription } = await supabase
-        .from("organization_subscriptions")
-        .select("status")
-        .eq("organization_id", owner.organization_id)
-        .maybeSingle();
-      if (subscription?.status === "pending_verification") return "unverified";
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, tenant_id, tenants(is_active, organization_id, created_at)")
-        .eq("owner_id", owner.id)
-        .eq("is_active", true);
-      const rows = (profiles ?? [])
-        .map((p) => ({ ...p, tenant: p.tenants as unknown as TenantJoin }))
-        .filter((p) => p.tenant?.is_active)
-        .sort((a, b) => a.tenant!.created_at.localeCompare(b.tenant!.created_at));
-      const profile = rows[0];
-      if (!profile) return "deactivated";
-      return {
-        profileId: profile.id,
-        email: profile.email,
-        fullName: profile.full_name,
-        role: "admin",
-        tenantId: profile.tenant_id,
-        orgId: owner.organization_id,
-        redirectTo: OWNER_HOME,
-      };
-    };
-  } else if (memberAccount?.is_active) {
-    account = {
-      table: "member_accounts",
-      key: "id",
-      id: memberAccount.id,
-      passwordHash: memberAccount.password_hash,
-      failedCount: memberAccount.failed_login_count,
-      lockedUntil: memberAccount.locked_until,
-    };
-    resolveTarget = async () => {
-      const clubs = await listMemberClubs(memberAccount.id);
-      const club = clubs[0];
-      if (!club) return "deactivated";
-      return {
-        profileId: club.profileId,
-        email: club.email,
-        fullName: club.fullName,
-        role: "member",
-        tenantId: club.tenantId,
-        orgId: club.orgId,
-        redirectTo: clubs.length > 1 ? "/member/klub" : roleHome("member"),
-        clubPending: clubs.length > 1,
-      };
-    };
-  } else if (!owner && !memberAccount) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, role, email, full_name, is_active, tenant_id, tenants(is_active, organization_id, created_at)")
-      .eq(identifier.field, identifier.value)
-      .is("owner_id", null)
-      .maybeSingle();
-
-    const { data: credentials } = profile?.is_active
-      ? await supabase
-          .from("auth_credentials")
-          .select("password_hash, failed_login_count, locked_until")
-          .eq("profile_id", profile.id)
-          .maybeSingle()
-      : { data: null };
-
-    if (profile && credentials) account = {
-      table: "auth_credentials",
-      key: "profile_id",
-      id: profile.id,
-      passwordHash: credentials.password_hash,
-      failedCount: credentials.failed_login_count,
-      lockedUntil: credentials.locked_until,
-    };
-    if (profile) resolveTarget = async () => {
-      const tenant = profile.tenants as unknown as TenantJoin;
-      if (!tenant?.is_active) return "deactivated";
-      return {
-        profileId: profile.id,
-        email: profile.email,
-        fullName: profile.full_name,
-        role: profile.role as AppRole,
-        tenantId: profile.tenant_id,
-        orgId: tenant.organization_id,
-        redirectTo: roleHome(profile.role as AppRole),
-      };
-    };
-  }
-
-  const locked = Boolean(account?.lockedUntil && new Date(account.lockedUntil) > new Date());
-  const valid = await verifyPasswordOrDummy(password, account && !locked ? account.passwordHash : null);
+  const locked = Boolean(account?.locked_until && new Date(account.locked_until) > new Date());
+  const valid = await verifyPasswordOrDummy(password, account && !locked ? account.password_hash : null);
   if (!account || locked || !valid) {
     if (!account || locked) return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
-    const nextCount = account.failedCount + 1;
+    const nextCount = account.failed_login_count + 1;
     await supabase
-      .from(account.table)
+      .from("accounts")
       .update({
         failed_login_count: nextCount,
         locked_until:
@@ -185,11 +166,11 @@ export async function POST(request: Request) {
             ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000).toISOString()
             : null,
       })
-      .eq(account.key, account.id);
+      .eq("id", account.id);
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
-  const target = await resolveTarget();
+  const target = await resolveTarget(supabase, account);
   if (target === "deactivated") {
     return NextResponse.json({ error: DEACTIVATED_ERROR }, { status: 403 });
   }
@@ -198,16 +179,17 @@ export async function POST(request: Request) {
   }
 
   await supabase
-    .from(account.table)
+    .from("accounts")
     .update({
       failed_login_count: 0,
       locked_until: null,
       last_login_at: new Date().toISOString(),
     })
-    .eq(account.key, account.id);
+    .eq("id", account.id);
 
   await createSession({
     id: target.profileId,
+    accountId: account.id,
     email: target.email,
     fullName: target.fullName,
     role: target.role,

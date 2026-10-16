@@ -25,6 +25,7 @@ export async function switchClub(_prevState: ActionState, formData: FormData): P
 
   await createSession({
     id: club.profileId,
+    accountId: session.account_id,
     email: club.email,
     fullName: club.fullName,
     role: "member",

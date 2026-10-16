@@ -39,6 +39,7 @@ export async function createTenant(_prevState: ActionState, formData: FormData):
 
   await createSession({
     id: profile.id,
+    accountId: owner.accountId,
     email: profile.email,
     fullName: profile.full_name,
     role: "admin",
@@ -66,6 +67,7 @@ export async function switchTenant(_prevState: ActionState, formData: FormData):
 
   await createSession({
     id: target.id,
+    accountId: owner.accountId,
     email: target.email,
     fullName: target.full_name,
     role: "admin",

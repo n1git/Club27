@@ -12,7 +12,7 @@ import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { SITE_URL } from "@/lib/site";
 import { APP_NAME } from "@/lib/config";
 import { PRIVACY_VERSION } from "@/lib/privacy";
-import { usernameDbError } from "@/lib/validations/username";
+import { createAccount, discardUnusedAccount } from "@/lib/accounts/account";
 
 const GENERIC_ERROR = "Pendaftaran tidak dapat diproses. Periksa data Anda atau masuk jika sudah punya akun.";
 
@@ -78,55 +78,71 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminSupabaseClient();
-  const passwordHash = await hashPassword(password);
+  const verifyByEmail = isEmailConfigured();
+  if (verifyByEmail) await supabase.rpc("discard_unverified_registration", { p_email: ownerEmail });
+
+  const account = await createAccount({
+    email: ownerEmail,
+    username,
+    fullName: ownerFullName,
+    passwordHash: await hashPassword(password),
+    emailVerified: !verifyByEmail,
+  });
+  if (!account.ok) {
+    if (account.field === "username") {
+      return NextResponse.json({ error: account.error, field: "username" }, { status: 409 });
+    }
+    if (account.field === "email") {
+      if (verifyByEmail) {
+        await sendEmail({ to: ownerEmail, ...existingAccountEmail() });
+        return NextResponse.json({ status: "check_email", quote }, { status: 202 });
+      }
+      return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Gagal mendaftarkan klub. Coba lagi nanti." }, { status: 500 });
+  }
+
   const args = {
     p_organization_name: tenantName,
     p_tenant_name: tenantName,
-    p_owner_name: ownerFullName,
-    p_owner_email: ownerEmail,
-    p_password_hash: passwordHash,
+    p_account_id: account.id,
     p_plan: planCode,
     p_period: billingPeriod,
     p_club_type: clubType,
-    p_username: username,
+  };
+  const failure = async (message: string | undefined) => {
+    await discardUnusedAccount(account.id);
+    if (message?.includes("club type not available") || message?.includes("plan not available")) {
+      return NextResponse.json({ error: "Paket atau jenis klub tidak tersedia" }, { status: 400 });
+    }
+    return null;
   };
 
-  if (isEmailConfigured()) {
+  if (verifyByEmail) {
     const token = randomBytes(32).toString("base64url");
     const tokenHash = createHash("sha256").update(token).digest("hex");
-    await supabase.rpc("discard_unverified_registration", { p_email: ownerEmail });
     const { data, error } = await supabase.rpc("register_organization_unverified", { ...args, p_token_hash: tokenHash });
     const pending = (data as Created[] | null)?.[0];
-    if (!error && pending) {
-      await recordOwnerConsent(pending);
-      await sendEmail({ to: ownerEmail, ...verificationEmail(`${SITE_URL}/api/onboarding/verify?token=${token}`, ownerFullName) });
-    } else if (usernameDbError(error?.message)) {
-      return NextResponse.json({ error: usernameDbError(error?.message), field: "username" }, { status: 409 });
-    } else if (error?.code === "23505") {
-      await sendEmail({ to: ownerEmail, ...existingAccountEmail() });
-    } else if (error?.message.includes("club type not available") || error?.message.includes("plan not available")) {
-      return NextResponse.json({ error: "Paket atau jenis klub tidak tersedia" }, { status: 400 });
-    } else {
-      return NextResponse.json({ error: "Gagal mendaftarkan klub. Coba lagi nanti." }, { status: 500 });
+    if (error || !pending) {
+      const known = await failure(error?.message);
+      return known ?? NextResponse.json({ error: "Gagal mendaftarkan klub. Coba lagi nanti." }, { status: 500 });
     }
+    await recordOwnerConsent(pending);
+    await sendEmail({ to: ownerEmail, ...verificationEmail(`${SITE_URL}/api/onboarding/verify?token=${token}`, ownerFullName) });
     return NextResponse.json({ status: "check_email", quote }, { status: 202 });
   }
 
   const { data, error } = await supabase.rpc("register_organization", args);
   const created = (data as Created[] | null)?.[0];
   if (error || !created) {
-    if (usernameDbError(error?.message)) {
-      return NextResponse.json({ error: usernameDbError(error?.message), field: "username" }, { status: 409 });
-    }
-    if (error?.message.includes("club type not available") || error?.message.includes("plan not available")) {
-      return NextResponse.json({ error: "Paket atau jenis klub tidak tersedia" }, { status: 400 });
-    }
-    return NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
+    const known = await failure(error?.message);
+    return known ?? NextResponse.json({ error: GENERIC_ERROR }, { status: 400 });
   }
 
   await recordOwnerConsent(created);
   await createSession({
     id: created.profile_id,
+    accountId: account.id,
     email: ownerEmail,
     fullName: ownerFullName,
     role: "admin",

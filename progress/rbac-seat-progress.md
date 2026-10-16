@@ -1,9 +1,9 @@
 # rbac-seat — akun universal, role kustom, seat
 
-Status: Fase 0 (audit) selesai, menunggu keputusan owner. Belum ada perubahan kode atau database.
+Status: Fase 1 selesai di kode dan diuji lokal; migrasi 039 BELUM diterapkan ke hosted (menunggu OK owner). Fase 2 belum dimulai.
 
 - [x] Fase 0 - audit dan rencana (dokumen ini)
-- [ ] Fase 1 - akun universal dan konteks personal
+- [x] Fase 1 - akun universal dan konteks personal (kode + uji lokal; terapan hosted menunggu OK)
 - [ ] Fase 2 - keanggotaan organisasi dan base role
 - [ ] Fase 3 - permission kustom, RLS, dan guard
 - [ ] Fase 4 - seat, billing, dan masa tenggang
@@ -141,3 +141,37 @@ Kasus yang diuji:
 - D11 Keuangan dan resepsionis: staff (makan seat) atau frontend (gratis)? Semua akses backoffice yang gratis = kebocoran seat.
 - D12 Daftar mandiri member wajib verifikasi email (seperti registrasi org sekarang)?
 - D13 Penyelarasan riwayat migrasi hosted (18 versi bertimestamp) dengan file repo sebelum migrasi baru: siapa dan bagaimana?
+
+## Keputusan owner (dijawab)
+
+- Keputusan final di prompt tugas `rbac-seat` (akun universal, p_owner/owner/staff, role kustom, seat, prorata, trial 14 hari, masa tenggang 1 bulan, purge nonaktif, reset email, autentikasi ulang) berlaku sebagai jawaban D2, D3, D5-D11 untuk fase terkait; D4 (trial 14 hari vs `trial_days`) tetap belum dijawab, jadi `subscription_plans` tidak diubah sampai Fase 4.
+- D1: data uji dikosongkan saat cutover, tanpa backfill.
+- D12 (2026-10-18): daftar mandiri akun umum tanpa verifikasi email.
+- D13 (2026-10-18): saya menulis skrip perbaikan riwayat; dijalankan hanya setelah owner OK.
+
+## Fase 1 - hasil
+
+Skema (`20250101000039_accounts.sql`, tambah-saja kecuali yang disebut):
+- `accounts` (email, username, nama, hash kata sandi, `must_change_password`, `is_active`, lockout, `email_verified_at`, `sessions_valid_after`). RLS aktif, tanpa grant ke anon/authenticated.
+- `account_id` di `org_owners` (unik), `member_accounts` (unik), `profiles` (unik per `tenant_id`). Trigger: email identitas harus sama dengan email akun; `profiles.account_id` hanya bisa diisi/diubah tanpa JWT klub (server/service role).
+- `password_hash`/`username` di `org_owners`, `member_accounts`, `auth_credentials` jadi nullable (tidak dipakai lagi; dihapus di migrasi pembersihan). Trigger username lama dilepas; `username_taken` kini memeriksa `accounts`.
+- `is_active_user()` mensyaratkan akun aktif dan `accounts.sessions_valid_after`; profil tanpa akun ditolak.
+- `register_organization(_unverified)`, `create_tenant_for_owner`, `activate_member_account`, `verify_registration`, `discard_unverified_registration` memakai `account_id`. `consents.subject_type` menerima `account`.
+
+Aplikasi:
+- JWT: `ctx`, `account_id`; role `personal` (tanpa `tenant_id`), rumah `/akun`. Sesi tanpa `account_id` ditolak (semua pengguna login ulang saat cutover).
+- Login membaca `accounts` (username atau email, lockout dan rate limit tetap), memilih konteks: pemilik, anggota (pemilih klub bila banyak), staf, personal. Logout, ganti kata sandi, dan reset mencabut semua konteks lewat `accounts.sessions_valid_after`.
+- `/daftar/akun` + `POST /api/accounts/register` (rate limit, captcha bila ada, consent tercatat), halaman `/akun` memakai profil bersama.
+- Pendaftaran klub, tambah staf/pelatih, aktivasi anggota, reset kata sandi, profil, seed-admin dan seed-demo memakai `accounts`.
+
+Perilaku yang perlu Anda ketahui:
+- Karena D12 tanpa verifikasi, klub tidak bisa menautkan akun mandiri yang emailnya belum terverifikasi (mencegah orang lain mendaftarkan email anggota lebih dulu lalu terhubung ke data anggota itu). Akun mandiri baru bisa ditautkan setelah verifikasi email ada (Fase 5, lewat tautan reset/undangan).
+- Akun staf tidak menautkan akun yang sudah ada (undangan lewat tautan di Fase 5).
+- Larangan satu email = satu jenis identitas masih berlaku lewat trigger lama; dilonggarkan di Fase 2/3.
+- Penghapusan data anggota menghapus tautan anggota, bukan baris `accounts`.
+
+Uji: `supabase/tests/accounts_phase1.sql` (transaksi yang di-rollback; jalankan di DB dengan migrasi 001-039: `psql -v ON_ERROR_STOP=1 -f supabase/tests/accounts_phase1.sql`) memeriksa keunikan, tautan, revokasi sesi, konteks personal nol baris di semua tabel RLS, trigger tautan, verifikasi pendaftaran. Uji browser lokal (daftar akun, login username/email, logout mencabut cookie lama, daftar klub, tambah pelatih + ganti kata sandi sementara, sesi lain dicabut saat kata sandi diganti, aktivasi anggota, kunci setelah 5 gagal) lolos. `npx next typegen && npx tsc --noEmit` bersih.
+
+Skrip: `rollback/039.sql` (diuji pada DB lokal), `cutover-phase1.sql` (kosongkan data uji, pertahankan paket, modul, jenis klub, superadmin; default `rollback`, ganti ke `commit` setelah OK dan `pg_dump`), `migration-history-repair.sql` (menyelaraskan 18 versi hosted ke nama file repo dan mencatat 013-032; default `rollback` sebagai dry-run).
+
+Urutan terapan hosted setelah OK: `pg_dump`, jalankan perbaikan riwayat (commit), terapkan 039, jalankan cutover (commit), deploy aplikasi. Sebelum deploy, semua sesi lama tidak valid.

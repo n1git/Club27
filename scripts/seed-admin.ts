@@ -39,18 +39,32 @@ async function main() {
     auth: { persistSession: false },
   });
 
+  const { data: account, error: accountError } = await supabase
+    .from("accounts")
+    .insert({
+      email,
+      username: username.data,
+      full_name: fullName,
+      password_hash: await bcrypt.hash(password, 10),
+      email_verified_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+  if (accountError || !account) {
+    console.error("Failed to create account:", accountError?.message);
+    process.exit(1);
+  }
+
   const { error } = await supabase.rpc("register_organization", {
     p_organization_name: organizationName,
     p_tenant_name: tenantName,
-    p_owner_name: fullName,
-    p_owner_email: email,
-    p_password_hash: await bcrypt.hash(password, 10),
+    p_account_id: account.id,
     p_plan: process.env.SEED_PLAN ?? "standard",
     p_period: process.env.SEED_PERIOD ?? "monthly",
-    p_username: username.data,
   });
 
   if (error) {
+    await supabase.from("accounts").delete().eq("id", account.id);
     console.error("Failed to create organization:", error.message);
     process.exit(1);
   }

@@ -65,14 +65,29 @@ variables.
 
 ## Auth model
 
-Authentication is **custom** (bcrypt password hashes in `auth_credentials` for coaches
-and in `org_owners` for owners), not Supabase Auth. There is one `/login`
-(email + password, no club code). The server looks the email up in
-`org_owners` first, then in `member_accounts`, then in coach/staff profiles, with the same generic error
-for unknown email and wrong password, plus per-IP rate limit and a 15-minute
-lockout after 5 failures. It then mints its own JWT signed with the Supabase
-project's JWT secret, carrying `sub` (profile id), `tenant_id`, `org_id` and
-`app_role` (admin/coach).
+Authentication is **custom**, not Supabase Auth. Every person has one
+universal account in `accounts` (email, username, bcrypt hash, lockout,
+`sessions_valid_after`, `must_change_password`); it is the only place a password
+lives. `org_owners`, `member_accounts` and club `profiles` link to it through
+`account_id` (a profile is unique per account and club, and the link can only be
+set by the server). There is one `/login` (username or email + password, no club
+code): the server finds the account, with the same generic error for unknown
+account and wrong password, plus per-IP rate limit and a 15-minute lockout after
+5 failures, then picks the context: owner, member (club chooser when several),
+club staff, or **personal** when the account has none of them. It mints its own
+JWT signed with the Supabase project's JWT secret, carrying `sub` (club profile
+id, or the account id for personal), `account_id`, `ctx` (`personal`, `member`,
+`org`), `tenant_id`, `org_id` and `app_role` (admin, coach, ..., or `personal`).
+A session without `account_id` is rejected.
+
+The **personal** context has no `tenant_id`, so every club policy returns zero
+rows for it (`supabase/tests/accounts_phase1.sql` checks every RLS table). It
+lands on `/akun` (profile, change password). Anyone can create an account at
+`/daftar/akun` (free, no email verification, terms consent recorded as subject
+type `account`). A club can attach an existing account as a member only if the
+account's email is verified or it is already a member somewhere; staff accounts
+are always created fresh. Registering a club creates the account first, then
+`register_organization(..., p_account_id, ...)`.
 
 An owner has no tenant-specific password: each owner gets one `admin`
 profile per club (`profiles.owner_id`) and signs in as the profile of their
@@ -96,7 +111,9 @@ shown first), and `switchClub` re-mints the JWT after checking
 member's own `members`, `subscriptions`, `invoices` and `bookings` rows plus
 the tenant-wide classes and active promo; there is no write policy, and
 deactivating the member account cuts every club while deactivating the
-`members` row cuts only that club.
+`members` row cuts only that club. Logout, password change and reset set
+`accounts.sessions_valid_after`, which cuts every context of the account (checked
+in `checkSession` and in `is_active_user()`).
 
 **Identity rule:** one email is one kind of identity (owner, coach/staff
 admin, or member account), enforced by triggers on all three stores. A coach

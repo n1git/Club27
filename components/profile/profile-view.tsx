@@ -74,6 +74,18 @@ export function ProfileView({ data }: { data: ProfileData }) {
           </CardContent>
         </Card>
 
+        {data.kind === "personal" ? (
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Klub</CardTitle>
+              <CardDescription>Anda belum tergabung di klub mana pun.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Minta admin klub mengaktifkan akun anggota Anda memakai email {data.email}. Setelah itu klub tampil saat Anda masuk.
+            </CardContent>
+          </Card>
+        ) : null}
+
         {data.kind === "owner" ? (
           <Card className="lg:col-span-2">
             <CardHeader>

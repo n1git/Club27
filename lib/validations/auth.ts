@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { USERNAME_PATTERN } from "./username";
+import { USERNAME_PATTERN, usernameSchema } from "./username";
 
 const COMMON_PASSWORDS = new Set([
   "password1", "password12", "password123", "password1234", "passw0rd123", "p@ssword123",
@@ -51,4 +51,12 @@ export const changePasswordSchema = z.object({
 export const superadminLoginSchema = z.object({
   identifier: loginIdentifier,
   password: boundedPassword,
+});
+
+export const registerAccountSchema = z.object({
+  fullName: z.string().trim().min(2, "Nama Anda minimal 2 karakter").max(100, "Nama terlalu panjang"),
+  email: z.string().trim().toLowerCase().email("Email tidak valid").max(254, "Email terlalu panjang"),
+  username: usernameSchema,
+  password: passwordSchema,
+  acceptTerms: z.literal(true, { message: "Setujui Syarat & Ketentuan dan Kebijakan Privasi untuk mendaftar" }),
 });

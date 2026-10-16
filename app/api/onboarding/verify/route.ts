@@ -13,11 +13,12 @@ export async function GET(request: NextRequest) {
   const { data } = await createAdminSupabaseClient().rpc("verify_registration", {
     p_token_hash: createHash("sha256").update(token).digest("hex"),
   });
-  const row = (data as { organization_id: string; tenant_id: string; profile_id: string; email: string; full_name: string }[] | null)?.[0];
+  const row = (data as { organization_id: string; tenant_id: string; profile_id: string; account_id: string; email: string; full_name: string }[] | null)?.[0];
   if (!row) return failed;
 
   await createSession({
     id: row.profile_id,
+    accountId: row.account_id,
     email: row.email,
     fullName: row.full_name,
     role: "admin",

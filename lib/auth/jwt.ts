@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from "jose";
 import type { AppRole } from "./roles";
 
+export type SessionContext = "personal" | "member" | "org";
+
 export interface SessionClaims {
   sub: string;
   role: "authenticated";
@@ -8,6 +10,8 @@ export interface SessionClaims {
   tenant_id: string;
   org_id: string;
   club_pending?: boolean;
+  ctx: SessionContext;
+  account_id: string;
   email: string;
   full_name: string;
   iat?: number;

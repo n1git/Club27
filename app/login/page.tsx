@@ -30,7 +30,11 @@ export default async function LoginPage({
       description="Masuk dengan username atau email dan kata sandi Anda"
       footer={
         <>
-          Klub Anda belum terdaftar?{" "}
+          Belum punya akun?{" "}
+          <Link href="/daftar/akun" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+            Buat akun
+          </Link>
+          {" · "}
           <Link href="/daftar" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Daftarkan klub
           </Link>

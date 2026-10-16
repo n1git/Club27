@@ -6,7 +6,7 @@ import { APP_ROLES, canAccessPath, roleHome, type AppRole } from "@/lib/auth/rol
 const COOKIE_NAME = "app_session";
 const SUPERADMIN_COOKIE_NAME = "superadmin_session";
 const SUPERADMIN_AUDIENCE = "club27-superadmin";
-const PROTECTED_PREFIXES = ["/admin", "/coach", "/member", "/change-password", "/profile"];
+const PROTECTED_PREFIXES = ["/admin", "/coach", "/member", "/akun", "/change-password", "/profile"];
 const GUEST_ONLY_PREFIXES = ["/login", "/daftar"];
 
 function getSecret() {

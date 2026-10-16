@@ -6,8 +6,14 @@ import { ProfileView } from "./profile-view";
 
 export async function ProfilePage({ roles }: { roles: AppRole[] }) {
   await requireRole(roles);
-  const { profile } = await requireValidSession();
-  const data = await getProfileData({ profileId: profile.id, ownerId: profile.ownerId, memberAccountId: profile.memberAccountId });
+  const { profile, session } = await requireValidSession();
+  const data = await getProfileData({
+    profileId: profile.id,
+    accountId: profile.accountId,
+    ownerId: profile.ownerId,
+    memberAccountId: profile.memberAccountId,
+    personal: session.app_role === "personal",
+  });
   if (!data) notFound();
   return <ProfileView data={data} />;
 }

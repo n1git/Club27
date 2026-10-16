@@ -47,59 +47,52 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
   if (check.mustChangePassword) redirect("/change-password");
   const { ownerId, memberAccountId } = check.profile;
   const supabase = createAdminSupabaseClient();
+  const isStaff = !ownerId && !memberAccountId && session.app_role !== "personal";
 
-  let changes: Record<string, { from: string | null; to: string | null }> = {};
-  let fullName = session.full_name;
-  let targetType = "profile";
-  let targetId = session.sub;
+  const parsed = (memberAccountId ? memberSchema : isStaff ? staffSchema : ownerSchema).safeParse({
+    fullName: formData.get("fullName"),
+    username: formData.get("username"),
+    phone: formData.get("phone") || undefined,
+  });
+  if (!parsed.success) return invalid(parsed.error);
+  const values = parsed.data as { fullName?: string; username: string; phone?: string };
 
-  if (memberAccountId) {
-    const parsed = memberSchema.safeParse({ username: formData.get("username") });
-    if (!parsed.success) return invalid(parsed.error);
-    const { data: before } = await supabase.from("member_accounts").select("username").eq("id", memberAccountId).single();
-    const { error } = await supabase.from("member_accounts").update({ username: parsed.data.username }).eq("id", memberAccountId);
-    if (error) return failure(error);
-    changes = diff(before ?? {}, { username: parsed.data.username });
-    targetType = "member_account";
-    targetId = memberAccountId;
-  } else if (ownerId) {
-    const parsed = ownerSchema.safeParse({ fullName: formData.get("fullName"), username: formData.get("username") });
-    if (!parsed.success) return invalid(parsed.error);
-    const after = { full_name: parsed.data.fullName, username: parsed.data.username };
-    const { data: before } = await supabase.from("org_owners").select("full_name, username").eq("id", ownerId).single();
-    const { error } = await supabase.from("org_owners").update(after).eq("id", ownerId);
-    if (error) return failure(error);
-    await supabase.from("profiles").update({ full_name: after.full_name }).eq("owner_id", ownerId);
-    changes = diff(before ?? {}, after);
-    fullName = after.full_name;
-    targetType = "org_owner";
-    targetId = ownerId;
-  } else {
-    const parsed = staffSchema.safeParse({
-      fullName: formData.get("fullName"),
-      username: formData.get("username"),
-      phone: formData.get("phone") || undefined,
-    });
-    if (!parsed.success) return invalid(parsed.error);
-    const after = { full_name: parsed.data.fullName, username: parsed.data.username, phone: parsed.data.phone || null };
-    const { data: before } = await supabase.from("profiles").select("full_name, username, phone").eq("id", session.sub).single();
-    const { error } = await supabase
-      .from("profiles")
-      .update(after)
-      .eq("id", session.sub)
-      .is("owner_id", null)
-      .is("member_account_id", null);
-    if (error) return failure(error);
-    changes = diff(before ?? {}, after);
-    fullName = after.full_name;
+  const { data: account } = await supabase
+    .from("accounts")
+    .select("full_name, username")
+    .eq("id", session.account_id)
+    .single();
+  const after: Values = memberAccountId
+    ? { username: values.username }
+    : { full_name: values.fullName ?? null, username: values.username };
+  const { error } = await supabase.from("accounts").update(after).eq("id", session.account_id);
+  if (error) return failure(error);
+  let changes = diff(account ?? {}, after);
+  const fullName = memberAccountId ? session.full_name : (values.fullName ?? session.full_name);
+
+  if (!memberAccountId && values.fullName) {
+    if (ownerId) {
+      await supabase.from("org_owners").update({ full_name: values.fullName }).eq("id", ownerId);
+      await supabase.from("profiles").update({ full_name: values.fullName }).eq("owner_id", ownerId);
+    } else if (isStaff) {
+      const { data: before } = await supabase.from("profiles").select("phone").eq("id", session.sub).single();
+      const phone = values.phone || null;
+      await supabase
+        .from("profiles")
+        .update({ full_name: values.fullName, phone })
+        .eq("id", session.sub)
+        .is("owner_id", null)
+        .is("member_account_id", null);
+      changes = { ...changes, ...diff(before ?? {}, { phone }) };
+    }
   }
 
   if (Object.keys(changes).length === 0) return { ok: true, message: "Tidak ada perubahan" };
 
   await logAudit({
     action: "profile.update",
-    targetType,
-    targetId,
+    targetType: "account",
+    targetId: session.account_id,
     details: { changes },
     tenantId: session.tenant_id,
     organizationId: session.org_id,
@@ -110,6 +103,7 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
   if (fullName !== session.full_name) {
     await createSession({
       id: session.sub,
+      accountId: session.account_id,
       email: session.email,
       fullName,
       role: session.app_role,

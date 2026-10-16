@@ -13,6 +13,7 @@ export interface Certification {
 }
 
 export type ProfileData =
+  | { kind: "personal"; email: string; fullName: string; username: string }
   | {
       kind: "owner";
       email: string;
@@ -47,15 +48,26 @@ export type ProfileData =
 
 export async function getProfileData(ids: {
   profileId: string;
+  accountId: string;
   ownerId: string | null;
   memberAccountId: string | null;
+  personal?: boolean;
 }): Promise<ProfileData | null> {
   const supabase = createAdminSupabaseClient();
+  const { data: account } = await supabase
+    .from("accounts")
+    .select("email, full_name, username")
+    .eq("id", ids.accountId)
+    .maybeSingle();
+  if (!account) return null;
+  if (ids.personal) {
+    return { kind: "personal", email: account.email, fullName: account.full_name, username: account.username };
+  }
 
   if (ids.ownerId) {
     const { data: owner } = await supabase
       .from("org_owners")
-      .select("email, full_name, username, organization_id, organizations(name)")
+      .select("organization_id, organizations(name)")
       .eq("id", ids.ownerId)
       .maybeSingle();
     if (!owner) return null;
@@ -69,9 +81,9 @@ export async function getProfileData(ids: {
     ]);
     return {
       kind: "owner",
-      email: owner.email,
-      fullName: owner.full_name,
-      username: owner.username,
+      email: account.email,
+      fullName: account.full_name,
+      username: account.username,
       organizationName: one(owner.organizations as One<{ name: string }>)?.name ?? "-",
       planName: one(subscription?.subscription_plans as One<{ name: string }>)?.name ?? subscription?.plan_code ?? null,
       billingPeriod: subscription?.billing_period ?? null,
@@ -83,12 +95,6 @@ export async function getProfileData(ids: {
   }
 
   if (ids.memberAccountId) {
-    const { data: account } = await supabase
-      .from("member_accounts")
-      .select("email, full_name, username")
-      .eq("id", ids.memberAccountId)
-      .maybeSingle();
-    if (!account) return null;
     const clubs = await listMemberClubs(ids.memberAccountId);
     const { data: members } = clubs.length
       ? await supabase
@@ -110,7 +116,7 @@ export async function getProfileData(ids: {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, email, full_name, username, phone, role, is_head_coach, specialization, session_rate, tenant_id, tenants(name)")
+    .select("id, phone, role, is_head_coach, specialization, session_rate, tenant_id, tenants(name)")
     .eq("id", ids.profileId)
     .is("owner_id", null)
     .is("member_account_id", null)
@@ -134,9 +140,9 @@ export async function getProfileData(ids: {
 
   return {
     kind: "staff",
-    email: profile.email,
-    fullName: profile.full_name,
-    username: profile.username,
+    email: account.email,
+    fullName: account.full_name,
+    username: account.username,
     phone: profile.phone,
     role: profile.role as AppRole,
     clubName: one(profile.tenants as One<{ name: string }>)?.name ?? "-",

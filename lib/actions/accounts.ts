@@ -23,7 +23,7 @@ export async function resetUserPassword(
   const [{ data: profile }, { data: caller }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("id, role")
+      .select("id, role, account_id")
       .eq("id", parsed.data.profileId)
       .eq("tenant_id", session.tenant_id)
       .is("owner_id", null)
@@ -37,22 +37,31 @@ export async function resetUserPassword(
     return { ok: false, error: "Hanya pemilik klub yang dapat mengatur ulang kata sandi admin" };
   }
 
+  if (!profile.account_id) return { ok: false, error: "Akun tidak ditemukan" };
+  const [{ count: otherProfiles }, { count: owners }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("account_id", profile.account_id)
+      .neq("id", profile.id),
+    supabase.from("org_owners").select("id", { count: "exact", head: true }).eq("account_id", profile.account_id),
+  ]);
+  if (otherProfiles || owners) {
+    return { ok: false, error: "Akun ini juga terhubung ke konteks lain. Kata sandi hanya bisa diatur ulang oleh pemiliknya." };
+  }
+
   const tempPassword = generateTempPassword();
-  const { error: credError } = await supabase
-    .from("auth_credentials")
-    .upsert({
-      profile_id: profile.id,
+  const { error: accountError } = await supabase
+    .from("accounts")
+    .update({
       password_hash: await hashPassword(tempPassword),
+      must_change_password: true,
       failed_login_count: 0,
       locked_until: null,
-    });
-  if (credError) return { ok: false, error: "Gagal mengatur ulang kata sandi" };
-
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({ must_change_password: true, sessions_valid_after: new Date().toISOString() })
-    .eq("id", profile.id);
-  if (profileError) return { ok: false, error: "Gagal mengatur ulang kata sandi" };
+      sessions_valid_after: new Date().toISOString(),
+    })
+    .eq("id", profile.account_id);
+  if (accountError) return { ok: false, error: "Gagal mengatur ulang kata sandi" };
 
   await logAudit({
     action: "password.reset",
