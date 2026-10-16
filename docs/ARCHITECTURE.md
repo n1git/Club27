@@ -392,7 +392,7 @@ Signed-in pages share one structure (the `.app-ui` class on the shell root scope
 
 ## Platform billing (superadmin)
 
-Swimma bills clubs separately from how a club bills its members. A
+The platform bills clubs separately from how a club bills its members. A
 superadmin is not tied to any tenant and manages every club's plan and
 status from `/superadmin`.
 
