@@ -59,7 +59,7 @@ Migration 024 sets the privileges of the public schema: no `TRUNCATE`, `REFERENC
 | `MIDTRANS_SERVER_KEY`, `MIDTRANS_IS_PRODUCTION` | Midtrans server key (sandbox `SB-Mid-server-...` or production) and `true` only for production. With the key set, owners pay renewals through Midtrans Snap and the subscription activates from the notification at `/api/payments/midtrans` (signature checked, status re-read from the Midtrans API, amount compared). Set that URL as the Payment Notification URL in the Midtrans dashboard; while Vercel Authentication protects the domain, append `?x-vercel-protection-bypass=<secret>`. Without the key, renewals stay on manual superadmin confirmation. |
 | `EMAIL_API_KEY`, `EMAIL_FROM` | Resend API key and a verified sender (for example `Swimma <noreply@domain>`). With both set, a new club stays unverified until the owner opens the emailed link (single use, 24 hours) and no session is issued before that. Without them registration signs the owner in immediately and the server logs a warning. |
 | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile keys for the registration captcha. Without them the captcha is skipped and the server logs a warning. |
-| `NEXT_PUBLIC_SITE_URL` | Public base URL; used in verification links. |
+| `NEXT_PUBLIC_SITE_URL` | Public base URL, for example `https://27club.id` (no trailing slash). Used in verification links and, for search engines, in canonical URLs, Open Graph tags, `sitemap.xml`, `robots.txt` and the structured data. Required once a custom domain is attached; while it is empty the `*.vercel.app` production URL is used, so search engines would treat that address as the original. |
 | `NEXT_PUBLIC_APP_NAME` | Optional |
 
 Vercel Authentication is on by default for the project; turn it off only when the site should be public.
@@ -67,6 +67,14 @@ Vercel Authentication is on by default for the project; turn it off only when th
 Client IP for rate limits is read only from `x-real-ip`, which Vercel sets on every request. Behind another proxy, make sure it overwrites that header.
 
 Pages send a Content-Security-Policy with a per-request nonce (`script-src 'nonce-…' 'strict-dynamic'`); every page renders dynamically for that reason.
+
+### Custom domain and search
+
+1. Attach the domain in Vercel, set `NEXT_PUBLIC_SITE_URL` to it and redeploy (the value is read at build time).
+2. Redirect the `*.vercel.app` production address to the custom domain permanently so only one version stays indexable.
+3. Open `/robots.txt`, `/sitemap.xml` and view the source of `/`: the canonical, `og:url` and sitemap addresses must show the custom domain.
+4. Add the domain in Google Search Console, submit `/sitemap.xml`, and check Core Web Vitals once data appears. The landing page is rendered on every request (per-request CSP nonce and a session check), so the HTML is not cached by the CDN.
+5. Keep `NEXT_PUBLIC_APP_NAME` at "27 Club" (or unset) so titles read correctly.
 
 ## 3. Smoke test
 
