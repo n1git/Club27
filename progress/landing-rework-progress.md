@@ -93,6 +93,9 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
 | A "Segera hadir" type cannot be chosen at registration and appears automatically once ready | `register_organization` / `create_tenant_for_owner` require `status = 'ready'` (018); `getReadyClubTypes` in the form; this page reads `club_types` live |
 | After registering you go straight to club setup | `app/api/onboarding/register/route.ts` redirects to `/admin/onboarding` (020 work) |
 | Product visuals are sample data | `hero-preview.tsx`, `multi-club.tsx` labelled "Contoh data" |
+| Per-sport page `/olahraga/<code>`: heading, one-line summary, feature list and term table for ready club types only | `club_types` (`status = ready`, `terms`), `club_type_modules` and `platform_modules.status` read live (`getPublicClubTypes`, `getModules`); the feature texts are the ones already listed above, filtered by the type's modules; an unknown or "soon" code renders not-found with `noindex` |
+| Sitemap lists a page for every ready club type | `app/sitemap.ts` reads `club_types` live |
+| "Coba gratis N hari" on a per-sport page | `subscription_plans.trial_days` via `getActivePlans` |
 
 ## Phase 1 done
 

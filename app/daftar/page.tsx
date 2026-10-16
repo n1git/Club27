@@ -20,7 +20,7 @@ export const metadata: Metadata = pageMetadata({
 export default async function RegisterClubPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; period?: string; users?: string; verifikasi?: string }>;
+  searchParams: Promise<{ plan?: string; period?: string; users?: string; verifikasi?: string; jenis?: string }>;
 }) {
   const [params, plans, clubTypes, requestHeaders] = await Promise.all([
     searchParams,
@@ -64,6 +64,7 @@ export default async function RegisterClubPage({
         initialPeriod={period}
         initialUsers={users}
         clubTypes={clubTypes}
+        initialClubType={params.jenis}
         captchaSiteKey={captchaSiteKey()}
         nonce={requestHeaders.get("x-nonce") ?? undefined}
       />

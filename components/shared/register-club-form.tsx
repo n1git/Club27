@@ -18,6 +18,7 @@ export function RegisterClubForm({
   initialPeriod,
   initialUsers,
   clubTypes,
+  initialClubType,
   captchaSiteKey,
   nonce,
 }: {
@@ -26,6 +27,7 @@ export function RegisterClubForm({
   initialPeriod: BillingPeriod;
   initialUsers: number;
   clubTypes: { code: string; name: string }[];
+  initialClubType?: string;
   captchaSiteKey?: string | null;
   nonce?: string;
 }) {
@@ -165,7 +167,7 @@ export function RegisterClubForm({
           {clubTypes.length > 1 ? (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="clubType">Jenis klub</Label>
-              <Select id="clubType" name="clubType" defaultValue={clubTypes[0].code}>
+              <Select id="clubType" name="clubType" defaultValue={clubTypes.some((t) => t.code === initialClubType) ? initialClubType : clubTypes[0].code}>
                 {clubTypes.map((type) => (
                   <option key={type.code} value={type.code}>
                     {type.name}

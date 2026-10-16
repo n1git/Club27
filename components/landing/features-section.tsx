@@ -13,7 +13,7 @@ import {
 import type { PlatformModule } from "@/lib/data/platform-pricing";
 import { Section } from "./section";
 
-const FEATURES = [
+export const FEATURES = [
   {
     icon: Users,
     module: "members",

@@ -4,6 +4,17 @@ import type { PricingPlan } from "@/lib/pricing";
 import { LEGAL_OPERATORS, LEGAL_OPERATORS_URL } from "@/lib/legal";
 import { getContact, SITE_URL } from "@/lib/site";
 
+export async function JsonLdScript({ data }: { data: unknown }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  return (
+    <script
+      type="application/ld+json"
+      nonce={nonce}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }}
+    />
+  );
+}
+
 export async function JsonLd({ plans }: { plans: PricingPlan[] }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const contact = getContact();

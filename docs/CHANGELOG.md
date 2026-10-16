@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-17
+
+- One page per ready club type at `/olahraga/<code>` (read from the database, so a new sport needs only an SQL insert): heading, summary, the features that type has, its terms, links to the other types, a breadcrumb, and a sign-up button that preselects the club type (`/daftar?jenis=<code>`). The landing cards link to them and the sitemap lists them.
+
 ## 2026-10-16
 
 - Search metadata: the landing page has its own title and description, every public page has its own canonical, Open Graph and Twitter tags (`lib/seo.ts`), `/login` is `noindex` and left out of the sitemap, the sitemap carries `lastmod`, and the product name now reads "27 Club".

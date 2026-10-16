@@ -1,16 +1,8 @@
+import Link from "next/link";
 import { CircleDashed, CircleCheck } from "lucide-react";
 import type { PublicClubType } from "@/lib/club-type";
+import { describe } from "./sport-copy";
 import { Section } from "./section";
-
-function describe(t: PublicClubType, ready: Set<string>): string {
-  const has = (code: string) => t.modules.includes(code) && ready.has(code);
-  const parts = [`${t.terms.member} dan ${t.terms.coach.toLowerCase()}`];
-  if (has("classes")) parts.push(`jadwal ${t.terms.session.toLowerCase()}`);
-  if (has("resource_booking")) parts.push(`booking ${t.terms.resource.toLowerCase()}`);
-  if (has("checkin")) parts.push("check-in QR");
-  if (has("pos")) parts.push("kasir");
-  return parts.length > 1 ? `${parts.slice(0, -1).join(", ")}, dan ${parts[parts.length - 1]}` : parts[0];
-}
 
 export function SportsSection({ types, readyModules }: { types: PublicClubType[]; readyModules: string[] }) {
   const ready_ = new Set(readyModules);
@@ -33,10 +25,14 @@ export function SportsSection({ types, readyModules }: { types: PublicClubType[]
           {ready.length > 0 ? (
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Jenis klub yang tersedia">
               {ready.map((t) => (
-                <li key={t.code} className="flex items-start gap-3 rounded-lg border border-border bg-card p-5">
+                <li key={t.code} className="ui-transition relative flex items-start gap-3 rounded-lg border border-border bg-card p-5 hover:border-foreground/40">
                   <CircleCheck className="mt-0.5 size-5 shrink-0 text-accent-foreground" aria-hidden />
                   <div>
-                    <p className="font-heading font-semibold">{t.name}</p>
+                    <p className="font-heading font-semibold">
+                      <Link href={`/olahraga/${t.code}`} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:rounded-lg">
+                        {t.name}
+                      </Link>
+                    </p>
                     <p className="mt-1 text-sm text-muted-foreground">{describe(t, ready_)}</p>
                   </div>
                 </li>
