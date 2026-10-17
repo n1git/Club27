@@ -58,7 +58,7 @@ export default async function SchedulePage({
   let query = supabase
     .from("classes")
     .select(
-      "id, start_time, end_time, capacity, profiles!classes_instructor_id_fkey(full_name), substitute:profiles!classes_substitute_id_fkey(full_name), locations(name), class_types(name), bookings(count)",
+      "id, start_time, end_time, capacity, profiles:club_profiles!classes_instructor_id_fkey(full_name), substitute:club_profiles!classes_substitute_id_fkey(full_name), locations(name), class_types(name), bookings:class_bookings(count)",
       { count: "exact" },
     )
     .order("start_time")

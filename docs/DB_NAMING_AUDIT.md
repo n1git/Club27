@@ -1,6 +1,8 @@
 # Audit penamaan database
 
-Sumber: skema hasil migrasi 001-042 (sama dengan hosted `club27`). 53 tabel, 12 view, 129 fungsi buatan sendiri (di luar ekstensi), ±90 trigger. Isi dokumen ini hanya inventaris dan usulan nama; belum ada yang diubah.
+Sumber: skema hasil migrasi 001-042 (sama dengan hosted `club27`). 53 tabel, 12 view, 129 fungsi buatan sendiri (di luar ekstensi), ±90 trigger.
+
+**Status:** rename diterapkan di migrasi 046 (lihat `CLAUDE.md`, bagian Penamaan database). Dipakai: `tenants`→`clubs`, `tenant_id`→`club_id`, `members`→`club_members`, `profiles`→`club_profiles`, `organization_members`→`organization_users`, `subscriptions`→`member_memberships`, `bookings`→`class_bookings`, `promo`→`promos`, `price_per_user_month`→`price_per_seat_month`, `billing_cycle`→`billing_period`, `sort`→`sort_order`, `internal_users`→`seats_used`. Belum: `instructor_id`→`coach_id`, `subscription_renewals.users`→`seats`, `audit_log.at`→`occurred_at`, `profiles.owner_id`.
 
 Kolom "Usulan" = saran saya. Kosong = nama sudah cukup jelas.
 

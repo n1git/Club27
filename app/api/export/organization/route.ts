@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (!session || session.app_role !== "owner") return NextResponse.json({ error: "Tidak diizinkan" }, { status: 403 });
   const check = await checkSession(session);
   if (!check.ok || check.mustChangePassword) return NextResponse.json({ error: "Sesi tidak valid" }, { status: 401 });
-  const owner = await loadOwner(session.sub, session.tenant_id);
+  const owner = await loadOwner(session.sub, session.club_id);
   if (!owner) return NextResponse.json({ error: "Tidak diizinkan" }, { status: 403 });
 
   const form = await request.formData().catch(() => null);

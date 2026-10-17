@@ -37,11 +37,11 @@ function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
-type Created = { organization_id: string; tenant_id: string; owner_id: string; profile_id: string };
+type Created = { organization_id: string; club_id: string; owner_id: string; profile_id: string };
 
 async function recordOwnerConsent(created: Created) {
   await createAdminSupabaseClient().from("consents").insert({
-    tenant_id: created.tenant_id,
+    club_id: created.club_id,
     organization_id: created.organization_id,
     subject_type: "owner",
     subject_id: created.owner_id,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
 
   const args = {
     p_organization_name: tenantName,
-    p_tenant_name: tenantName,
+    p_club_name: tenantName,
     p_account_id: account.id,
     p_plan: planCode,
     p_period: billingPeriod,
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
     email: ownerEmail,
     fullName: ownerFullName,
     role: "owner",
-    tenantId: created.tenant_id,
+    tenantId: created.club_id,
     orgId: created.organization_id,
   });
 

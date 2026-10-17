@@ -27,7 +27,7 @@ export async function updateCoach(
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase
-    .from("profiles")
+    .from("club_profiles")
     .update({
       full_name: parsed.data.fullName,
       phone: parsed.data.phone ?? null,
@@ -40,7 +40,7 @@ export async function updateCoach(
   if (error) {
     return { ok: false, error: "Gagal memperbarui data pelatih" };
   }
-  const roleFailure = await setStaffProfileRole(session.tenant_id, coachId, parsed.data.roleId, true);
+  const roleFailure = await setStaffProfileRole(session.club_id, coachId, parsed.data.roleId, true);
   if (roleFailure) return { ok: false, error: roleFailure };
 
   revalidatePath("/admin/coaches");
@@ -53,7 +53,7 @@ export async function toggleCoachActive(_prevState: ActionState, formData: FormD
   const coachId = String(formData.get("coachId"));
   const isActive = formData.get("isActive") === "true";
 
-  const failure = await setStaffProfileActive(session.tenant_id, coachId, isActive);
+  const failure = await setStaffProfileActive(session.club_id, coachId, isActive);
   if (failure) return { ok: false, error: failure };
 
   revalidatePath("/admin/coaches");

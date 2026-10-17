@@ -1,9 +1,9 @@
 \set ON_ERROR_STOP on
 begin;
 
-create function pg_temp.claims(p_sub uuid, p_tenant text, p_role text, p_account uuid, p_iat bigint default null) returns void language sql as $f$
+create function pg_temp.claims(p_sub uuid, p_club text, p_role text, p_account uuid, p_iat bigint default null) returns void language sql as $f$
   select set_config('request.jwt.claims', jsonb_build_object(
-    'sub', p_sub, 'role', 'authenticated', 'app_role', p_role, 'tenant_id', p_tenant, 'org_id', '',
+    'sub', p_sub, 'role', 'authenticated', 'app_role', p_role, 'club_id', p_club, 'org_id', '',
     'account_id', p_account, 'iat', coalesce(p_iat, extract(epoch from now())::bigint)
   )::text, true)
 $f$;
@@ -42,32 +42,32 @@ begin
 
   select id into a from accounts where email = 'owner@t.test';
   select * into r from register_organization('Org A', 'Club A', a, 'standard', 'monthly', 'swimming');
-  assert (select account_id from organization_members where id = r.owner_id) = a, 'owner linked to account';
+  assert (select account_id from organization_users where id = r.owner_id) = a, 'owner linked to account';
   assert not exists (select 1 from information_schema.columns where table_schema = 'public' and column_name = 'password_hash' and table_name <> all (array['accounts', 'superadmins'])), 'passwords live only in accounts and superadmins';
-  assert (select account_id from profiles where id = r.profile_id) = a, 'owner profile linked to account';
+  assert (select account_id from club_profiles where id = r.profile_id) = a, 'owner profile linked to account';
 
   select id into a from accounts where email = 'owner2@t.test';
   select * into r2 from register_organization('Org C', 'Club C', a, 'standard', 'monthly', 'gym');
 
   begin
-    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-    values (r.tenant_id, 'staff', (select id from organization_roles where organization_id = r.organization_id and preset_key = 'pelatih'), 'C', 'someone@t.test', (select id from accounts where email = 'plain@t.test'));
+    insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+    values (r.club_id, 'staff', (select id from organization_roles where organization_id = r.organization_id and preset_key = 'pelatih'), 'C', 'someone@t.test', (select id from accounts where email = 'plain@t.test'));
     assert false, 'profile email must match account email';
   exception when raise_exception then null; end;
 
-  insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-  values (r.tenant_id, 'staff', (select id from organization_roles where organization_id = r.organization_id and preset_key = 'pelatih'), 'Plain', 'plain@t.test', (select id from accounts where email = 'plain@t.test'));
+  insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+  values (r.club_id, 'staff', (select id from organization_roles where organization_id = r.organization_id and preset_key = 'pelatih'), 'Plain', 'plain@t.test', (select id from accounts where email = 'plain@t.test'));
 
-  insert into members (tenant_id, full_name, date_of_birth) values (r.tenant_id, 'Member One', '2010-01-01') returning id into v_member;
+  insert into club_members (club_id, full_name, date_of_birth) values (r.club_id, 'Member One', '2010-01-01') returning id into v_member;
   select out_profile_id into v_profile from activate_member_account(v_member, (select id from accounts where email = 'member@t.test'));
-  assert (select account_id from profiles where id = v_profile) = (select id from accounts where email = 'member@t.test'), 'member profile linked to account';
+  assert (select account_id from club_profiles where id = v_profile) = (select id from accounts where email = 'member@t.test'), 'member profile linked to account';
 
-  insert into members (tenant_id, full_name, date_of_birth) values (r2.tenant_id, 'Member One', '2010-01-01') returning id into v_member;
+  insert into club_members (club_id, full_name, date_of_birth) values (r2.club_id, 'Member One', '2010-01-01') returning id into v_member;
   perform activate_member_account(v_member, (select id from accounts where email = 'member@t.test'));
-  assert (select count(*) from profiles where account_id = (select id from accounts where email = 'member@t.test')) = 2, 'same account is a member in two clubs';
-  assert (select count(*) from profiles where role = 'member' and account_id = (select id from accounts where email = 'member@t.test')) = 2, 'member profiles are plain club profiles of the account';
+  assert (select count(*) from club_profiles where account_id = (select id from accounts where email = 'member@t.test')) = 2, 'same account is a member in two clubs';
+  assert (select count(*) from club_profiles where role = 'member' and account_id = (select id from accounts where email = 'member@t.test')) = 2, 'member profiles are plain club profiles of the account';
 
-  insert into members (tenant_id, full_name, date_of_birth) values (r.tenant_id, 'Owner As Member', '2010-01-01') returning id into v_member;
+  insert into club_members (club_id, full_name, date_of_birth) values (r.club_id, 'Owner As Member', '2010-01-01') returning id into v_member;
   begin
     perform activate_member_account(v_member, (select id from accounts where email = 'owner@t.test'));
     assert false, 'an account already linked to the club cannot be activated as member there';
@@ -78,7 +78,7 @@ do $$
 declare
   p uuid; t uuid; a uuid; o uuid;
 begin
-  select id, tenant_id, account_id into p, t, a from profiles where owner_id is not null and email = 'owner@t.test';
+  select id, club_id, account_id into p, t, a from club_profiles where owner_id is not null and email = 'owner@t.test';
   perform pg_temp.claims(p, t::text, 'owner', a);
   assert is_active_user(), 'active owner';
   perform pg_temp.claims(p, t::text, 'owner', a, extract(epoch from now())::bigint - 3600);
@@ -90,19 +90,19 @@ begin
   assert not is_active_user(), 'inactive account is rejected';
   update accounts set is_active = true where id = a;
   perform set_config('request.jwt.claims', '', true);
-  update profiles set account_id = null where id = p;
+  update club_profiles set account_id = null where id = p;
   perform pg_temp.claims(p, t::text, 'owner', a);
   assert not is_active_user(), 'profile without account is rejected';
   perform set_config('request.jwt.claims', '', true);
-  update profiles set account_id = a where id = p;
+  update club_profiles set account_id = a where id = p;
   perform pg_temp.claims(p, t::text, 'owner', a);
   assert is_active_user(), 'restored';
 end $$;
 
 select set_config('t.plain', (select id::text from accounts where email = 'plain@t.test'), false),
-       set_config('t.owner_profile', (select id::text from profiles where owner_id is not null and email = 'owner@t.test'), false),
-       set_config('t.owner_tenant', (select tenant_id::text from profiles where owner_id is not null and email = 'owner@t.test'), false),
-       set_config('t.owner_account', (select account_id::text from profiles where owner_id is not null and email = 'owner@t.test'), false);
+       set_config('t.owner_profile', (select id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false),
+       set_config('t.owner_tenant', (select club_id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false),
+       set_config('t.owner_account', (select account_id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false);
 
 create temp table iso_objects as
 select c.relname::text as name
@@ -141,14 +141,14 @@ begin
   t := current_setting('t.owner_tenant')::uuid;
   a := current_setting('t.owner_account')::uuid;
   perform pg_temp.claims(p, t::text, 'owner', a);
-  select count(*) into n from tenants;
+  select count(*) into n from clubs;
   assert n = 1, 'owner sees only its own club';
   begin
-    update profiles set account_id = current_setting('t.plain')::uuid where id = p;
+    update club_profiles set account_id = current_setting('t.plain')::uuid where id = p;
     assert false, 'a club user cannot relink a profile to another account';
   exception when raise_exception then null; end;
   begin
-    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
+    insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
     values (t, 'staff', gen_random_uuid(), 'X', 'plain@t.test', current_setting('t.plain')::uuid);
     assert false, 'a club user cannot insert a profile with an account link';
   exception when raise_exception then null; end;

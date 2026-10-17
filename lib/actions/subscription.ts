@@ -24,10 +24,10 @@ const seatPurchaseSchema = z.object({ seats: seatsField });
 
 async function billingContext(codes: "billing.manage" | readonly ["billing.view", "billing.manage"] = "billing.manage") {
   const session = await requireActionPermission(codes, { allowBillingLocked: true });
-  const organizationId = await organizationIdForTenant(session.tenant_id);
+  const organizationId = await organizationIdForTenant(session.club_id);
   if (!organizationId) throw new UnauthorizedError("Organisasi tidak ditemukan");
   const { data: member } = await createAdminSupabaseClient()
-    .from("organization_members")
+    .from("organization_users")
     .select("id")
     .eq("organization_id", organizationId)
     .eq("account_id", session.account_id)
@@ -66,7 +66,7 @@ export async function submitRenewal(_prevState: ActionState, formData: FormData)
     targetType: "organization",
     targetId: organizationId,
     details: { renewal: data, plan: parsed.data.planCode, period: parsed.data.billingPeriod, seats: parsed.data.seats },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     organizationId,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -90,7 +90,7 @@ export async function submitSeatPurchase(_prevState: ActionState, formData: Form
     targetType: "organization",
     targetId: organizationId,
     details: { renewal: data, seats: parsed.data.seats },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     organizationId,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -134,6 +134,6 @@ export async function previewSeatPurchase(add: number): Promise<SeatPurchasePrev
 
 export async function previewSeatUsage(): Promise<SeatUsage | null> {
   const session = await requireActionPermission(["staff.manage", "coaches.manage", "roles.manage"]);
-  const organizationId = await organizationIdForTenant(session.tenant_id);
+  const organizationId = await organizationIdForTenant(session.club_id);
   return organizationId ? seatUsage(organizationId) : null;
 }

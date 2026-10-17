@@ -52,23 +52,23 @@ export async function getMemberOverview(): Promise<MemberOverview | null> {
 
   const [{ data: member }, { data: subs }, { data: usage }, { data: invoices }, { data: bookings }, { data: promos }] =
     await Promise.all([
-      supabase.from("members").select("id, full_name").maybeSingle(),
+      supabase.from("club_members").select("id, full_name").maybeSingle(),
       supabase
-        .from("subscriptions")
-        .select("id, status, start_date, end_date, membership_packages(name, pricing_mode, billing_cycle)")
+        .from("member_memberships")
+        .select("id, status, start_date, end_date, membership_packages(name, pricing_mode, billing_period)")
         .order("start_date", { ascending: false }),
-      supabase.from("my_subscription_usage").select("subscription_id, sessions_included, sessions_used, sessions_remaining"),
+      supabase.from("my_membership_usage").select("subscription_id, sessions_included, sessions_used, sessions_remaining"),
       supabase
         .from("invoices")
         .select("id, amount, status, due_date, period_start, period_end, paid_at")
         .order("due_date", { ascending: false })
         .limit(24),
       supabase
-        .from("bookings")
+        .from("class_bookings")
         .select("id, classes!inner(id, start_time, end_time, locations(name), class_types(name))")
         .gte("classes.start_time", nowIso),
       supabase
-        .from("promo")
+        .from("promos")
         .select("id, title, body, image_url")
         .lte("active_from", nowIso)
         .or(`active_until.is.null,active_until.gte.${nowIso}`)
@@ -85,7 +85,7 @@ export async function getMemberOverview(): Promise<MemberOverview | null> {
       const pkg = s.membership_packages as unknown as {
         name: string;
         pricing_mode: "cycle" | "session_pack";
-        billing_cycle: string | null;
+        billing_period: string | null;
       } | null;
       const u = usageBySub.get(s.id as string);
       return {
@@ -95,7 +95,7 @@ export async function getMemberOverview(): Promise<MemberOverview | null> {
         endDate: (s.end_date as string | null) ?? null,
         packageName: pkg?.name ?? "-",
         pricingMode: pkg?.pricing_mode ?? "cycle",
-        billingCycle: pkg?.billing_cycle ?? null,
+        billingCycle: pkg?.billing_period ?? null,
         sessionsIncluded: u ? Number(u.sessions_included) : null,
         sessionsUsed: u ? Number(u.sessions_used) : null,
         sessionsRemaining: u ? Number(u.sessions_remaining) : null,

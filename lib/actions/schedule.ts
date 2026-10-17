@@ -124,7 +124,7 @@ export async function removeBooking(_prevState: ActionState, formData: FormData)
   const bookingId = String(formData.get("bookingId"));
   const classId = String(formData.get("classId"));
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from("bookings").delete().eq("id", bookingId).select("id");
+  const { data, error } = await supabase.from("class_bookings").delete().eq("id", bookingId).select("id");
   if (error || !data?.length) return { ok: false, error: "Gagal mengeluarkan anggota dari kelas" };
   revalidatePath(`/admin/schedule/${classId}`);
   return { ok: true, message: "Anggota dikeluarkan dari kelas" };

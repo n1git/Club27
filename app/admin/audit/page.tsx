@@ -69,11 +69,11 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
   const supabase = await createServerSupabaseClient();
   let query = supabase
     .from("audit_log")
-    .select("id, at, actor_id, actor_role, actor_label, tenant_id, action, target_type, details, tenants(name)", { count: "exact" })
+    .select("id, at, actor_id, actor_role, actor_label, club_id, action, target_type, details, tenants:clubs(name)", { count: "exact" })
     .order("at", { ascending: false })
     .order("id")
     .range(from, to);
-  if (!orgScope) query = query.eq("tenant_id", user.tenantId);
+  if (!orgScope) query = query.eq("club_id", user.tenantId);
   const { data, count } = await query;
   const rows = (data ?? []) as unknown as {
     id: string;
@@ -89,7 +89,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
 
   const actorIds = [...new Set(rows.map((r) => r.actor_id).filter((x): x is string => Boolean(x)))];
   const { data: actors } = actorIds.length
-    ? await supabase.from("profiles").select("id, full_name").in("id", actorIds)
+    ? await supabase.from("club_profiles").select("id, full_name").in("id", actorIds)
     : { data: [] as { id: string; full_name: string }[] };
   const actorName = new Map((actors ?? []).map((a) => [a.id, a.full_name]));
   const tabClass = (active: boolean) =>

@@ -36,7 +36,7 @@ export function mergeTerms(raw: unknown): ClubTerms {
 
 export async function getClubTerms(): Promise<ClubTerms> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase.from("tenants").select("club_types(terms)").maybeSingle();
+  const { data } = await supabase.from("clubs").select("club_types(terms)").maybeSingle();
   const clubType = data?.club_types as unknown as { terms: unknown } | null;
   return mergeTerms(clubType?.terms);
 }
@@ -44,7 +44,7 @@ export async function getClubTerms(): Promise<ClubTerms> {
 export async function getReadyClubTypes(): Promise<ClubType[]> {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data } = await supabase.from("club_types").select("code, name").eq("status", "ready").order("sort");
+    const { data } = await supabase.from("club_types").select("code, name").eq("status", "ready").order("sort_order");
     return (data ?? []) as ClubType[];
   } catch {
     return [];
@@ -63,7 +63,7 @@ export async function getPublicClubTypes(): Promise<PublicClubType[]> {
   try {
     const supabase = await createServerSupabaseClient();
     const [{ data }, { data: links }] = await Promise.all([
-      supabase.from("club_types").select("code, name, status, terms").order("sort"),
+      supabase.from("club_types").select("code, name, status, terms").order("sort_order"),
       supabase.from("club_type_modules").select("club_type, module_code"),
     ]);
     const modules = new Map<string, string[]>();

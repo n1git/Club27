@@ -24,7 +24,7 @@ export async function createSession(user: {
     ctx: contextOf(user.role),
     account_id: user.accountId,
     app_role: user.role,
-    tenant_id: user.tenantId,
+    club_id: user.tenantId,
     org_id: user.orgId,
     ...(user.clubPending ? { club_pending: true } : {}),
     email: user.email,

@@ -70,15 +70,15 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   }
 
   const { data: profile } = await admin
-    .from("profiles")
+    .from("club_profiles")
     .select(
-      "id, tenant_id, role, is_active, full_name, owner_id, account_id, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))), organization_members(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
+      "id, club_id, role, is_active, full_name, owner_id, account_id, tenants:clubs(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))), organization_members:organization_users(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
     )
     .eq("id", session.sub)
     .maybeSingle();
 
   if (!profile || !profile.is_active) return { ok: false, reason: "deactivated" };
-  if (profile.tenant_id !== session.tenant_id || profile.role !== session.app_role) {
+  if (profile.club_id !== session.club_id || profile.role !== session.app_role) {
     return { ok: false, reason: "revoked" };
   }
   const account = one(profile.accounts as One<AccountRow>);
@@ -109,7 +109,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   }
 
   if (profile.role === "member") {
-    const { data: member } = await admin.from("members").select("is_active").eq("profile_id", profile.id).maybeSingle();
+    const { data: member } = await admin.from("club_members").select("is_active").eq("profile_id", profile.id).maybeSingle();
     if (!member?.is_active) return { ok: false, reason: "deactivated" };
   }
 
@@ -150,8 +150,8 @@ export const loadPermissions = cache(async (profileId: string): Promise<Permissi
 export const loadRoleLabel = cache(async (profileId: string, role: AppRole): Promise<string> => {
   const admin = createAdminSupabaseClient();
   const { data } = await admin
-    .from("profiles")
-    .select("organization_roles(name), organization_members(base_role)")
+    .from("club_profiles")
+    .select("organization_roles(name), organization_members:organization_users(base_role)")
     .eq("id", profileId)
     .maybeSingle();
   if (role === "owner") {
@@ -196,7 +196,7 @@ export async function requireRole(role: AppRole | readonly AppRole[]) {
     id: session.sub,
     email: session.email,
     role: session.app_role,
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     orgId: session.org_id,
     fullName: check.profile.fullName,
     accountId: check.profile.accountId,

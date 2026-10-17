@@ -18,7 +18,7 @@ export async function getOrganizationOverview(organizationId: string, ownerId: s
   const supabase = createAdminSupabaseClient();
   const { data: org } = await supabase
     .from("organizations")
-    .select("name, organization_members!inner(id), organization_subscriptions(club_limit_override, subscription_plans(club_limit))")
+    .select("name, organization_members:organization_users!inner(id), organization_subscriptions(club_limit_override, subscription_plans(club_limit))")
     .eq("id", organizationId)
     .eq("organization_members.id", ownerId)
     .maybeSingle();
@@ -29,17 +29,17 @@ export async function getOrganizationOverview(organizationId: string, ownerId: s
   } | null;
 
   const { data: tenants } = await supabase
-    .from("tenants")
+    .from("clubs")
     .select("id, name, is_active, created_at")
     .eq("organization_id", organizationId)
     .order("created_at");
   const ids = (tenants ?? []).map((t) => t.id as string);
 
   const [{ data: members }, { data: coaches }] = await Promise.all([
-    supabase.from("members").select("tenant_id").in("tenant_id", ids).eq("is_active", true),
-    supabase.from("instructors").select("tenant_id").in("tenant_id", ids).eq("is_active", true),
+    supabase.from("club_members").select("club_id").in("club_id", ids).eq("is_active", true),
+    supabase.from("instructors").select("club_id").in("club_id", ids).eq("is_active", true),
   ]);
-  const count = (rows: { tenant_id: string }[] | null, id: string) => (rows ?? []).filter((r) => r.tenant_id === id).length;
+  const count = (rows: { club_id: string }[] | null, id: string) => (rows ?? []).filter((r) => r.club_id === id).length;
 
   return {
     name: org.name as string,
@@ -61,13 +61,13 @@ export interface SwitchableTenant {
 
 export async function getSwitchableTenants(ownerId: string): Promise<SwitchableTenant[]> {
   const { data } = await createAdminSupabaseClient()
-    .from("profiles")
-    .select("tenant_id, tenants!inner(name, is_active, created_at)")
+    .from("club_profiles")
+    .select("club_id, tenants:clubs!inner(name, is_active, created_at)")
     .eq("owner_id", ownerId)
     .eq("is_active", true)
     .eq("tenants.is_active", true);
   return (data ?? [])
-    .map((p) => ({ id: p.tenant_id as string, ...(p.tenants as unknown as { name: string; created_at: string }) }))
+    .map((p) => ({ id: p.club_id as string, ...(p.tenants as unknown as { name: string; created_at: string }) }))
     .sort((a, b) => a.created_at.localeCompare(b.created_at))
     .map(({ id, name }) => ({ id, name }));
 }

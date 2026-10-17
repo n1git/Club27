@@ -82,26 +82,26 @@ export async function getDashboardData(): Promise<DashboardData> {
       .order("entry_date", { ascending: false })
       .limit(5),
     supabase
-      .from("promo")
+      .from("promos")
       .select("id", { count: "exact", head: true })
       .lte("active_from", new Date().toISOString())
       .or(`active_until.is.null,active_until.gte.${new Date().toISOString()}`),
     supabase
       .from("classes")
-      .select("id, start_time, end_time, capacity, profiles!classes_instructor_id_fkey(full_name), locations(name), class_types(name), bookings(id)")
+      .select("id, start_time, end_time, capacity, profiles:club_profiles!classes_instructor_id_fkey(full_name), locations(name), class_types(name), bookings:class_bookings(id)")
       .gte("start_time", todayStart)
       .lt("start_time", todayEnd)
       .order("start_time"),
     supabase
-      .from("subscriptions")
-      .select("id, end_date, members(full_name), membership_packages(name)")
+      .from("member_memberships")
+      .select("id, end_date, members:club_members(full_name), membership_packages(name)")
       .eq("status", "active")
       .gte("end_date", today)
       .lte("end_date", in7Days)
       .order("end_date"),
     supabase
       .from("invoices")
-      .select("id, amount, due_date, members(full_name)")
+      .select("id, amount, due_date, members:club_members(full_name)")
       .eq("status", "outstanding")
       .lt("due_date", today)
       .order("due_date")

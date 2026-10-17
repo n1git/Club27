@@ -13,7 +13,7 @@ export default async function HeadCoachMembersPage() {
   const supabase = await createServerSupabaseClient();
   const [{ data }, coaches] = await Promise.all([
     supabase
-      .from("members")
+      .from("club_members")
       .select("id, full_name, coach_id, contact_name, contact_phone")
       .eq("is_active", true)
       .order("full_name"),

@@ -15,7 +15,7 @@ export default async function OwnersPage() {
   const owner = await requireOwner();
   const [{ data: members }, invitations] = await Promise.all([
     createAdminSupabaseClient()
-      .from("organization_members")
+      .from("organization_users")
       .select("id, full_name, email, base_role")
       .eq("organization_id", owner.organizationId)
       .eq("is_active", true)

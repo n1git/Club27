@@ -55,9 +55,9 @@ export default async function MembersPage({
     getLocations(),
   ]);
   let query = supabase
-    .from("members")
+    .from("club_members")
     .select(
-      "id, full_name, date_of_birth, is_active, contact_name, coach:profiles!coach_id(full_name), locations(name)",
+      "id, full_name, date_of_birth, is_active, contact_name, coach:club_profiles!coach_id(full_name), locations(name)",
       { count: "exact" },
     )
     .order("full_name")

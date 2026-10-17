@@ -22,13 +22,13 @@ export async function updateTenantBranding(
 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase
-    .from("tenants")
+    .from("clubs")
     .update({
       name: parsed.data.name,
       logo_url: parsed.data.logoUrl ?? null,
       primary_color: parsed.data.primaryColor ?? null,
     })
-    .eq("id", session.tenant_id);
+    .eq("id", session.club_id);
 
   if (error) return { ok: false, error: "Gagal menyimpan identitas klub" };
 

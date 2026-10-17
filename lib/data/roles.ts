@@ -11,7 +11,7 @@ export interface OrgRole {
 }
 
 export const organizationIdForTenant = cache(async (tenantId: string): Promise<string | null> => {
-  const { data } = await createAdminSupabaseClient().from("tenants").select("organization_id").eq("id", tenantId).maybeSingle();
+  const { data } = await createAdminSupabaseClient().from("clubs").select("organization_id").eq("id", tenantId).maybeSingle();
   return (data?.organization_id as string | undefined) ?? null;
 });
 
@@ -23,7 +23,7 @@ export const getOrgRoles = cache(async (organizationId: string): Promise<OrgRole
     .eq("organization_id", organizationId)
     .order("created_at");
   const ids = (roles ?? []).map((r) => r.id as string);
-  const { data: used } = ids.length ? await supabase.from("profiles").select("org_role_id").in("org_role_id", ids) : { data: [] };
+  const { data: used } = ids.length ? await supabase.from("club_profiles").select("org_role_id").in("org_role_id", ids) : { data: [] };
   const counts = new Map<string, number>();
   for (const row of used ?? []) counts.set(row.org_role_id as string, (counts.get(row.org_role_id as string) ?? 0) + 1);
   return (roles ?? []).map((r) => ({

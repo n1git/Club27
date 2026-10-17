@@ -36,13 +36,13 @@ export default async function CoachSchedulePage() {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("classes")
-    .select("id, start_time, end_time, capacity, instructor_id, substitute_id, locations(name), class_types(name), bookings(count)")
+    .select("id, start_time, end_time, capacity, instructor_id, substitute_id, locations(name), class_types(name), bookings:class_bookings(count)")
     .or(`instructor_id.eq.${session?.sub},substitute_id.eq.${session?.sub}`)
     .order("start_time");
 
   const classes = (data ?? []) as unknown as ClassRow[];
   const { data: memberRows } = await supabase
-    .from("members")
+    .from("club_members")
     .select("id, full_name, contact_name, contact_phone, profile_id")
     .eq("coach_id", session?.sub)
     .eq("is_active", true)

@@ -36,7 +36,7 @@ interface RawCheckin {
 }
 
 const CHECKIN_SELECT =
-  "id, checked_in_at, method, members(full_name), checkin_points(name), subscriptions(membership_packages(name))";
+  "id, checked_in_at, method, members:club_members(full_name), checkin_points(name), subscriptions:member_memberships(membership_packages(name))";
 
 function toRow(raw: RawCheckin): CheckinRow {
   return {

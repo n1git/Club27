@@ -72,7 +72,7 @@ export async function getProfileData(ids: {
 
   if (ids.ownerId) {
     const { data: owner } = await supabase
-      .from("organization_members")
+      .from("organization_users")
       .select("organization_id, organizations(name)")
       .eq("id", ids.ownerId)
       .maybeSingle();
@@ -83,7 +83,7 @@ export async function getProfileData(ids: {
         .select("plan_code, billing_period, status, trial_ends_at, current_period_end, subscription_plans(name)")
         .eq("organization_id", owner.organization_id)
         .maybeSingle(),
-      supabase.from("tenants").select("id, name, is_active").eq("organization_id", owner.organization_id).order("created_at"),
+      supabase.from("clubs").select("id, name, is_active").eq("organization_id", owner.organization_id).order("created_at"),
     ]);
     return {
       kind: "owner",
@@ -104,8 +104,8 @@ export async function getProfileData(ids: {
     const clubs = await listMemberClubs(ids.accountId);
     const { data: members } = clubs.length
       ? await supabase
-          .from("members")
-          .select("profile_id, coach:profiles!members_coach_id_fkey(full_name)")
+          .from("club_members")
+          .select("profile_id, coach:club_profiles!club_members_coach_id_fkey(full_name)")
           .in("profile_id", clubs.map((c) => c.profileId))
       : { data: [] };
     const coachByProfile = new Map(
@@ -121,8 +121,8 @@ export async function getProfileData(ids: {
   }
 
   const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, phone, role, specialization, session_rate, tenant_id, tenants(name), organization_roles(name)")
+    .from("club_profiles")
+    .select("id, phone, role, specialization, session_rate, club_id, tenants:clubs(name), organization_roles(name)")
     .eq("id", ids.profileId)
     .is("owner_id", null)
     .neq("role", "member")
@@ -136,7 +136,7 @@ export async function getProfileData(ids: {
       .from("coach_certifications")
       .select("id, name, number, valid_until")
       .eq("coach_id", profile.id)
-      .eq("tenant_id", profile.tenant_id)
+      .eq("club_id", profile.club_id)
       .order("valid_until", { ascending: true, nullsFirst: false });
     coach = {
       specialization: profile.specialization,

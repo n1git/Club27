@@ -32,7 +32,7 @@ export async function listContexts(accountId: string): Promise<ContextList> {
   let identities = 0;
 
   const { data: members } = await supabase
-    .from("organization_members")
+    .from("organization_users")
     .select("id, organization_id, is_active, base_role, organizations(name, organization_subscriptions(status))")
     .eq("account_id", accountId)
     .in("base_role", ["p_owner", "owner"]);
@@ -47,8 +47,8 @@ export async function listContexts(accountId: string): Promise<ContextList> {
       continue;
     }
     const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, email, full_name, tenant_id, tenants(name, is_active, organization_id, created_at)")
+      .from("club_profiles")
+      .select("id, email, full_name, club_id, tenants:clubs(name, is_active, organization_id, created_at)")
       .eq("owner_id", member.id)
       .eq("is_active", true);
     const profile = (profiles ?? [])
@@ -66,7 +66,7 @@ export async function listContexts(accountId: string): Promise<ContextList> {
         email: profile.email,
         fullName: profile.full_name,
         role: "owner",
-        tenantId: profile.tenant_id,
+        tenantId: profile.club_id,
         orgId: member.organization_id,
         redirectTo: OWNER_HOME,
       },
@@ -94,8 +94,8 @@ export async function listContexts(accountId: string): Promise<ContextList> {
   }
 
   const { data: staff } = await supabase
-    .from("profiles")
-    .select("id, role, email, full_name, is_active, tenant_id, tenants(name, is_active, organization_id), organization_roles(name)")
+    .from("club_profiles")
+    .select("id, role, email, full_name, is_active, club_id, tenants:clubs(name, is_active, organization_id), organization_roles(name)")
     .eq("account_id", accountId)
     .eq("role", "staff");
   for (const profile of staff ?? []) {
@@ -114,7 +114,7 @@ export async function listContexts(accountId: string): Promise<ContextList> {
         email: profile.email,
         fullName: profile.full_name,
         role: "staff",
-        tenantId: profile.tenant_id,
+        tenantId: profile.club_id,
         orgId: tenant.organization_id,
         redirectTo: roleHome("staff", staffHome(new Set((granted as string[] | null) ?? []))),
       },
@@ -157,7 +157,7 @@ export interface PendingDeletion {
 
 export async function listPendingDeletions(accountId: string): Promise<PendingDeletion[]> {
   const { data } = await createAdminSupabaseClient()
-    .from("organization_members")
+    .from("organization_users")
     .select("organization_id, organizations!inner(name, purge_after, deletion_requested_at)")
     .eq("account_id", accountId)
     .eq("base_role", "p_owner")

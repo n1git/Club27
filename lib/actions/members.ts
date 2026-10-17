@@ -73,7 +73,7 @@ export async function createMember(_prevState: ActionState, formData: FormData):
   }
 
   const supabase = await createServerSupabaseClient();
-  const { data: created, error } = await supabase.from("members").insert(memberColumns(parsed.data)).select("id").single();
+  const { data: created, error } = await supabase.from("club_members").insert(memberColumns(parsed.data)).select("id").single();
 
   if (error || !created) {
     return {
@@ -82,7 +82,7 @@ export async function createMember(_prevState: ActionState, formData: FormData):
     };
   }
 
-  const consent = { tenant_id: session.tenant_id, subject_type: "member", subject_id: created.id, version: PRIVACY_VERSION };
+  const consent = { club_id: session.club_id, subject_type: "member", subject_id: created.id, version: PRIVACY_VERSION };
   const consents = [
     { ...consent, kind: "member_data", guardian_name: null },
     ...(minor ? [{ ...consent, kind: "guardian", guardian_name: guardianName }] : []),
@@ -109,7 +109,7 @@ export async function updateMember(
   }
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("members").update(memberColumns(parsed.data)).eq("id", memberId);
+  const { error } = await supabase.from("club_members").update(memberColumns(parsed.data)).eq("id", memberId);
 
   if (error) {
     return { ok: false, error: "Gagal memperbarui data anggota" };
@@ -126,7 +126,7 @@ export async function toggleMemberActive(_prevState: ActionState, formData: Form
   const isActive = formData.get("isActive") === "true";
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("members").update({ is_active: isActive }).eq("id", memberId);
+  const { error } = await supabase.from("club_members").update({ is_active: isActive }).eq("id", memberId);
   if (error) {
     return {
       ok: false,
@@ -146,7 +146,7 @@ export async function reassignMemberCoach(_prevState: ActionState, formData: For
   if (!coachId) return { ok: false, error: "Pilih pelatih" };
 
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from("members").update({ coach_id: coachId }).eq("id", memberId).select("id");
+  const { data, error } = await supabase.from("club_members").update({ coach_id: coachId }).eq("id", memberId).select("id");
   if (error || !data?.length) return { ok: false, error: "Gagal memindahkan anggota" };
 
   revalidatePath("/coach", "layout");

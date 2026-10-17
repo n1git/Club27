@@ -20,7 +20,7 @@ export default async function StaffPage() {
   const roles = (await getTenantRoles(session.tenantId)).filter((r) => !isInstructorRole(r));
   const roleById = new Map(roles.map((r) => [r.id, r]));
   const { data } = await supabase
-    .from("profiles")
+    .from("club_profiles")
     .select("id, full_name, email, phone, role, is_active, org_role_id")
     .in("role", ["owner", "staff"])
     .order("full_name");

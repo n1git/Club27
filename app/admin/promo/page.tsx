@@ -12,7 +12,7 @@ import { PageHeader } from "@/components/ui/page-header";
 export default async function PromoAdminPage() {
   const supabase = await createServerSupabaseClient();
   const { data: promos } = await supabase
-    .from("promo")
+    .from("promos")
     .select("id, title, body, image_url, active_from, active_until")
     .order("active_from", { ascending: false });
 

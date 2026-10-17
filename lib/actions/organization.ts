@@ -26,7 +26,7 @@ const schema = createTenantSchema.extend({
   acceptTerms: z.literal("on", { message: "Setujui Syarat & Ketentuan dan Kebijakan Privasi untuk mendaftar" }),
 });
 
-type Created = { organization_id: string; tenant_id: string; owner_id: string; profile_id: string };
+type Created = { organization_id: string; club_id: string; owner_id: string; profile_id: string };
 
 export async function createOrganizationFromAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireActionRole(["personal", "member", "staff", "owner"]);
@@ -52,7 +52,7 @@ export async function createOrganizationFromAccount(_prevState: ActionState, for
 
   const args = {
     p_organization_name: parsed.data.tenantName,
-    p_tenant_name: parsed.data.tenantName,
+    p_club_name: parsed.data.tenantName,
     p_account_id: account.id,
     p_plan: parsed.data.planCode,
     p_period: parsed.data.billingPeriod,
@@ -84,7 +84,7 @@ export async function createOrganizationFromAccount(_prevState: ActionState, for
   }
 
   await supabase.from("consents").insert({
-    tenant_id: created.tenant_id,
+    club_id: created.club_id,
     organization_id: created.organization_id,
     subject_type: "owner",
     subject_id: created.owner_id,
@@ -95,7 +95,7 @@ export async function createOrganizationFromAccount(_prevState: ActionState, for
     action: "organization.create_from_account",
     targetType: "organization",
     targetId: created.organization_id,
-    tenantId: created.tenant_id,
+    tenantId: created.club_id,
     organizationId: created.organization_id,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -110,7 +110,7 @@ export async function createOrganizationFromAccount(_prevState: ActionState, for
     email: account.email as string,
     fullName: account.full_name as string,
     role: "owner",
-    tenantId: created.tenant_id,
+    tenantId: created.club_id,
     orgId: created.organization_id,
   });
   redirect("/admin/onboarding");

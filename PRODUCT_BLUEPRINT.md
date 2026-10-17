@@ -17,7 +17,7 @@ Portal:
 
 | Area blueprint | Status | Catatan |
 | :--- | :--- | :--- |
-| Member & CRM | Ada | `members`; akun login member (`accounts` + profil `member`), bukan akun orang tua; tanpa data medis terstruktur |
+| Member & CRM | Ada | `club_members`; akun login member (`accounts` + profil `member`), bukan akun orang tua; tanpa data medis terstruktur |
 | Paket & langganan | Ada | bulanan dan paket sesi; sisa sesi dihitung dari absensi atau check-in |
 | Jadwal kelas | Ada | pelatih, kapasitas, pelatih pengganti, fasilitas (`resource_id`) menggantikan kolam dan lane |
 | Private lesson | Belum | booking fasilitas ada, sesi privat per pelatih belum |
@@ -390,9 +390,9 @@ competitions ──> race_events ──> race_registrations ──> members
 ## 14. Core Tables
 
 Minimal initial schema:
-* `profiles`
+* `club_profiles`
 * `parents`
-* `members`
+* `club_members`
 * `employees`
 * `coaches`
 * `locations`
@@ -402,7 +402,7 @@ Minimal initial schema:
 * `class_members`
 * `member_attendance`
 * `packages`
-* `subscriptions`
+* `member_memberships`
 * `invoices`
 * `invoice_items`
 * `payments`
@@ -509,7 +509,7 @@ Detail ada di `docs/ARCHITECTURE.md`.
 | **Font dan merek** | Source Sans 3, Barlow Condensed 800 italic, hijau volt `#C8F31D` |
 | **Database** | PostgreSQL (Supabase), migrasi di `supabase/migrations` |
 | **Autentikasi** | Sendiri: bcrypt dan JWT (`jose`), bukan Supabase Auth; superadmin wajib TOTP |
-| **Otorisasi** | RLS per `tenant_id` dan peran, fungsi RPC untuk penulisan sensitif |
+| **Otorisasi** | RLS per `club_id` dan peran, fungsi RPC untuk penulisan sensitif |
 | **Validasi** | zod, sama dengan `CHECK` di database |
 | **Data fetching** | Server component dan server action; cache router 60 detik untuk halaman non-kritis |
 | **Pembayaran** | Midtrans Snap (langganan platform) |

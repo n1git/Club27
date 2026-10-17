@@ -19,7 +19,7 @@ export default async function PayrollPage() {
   const [{ data: runs }, coaches] = await Promise.all([
     supabase
       .from("payroll_runs")
-      .select("id, period_start, period_end, base_salary, bonus, thr, total_amount, status, profiles(full_name)")
+      .select("id, period_start, period_end, base_salary, bonus, thr, total_amount, status, profiles:club_profiles(full_name)")
       .order("period_start", { ascending: false }),
     getActiveCoaches(),
   ]);

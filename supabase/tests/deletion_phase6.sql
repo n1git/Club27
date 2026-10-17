@@ -7,7 +7,7 @@ insert into accounts (email, full_name, password_hash) values
 do $$
 declare
   aown uuid; akeep uuid; aco uuid;
-  r record; k record; v_org uuid; v_tenant uuid; v_member uuid; v_pkg uuid; v_sub uuid;
+  r record; k record; v_org uuid; v_club uuid; v_member uuid; v_pkg uuid; v_sub uuid;
   res jsonb; n bigint; v_after timestamptz; m_co uuid;
 begin
   select id into aown from accounts where email = 'own@t.test';
@@ -16,29 +16,29 @@ begin
 
   select * into r from register_organization('Org Hapus', 'Club Hapus', aown, 'standard', 'monthly', 'swimming');
   select * into k from register_organization('Org Tetap', 'Club Tetap', akeep, 'standard', 'monthly', 'swimming');
-  v_org := r.organization_id; v_tenant := r.tenant_id;
+  v_org := r.organization_id; v_club := r.club_id;
   update organization_subscriptions set seats = 5;
 
-  insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, aco, 'co@t.test', 'Co', 'owner') returning id into m_co;
-  insert into profiles (tenant_id, role, full_name, email, owner_id, account_id) values (v_tenant, 'owner', 'Co', 'co@t.test', m_co, aco);
+  insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, aco, 'co@t.test', 'Co', 'owner') returning id into m_co;
+  insert into club_profiles (club_id, role, full_name, email, owner_id, account_id) values (v_club, 'owner', 'Co', 'co@t.test', m_co, aco);
 
-  insert into locations (tenant_id, name) values (v_tenant, 'Kolam'), (k.tenant_id, 'Kolam Tetap');
-  insert into class_types (tenant_id, name) values (v_tenant, 'Dasar');
-  insert into membership_packages (tenant_id, name, price, billing_cycle) values (v_tenant, 'Bulanan', 100000, 'monthly') returning id into v_pkg;
-  insert into members (tenant_id, full_name, date_of_birth) values (v_tenant, 'Murid Satu', '2015-01-01') returning id into v_member;
-  insert into members (tenant_id, full_name, date_of_birth) values (k.tenant_id, 'Murid Tetap', '2015-01-01');
-  insert into subscriptions (tenant_id, member_id, package_id, status, start_date, end_date)
-  values (v_tenant, v_member, v_pkg, 'active', current_date, current_date + 30) returning id into v_sub;
-  insert into invoices (tenant_id, member_id, subscription_id, amount, status, due_date, period_start, period_end)
-  values (v_tenant, v_member, v_sub, 100000, 'paid', current_date, current_date, current_date + 30);
-  insert into products (tenant_id, name, price) values (v_tenant, 'Kacamata', 50000);
-  insert into cash_ledger (tenant_id, category, direction, amount, reason, created_by) values (v_tenant, 'manual_adjustment', 'in', 1000, 'koreksi', r.profile_id);
+  insert into locations (club_id, name) values (v_club, 'Kolam'), (k.club_id, 'Kolam Tetap');
+  insert into class_types (club_id, name) values (v_club, 'Dasar');
+  insert into membership_packages (club_id, name, price, billing_period) values (v_club, 'Bulanan', 100000, 'monthly') returning id into v_pkg;
+  insert into club_members (club_id, full_name, date_of_birth) values (v_club, 'Murid Satu', '2015-01-01') returning id into v_member;
+  insert into club_members (club_id, full_name, date_of_birth) values (k.club_id, 'Murid Tetap', '2015-01-01');
+  insert into member_memberships (club_id, member_id, package_id, status, start_date, end_date)
+  values (v_club, v_member, v_pkg, 'active', current_date, current_date + 30) returning id into v_sub;
+  insert into invoices (club_id, member_id, subscription_id, amount, status, due_date, period_start, period_end)
+  values (v_club, v_member, v_sub, 100000, 'paid', current_date, current_date, current_date + 30);
+  insert into products (club_id, name, price) values (v_club, 'Kacamata', 50000);
+  insert into cash_ledger (club_id, category, direction, amount, reason, created_by) values (v_club, 'manual_adjustment', 'in', 1000, 'koreksi', r.profile_id);
 
   res := purge_organization(v_org);
   assert (res ->> 'dry_run')::boolean, 'default is a dry run';
-  assert (res -> 'counts' ->> 'members')::int = 1 and (res -> 'counts' ->> 'invoices')::int = 1 and (res -> 'counts' ->> 'tenants')::int = 1, 'dry run counts rows';
-  assert (res -> 'counts' ->> 'organization_members')::int = 2, 'dry run counts the owners';
-  assert (select count(*) from members where tenant_id = v_tenant) = 1, 'dry run deletes nothing';
+  assert (res -> 'counts' ->> 'club_members')::int = 1 and (res -> 'counts' ->> 'invoices')::int = 1 and (res -> 'counts' ->> 'clubs')::int = 1, 'dry run counts rows';
+  assert (res -> 'counts' ->> 'organization_users')::int = 2, 'dry run counts the owners';
+  assert (select count(*) from club_members where club_id = v_club) = 1, 'dry run deletes nothing';
   assert (select count(*) from purge_candidates()) = 0, 'a fresh organization is no candidate';
 
   begin
@@ -58,7 +58,7 @@ begin
   v_after := request_organization_deletion(v_org, aown);
   assert v_after > now() + interval '29 days' and v_after < now() + interval '31 days', 'thirty day wait';
   assert (select status from organization_subscriptions where organization_id = v_org) = 'cancelled', 'subscription is cancelled';
-  assert not exists (select 1 from tenants where organization_id = v_org and is_active), 'every club is switched off';
+  assert not exists (select 1 from clubs where organization_id = v_org and is_active), 'every club is switched off';
   assert (select deletion_previous_status from organizations where id = v_org) = 'trial', 'previous status remembered';
   begin
     perform request_organization_deletion(v_org, aown);
@@ -68,7 +68,7 @@ begin
 
   perform cancel_organization_deletion(v_org, aown);
   assert (select status from organization_subscriptions where organization_id = v_org) = 'trial', 'restored to the previous status';
-  assert exists (select 1 from tenants where organization_id = v_org and is_active), 'clubs are back';
+  assert exists (select 1 from clubs where organization_id = v_org and is_active), 'clubs are back';
   assert (select deletion_requested_at from organizations where id = v_org) is null, 'deletion cleared';
   begin
     perform cancel_organization_deletion(v_org, aown);
@@ -92,14 +92,14 @@ begin
   res := purge_organization(v_org, true);
   assert not (res ->> 'dry_run')::boolean, 'real run reported';
   assert not exists (select 1 from organizations where id = v_org), 'organization removed';
-  assert not exists (select 1 from tenants where id = v_tenant), 'club removed';
-  assert (select count(*) from members where tenant_id = v_tenant) = 0, 'members removed';
+  assert not exists (select 1 from clubs where id = v_club), 'club removed';
+  assert (select count(*) from club_members where club_id = v_club) = 0, 'members removed';
   assert (select count(*) from organization_purges where organization_id = v_org and reason = 'owner_deleted') = 1, 'purge recorded';
-  assert (select counts ->> 'members' from organization_purges where organization_id = v_org) = '1', 'with counts';
+  assert (select counts ->> 'club_members' from organization_purges where organization_id = v_org) = '1', 'with counts';
   assert exists (select 1 from accounts where id = aown), 'accounts are kept';
   assert exists (select 1 from organizations where id = k.organization_id), 'other organizations are untouched';
-  assert (select count(*) from members where tenant_id = k.tenant_id) = 1, 'other clubs keep their members';
-  assert (select count(*) from locations where tenant_id = k.tenant_id) = 1, 'and their locations';
+  assert (select count(*) from club_members where club_id = k.club_id) = 1, 'other clubs keep their members';
+  assert (select count(*) from locations where club_id = k.club_id) = 1, 'and their locations';
 
   update organization_subscriptions set status = 'expired', current_period_end = current_date - 400, current_period_start = current_date - 430 where organization_id = k.organization_id;
   assert (select count(*) from purge_candidates() where organization_id = k.organization_id and reason = 'grace_expired') = 1, 'expired beyond the grace period is a candidate';

@@ -27,7 +27,7 @@ import { logAudit } from "@/lib/audit";
 import { PLAN_LIMIT_CODES, type ActionState } from "./types";
 
 async function clubName(tenantId: string) {
-  const { data } = await createAdminSupabaseClient().from("tenants").select("name").eq("id", tenantId).maybeSingle();
+  const { data } = await createAdminSupabaseClient().from("clubs").select("name").eq("id", tenantId).maybeSingle();
   return (data?.name as string | undefined) ?? "klub";
 }
 
@@ -38,28 +38,28 @@ function inviteMessage(emailSent: boolean) {
 }
 
 async function sendClubInvitation(
-  session: { sub: string; account_id: string; tenant_id: string; full_name?: string; app_role: string },
+  session: { sub: string; account_id: string; club_id: string; full_name?: string; app_role: string },
   input: { fullName: string; email: string; roleId: string }
 ): Promise<ActionState> {
-  const organizationId = await organizationIdForTenant(session.tenant_id);
+  const organizationId = await organizationIdForTenant(session.club_id);
   if (!organizationId) return { ok: false, error: "Organisasi tidak ditemukan" };
   const result = await createInvitation({
     organizationId,
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     kind: "staff",
     roleId: input.roleId,
     email: input.email,
     fullName: input.fullName,
     invitedBy: session.account_id,
     inviterName: session.full_name ?? "Admin klub",
-    where: await clubName(session.tenant_id),
+    where: await clubName(session.club_id),
   });
   if (!result.ok) return { ok: false, error: result.error };
   await logAudit({
     action: "invitation.create",
     targetType: "invitation",
     details: { role: input.roleId },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     organizationId,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -75,7 +75,7 @@ export async function inviteStaff(_prevState: ActionState, formData: FormData): 
     roleId: formData.get("role"),
   });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
-  const roles = (await getTenantRoles(session.tenant_id)).filter((r) => !isInstructorRole(r));
+  const roles = (await getTenantRoles(session.club_id)).filter((r) => !isInstructorRole(r));
   if (!roles.some((r) => r.id === parsed.data.roleId)) return { ok: false, error: "Peran tidak valid" };
   const result = await sendClubInvitation(session, parsed.data);
   revalidatePath("/admin/staff");
@@ -86,7 +86,7 @@ export async function inviteCoach(_prevState: ActionState, formData: FormData): 
   const session = await requireActionPermission("coaches.manage");
   const parsed = coachInviteSchema.safeParse({ fullName: formData.get("fullName"), email: formData.get("email") });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
-  const roles = (await getTenantRoles(session.tenant_id)).filter(isInstructorRole);
+  const roles = (await getTenantRoles(session.club_id)).filter(isInstructorRole);
   const role = roles.find((r) => r.presetKey === "pelatih") ?? roles[0];
   if (!role) return { ok: false, error: "Belum ada peran pelatih. Buat peran dengan izin menjadi pelatih terlebih dulu." };
   const result = await sendClubInvitation(session, { ...parsed.data, roleId: role.id });
@@ -100,7 +100,7 @@ export async function resendInvitation(_prevState: ActionState, formData: FormDa
   const session = await requireActionPermission(["staff.manage", "coaches.manage"]);
   const parsed = idSchema.safeParse({ invitationId: formData.get("invitationId") });
   if (!parsed.success) return { ok: false, error: "Undangan tidak valid" };
-  const invitation = await loadInvitationForAction(parsed.data.invitationId, { tenantId: session.tenant_id });
+  const invitation = await loadInvitationForAction(parsed.data.invitationId, { tenantId: session.club_id });
   if (!invitation?.org_role_id) return { ok: false, error: "Undangan tidak ditemukan" };
   const result = await sendClubInvitation(session, {
     fullName: invitation.full_name as string,
@@ -116,14 +116,14 @@ export async function revokeInvitationAction(_prevState: ActionState, formData: 
   const session = await requireActionPermission(["staff.manage", "coaches.manage"]);
   const parsed = idSchema.safeParse({ invitationId: formData.get("invitationId") });
   if (!parsed.success) return { ok: false, error: "Undangan tidak valid" };
-  const invitation = await loadInvitationForAction(parsed.data.invitationId, { tenantId: session.tenant_id });
+  const invitation = await loadInvitationForAction(parsed.data.invitationId, { tenantId: session.club_id });
   if (!invitation) return { ok: false, error: "Undangan tidak ditemukan" };
   await revokeInvitation(invitation.id as string);
   await logAudit({
     action: "invitation.revoke",
     targetType: "invitation",
     targetId: invitation.id as string,
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     organizationId: invitation.organization_id as string,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -138,7 +138,7 @@ const ACCEPT_ERRORS: Record<string, string> = {
   IV003: "Akun ini sudah terhubung ke klub atau organisasi tersebut.",
 };
 
-type Accepted = { out_kind: "staff" | "owner"; out_organization_id: string; out_tenant_id: string | null; out_profile_id: string };
+type Accepted = { out_kind: "staff" | "owner"; out_organization_id: string; out_club_id: string | null; out_profile_id: string };
 
 async function accept(token: string, accountId: string): Promise<{ ok: true; row: Accepted } | { ok: false; error: string }> {
   const { data, error } = await createAdminSupabaseClient().rpc("accept_invitation", {
@@ -161,7 +161,7 @@ async function recordAccepted(row: Accepted, accountId: string) {
     targetType: "account",
     targetId: accountId,
     details: { kind: row.out_kind },
-    tenantId: row.out_tenant_id,
+    tenantId: row.out_club_id,
     organizationId: row.out_organization_id,
     actorId: row.out_profile_id,
     actorRole: row.out_kind === "owner" ? "owner" : "staff",

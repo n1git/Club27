@@ -14,15 +14,15 @@ type TenantJoin = { name: string; is_active: boolean; organization_id: string; c
 export async function listMemberClubs(accountId: string): Promise<MemberClub[]> {
   const supabase = createAdminSupabaseClient();
   const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, email, full_name, tenant_id, tenants(name, is_active, organization_id, created_at)")
+    .from("club_profiles")
+    .select("id, email, full_name, club_id, tenants:clubs(name, is_active, organization_id, created_at)")
     .eq("account_id", accountId)
     .eq("role", "member")
     .eq("is_active", true);
   const ids = (profiles ?? []).map((p) => p.id as string);
   if (ids.length === 0) return [];
 
-  const { data: members } = await supabase.from("members").select("profile_id").in("profile_id", ids).eq("is_active", true);
+  const { data: members } = await supabase.from("club_members").select("profile_id").in("profile_id", ids).eq("is_active", true);
   const activeProfiles = new Set((members ?? []).map((m) => m.profile_id as string));
 
   return (profiles ?? [])
@@ -31,7 +31,7 @@ export async function listMemberClubs(accountId: string): Promise<MemberClub[]> 
     .sort((a, b) => a.tenant!.created_at.localeCompare(b.tenant!.created_at))
     .map(({ p, tenant }) => ({
       profileId: p.id as string,
-      tenantId: p.tenant_id as string,
+      tenantId: p.club_id as string,
       tenantName: tenant!.name,
       orgId: tenant!.organization_id,
       email: p.email as string,
@@ -41,7 +41,7 @@ export async function listMemberClubs(accountId: string): Promise<MemberClub[]> 
 
 export async function listClubsForProfile(profileId: string): Promise<MemberClub[]> {
   const { data } = await createAdminSupabaseClient()
-    .from("profiles")
+    .from("club_profiles")
     .select("account_id, role")
     .eq("id", profileId)
     .maybeSingle();

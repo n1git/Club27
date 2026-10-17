@@ -7,7 +7,7 @@ export interface SessionClaims {
   sub: string;
   role: "authenticated";
   app_role: AppRole;
-  tenant_id: string;
+  club_id: string;
   org_id: string;
   club_pending?: boolean;
   ctx: SessionContext;

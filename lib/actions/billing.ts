@@ -51,7 +51,7 @@ export async function createPackage(
           name: parsed.data.name,
           price: parsed.data.price,
           pricing_mode: "cycle",
-          billing_cycle: parsed.data.billingCycle,
+          billing_period: parsed.data.billingCycle,
           description: parsed.data.description ?? null,
         }
   );
@@ -77,7 +77,7 @@ export async function createSubscription(
   }
 
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.from("subscriptions").insert({
+  const { error } = await supabase.from("member_memberships").insert({
     member_id: parsed.data.memberId,
     package_id: parsed.data.packageId,
     start_date: parsed.data.startDate,
@@ -99,7 +99,7 @@ export async function cancelSubscription(_prevState: ActionState, formData: Form
   const subscriptionId = String(formData.get("subscriptionId"));
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
-    .from("subscriptions")
+    .from("member_memberships")
     .update({ status: "cancelled", end_date: getJakartaDateString() })
     .eq("id", subscriptionId)
     .select("id");
@@ -127,7 +127,7 @@ export async function generateInvoices(
     p_period_start: parsed.data.periodStart,
     p_period_end: parsed.data.periodEnd,
     p_due_date: parsed.data.dueDate,
-    p_tenant_id: session.tenant_id,
+    p_club_id: session.club_id,
   });
 
   if (error) return { ok: false, error: error.code === "SW003" ? error.message : "Gagal membuat tagihan" };

@@ -2,6 +2,8 @@
 
 ## 2026-10-19
 
+- Database naming: a club is now `clubs`/`club_id` everywhere (was `tenants`/`tenant_id`), club members are `club_members`, per-club profiles `club_profiles`, back-office users with a seat `organization_users`, and member memberships `member_memberships`. Sessions signed in before this change must sign in again.
+- Fixed: the coach list (and coach pickers) showed nothing for non-owners because a view lacked permission to read its source.
 - Owners can download all organization data as a ZIP of CSV files (Ekspor data), including when the subscription has lapsed.
 - The main owner can delete an organization: it is switched off at once, can be restored for 30 days from the account page, and its data is then eligible for permanent deletion, which is not automatic. A platform page lists what is eligible and counts what a deletion would remove. The privacy policy and terms describe this.
 - Staff, coaches and co-owners now join by invitation link instead of a temporary password; passwords are reset with an emailed one-hour link (`/lupa-sandi`). Moving the main owner role and inviting co-owners ask for your password again, and any account can create its own organization from `/akun`.

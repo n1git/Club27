@@ -31,8 +31,8 @@ export default async function AttendancePage({
       .eq("id", classId)
       .maybeSingle(),
     supabase
-      .from("bookings")
-      .select("id, is_attended, notes, members(full_name)")
+      .from("class_bookings")
+      .select("id, is_attended, notes, members:club_members(full_name)")
       .eq("class_id", classId),
   ]);
 

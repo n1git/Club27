@@ -3,8 +3,8 @@ begin;
 
 create function pg_temp.act(p_profile uuid) returns void language sql as $f$
   select set_config('request.jwt.claims', jsonb_build_object(
-    'sub', p_profile, 'role', 'authenticated', 'tenant_id', (select tenant_id from profiles where id = p_profile),
-    'account_id', (select account_id from profiles where id = p_profile), 'iat', extract(epoch from now())::bigint
+    'sub', p_profile, 'role', 'authenticated', 'club_id', (select club_id from club_profiles where id = p_profile),
+    'account_id', (select account_id from club_profiles where id = p_profile), 'iat', extract(epoch from now())::bigint
   )::text, true)
 $f$;
 grant execute on function pg_temp.act(uuid) to public;
@@ -40,10 +40,10 @@ begin
   assert (select trial_ends_at from organization_subscriptions where organization_id = v_org) = v_today + 14, 'trial lasts 14 days';
   assert (select seats from organization_subscriptions where organization_id = v_org) = 1, 'trial has one seat';
   assert subscription_phase(v_org) = 'trial', 'phase trial';
-  assert organization_internal_users(v_org) = 1, 'the first owner takes the seat';
+  assert organization_seats_used(v_org) = 1, 'the first owner takes the seat';
 
   begin
-    insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, a1, 's1@t.test', 'S1', 'staff');
+    insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, a1, 's1@t.test', 'S1', 'staff');
     assert false, 'trial seat is full';
   exception when sqlstate 'SW005' then null; end;
 
@@ -65,24 +65,24 @@ begin
   assert subscription_phase(v_org) = 'active', 'phase active';
   assert (select pending_seats from organization_subscriptions where organization_id = v_org) is null, 'no pending reduction';
 
-  insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, a1, 's1@t.test', 'S1', 'staff');
-  insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, a2, 's2@t.test', 'S2', 'staff');
+  insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, a1, 's1@t.test', 'S1', 'staff');
+  insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, a2, 's2@t.test', 'S2', 'staff');
   begin
-    insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, a3, 's3@t.test', 'S3', 'staff');
+    insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, a3, 's3@t.test', 'S3', 'staff');
     assert false, 'seats are full';
   exception when sqlstate 'SW005' then null; end;
-  assert organization_internal_users(v_org) = 3, 'three seats used';
+  assert organization_seats_used(v_org) = 3, 'three seats used';
 
   set constraints all immediate;
-  update organization_members set is_active = false where organization_id = v_org and account_id = a2;
-  update organization_members set is_active = true where organization_id = v_org and account_id = a2;
-  update organization_members set is_active = false where organization_id = v_org and account_id = a2;
-  insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, a3, 's3@t.test', 'S3', 'staff');
+  update organization_users set is_active = false where organization_id = v_org and account_id = a2;
+  update organization_users set is_active = true where organization_id = v_org and account_id = a2;
+  update organization_users set is_active = false where organization_id = v_org and account_id = a2;
+  insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, a3, 's3@t.test', 'S3', 'staff');
   begin
-    update organization_members set is_active = true where organization_id = v_org and account_id = a2;
+    update organization_users set is_active = true where organization_id = v_org and account_id = a2;
     assert false, 'reactivation respects the seat limit';
   exception when sqlstate 'SW005' then null; end;
-  update organization_members set is_active = false where organization_id = v_org and account_id = a3;
+  update organization_users set is_active = false where organization_id = v_org and account_id = a3;
 
   select * into q from seat_quote(v_org, 2);
   assert q.amount = 2 * 150000 and q.remaining_days = q.period_days, 'a fresh period is not prorated';
@@ -104,10 +104,10 @@ begin
   perform confirm_renewal(v_id, 'test');
   assert (select seats from organization_subscriptions where organization_id = v_org) = 5, 'seats added once, idempotent';
   assert (select current_period_end from organization_subscriptions where organization_id = v_org) = v_today + 15, 'a seat purchase does not move the period';
-  insert into organization_members (organization_id, account_id, email, full_name, base_role) values (v_org, a4, 's4@t.test', 'S4', 'staff');
-  update organization_members set is_active = true where organization_id = v_org and account_id = a3;
-  update organization_members set is_active = true where organization_id = v_org and account_id = a2;
-  assert organization_internal_users(v_org) = 5, 'five seats used';
+  insert into organization_users (organization_id, account_id, email, full_name, base_role) values (v_org, a4, 's4@t.test', 'S4', 'staff');
+  update organization_users set is_active = true where organization_id = v_org and account_id = a3;
+  update organization_users set is_active = true where organization_id = v_org and account_id = a2;
+  assert organization_seats_used(v_org) = 5, 'five seats used';
 
   begin
     perform request_renewal(v_org, null, 'standard', 'monthly', 4);
@@ -118,7 +118,7 @@ begin
     assert false, 'mid period increases go through seat purchase';
   exception when sqlstate '22023' then null; end;
 
-  update organization_members set is_active = false where organization_id = v_org and account_id in (a3, a4);
+  update organization_users set is_active = false where organization_id = v_org and account_id in (a3, a4);
   v_id := request_renewal(v_org, null, 'standard', 'monthly', 3);
   select * into q from subscription_renewals where id = v_id;
   assert q.amount = 3 * 150000, 'renewal quote at reduced seats';
@@ -127,7 +127,7 @@ begin
   assert q.seats = 5 and q.pending_seats = 3 and q.pending_seats_from = v_today + 16, 'reduction waits for the next period';
   assert q.current_period_end > v_today + 15, 'early renewal extends the period';
   begin
-    update organization_members set is_active = true where organization_id = v_org and account_id = a3;
+    update organization_users set is_active = true where organization_id = v_org and account_id = a3;
     assert false, 'pending reduction already caps new seats';
   exception when sqlstate 'SW005' then null; end;
 
@@ -141,26 +141,26 @@ begin
 
   perform pg_temp.act(p_owner);
   begin
-    insert into locations (tenant_id, name) values (r.tenant_id, 'Kolam');
+    insert into locations (club_id, name) values (r.club_id, 'Kolam');
     assert false, 'grace period is read only';
   exception when sqlstate 'SW003' then null; end;
   assert (select count(*) from locations) >= 0, 'reading stays possible';
   perform set_config('request.jwt.claims', '', true);
-  insert into locations (tenant_id, name) values (r.tenant_id, 'Kolam');
+  insert into locations (club_id, name) values (r.club_id, 'Kolam');
   perform pg_temp.act(p_owner);
   begin
-    update locations set address = 'x' where tenant_id = r.tenant_id;
+    update locations set address = 'x' where club_id = r.club_id;
     assert false, 'updates are blocked too';
   exception when sqlstate 'SW003' then null; end;
   begin
-    delete from locations where tenant_id = r.tenant_id;
+    delete from locations where club_id = r.club_id;
     assert false, 'deletes are blocked too';
   exception when sqlstate 'SW003' then null; end;
   perform set_config('request.jwt.claims', '', true);
-  delete from locations where tenant_id = r.tenant_id;
+  delete from locations where club_id = r.club_id;
 
   begin
-    update organization_members set is_active = true where organization_id = v_org and account_id = a3;
+    update organization_users set is_active = true where organization_id = v_org and account_id = a3;
     assert false, 'seat changes are blocked in the grace period';
   exception when sqlstate 'SW003' then null; end;
 
@@ -187,16 +187,16 @@ begin
   assert q.status = 'active' and q.seats = 4 and q.pending_seats is null and q.current_period_start = v_today, 'renewing after a lapse restarts today with the chosen seats';
   assert subscription_phase(v_org) = 'active', 'active again';
   perform pg_temp.act(p_owner);
-  insert into locations (tenant_id, name) values (r.tenant_id, 'Kolam 2');
+  insert into locations (club_id, name) values (r.club_id, 'Kolam 2');
   perform set_config('request.jwt.claims', '', true);
 
   select count(*) into n
   from pg_class c
-  join pg_attribute a on a.attrelid = c.oid and a.attname = 'tenant_id' and not a.attisdropped
+  join pg_attribute a on a.attrelid = c.oid and a.attname = 'club_id' and not a.attisdropped
   where c.relkind = 'r' and c.relnamespace = 'public'::regnamespace
-    and c.relname not in ('audit_log', 'consents', 'platform_subscriptions', 'organization_member_clubs')
+    and c.relname not in ('audit_log', 'consents', 'organization_user_clubs')
     and not exists (select 1 from pg_trigger t where t.tgrelid = c.oid and t.tgname = 'a00_org_writable');
-  assert n = 0, 'every tenant table carries the read-only guard';
+  assert n = 0, 'every club table carries the read-only guard';
 end;
 $$;
 

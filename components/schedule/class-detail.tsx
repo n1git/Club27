@@ -38,11 +38,11 @@ export async function ClassDetail({ id, canManage, variant }: { id: string; canM
     supabase
       .from("classes")
       .select(
-        "id, start_time, end_time, capacity, instructor_id, substitute_id, instructor:profiles!classes_instructor_id_fkey(full_name), substitute:profiles!classes_substitute_id_fkey(full_name), locations(name), class_types(name)"
+        "id, start_time, end_time, capacity, instructor_id, substitute_id, instructor:club_profiles!classes_instructor_id_fkey(full_name), substitute:club_profiles!classes_substitute_id_fkey(full_name), locations(name), class_types(name)"
       )
       .eq("id", id)
       .maybeSingle(),
-    supabase.from("bookings").select("id, is_attended, members(id, full_name)").eq("class_id", id),
+    supabase.from("class_bookings").select("id, is_attended, members:club_members(id, full_name)").eq("class_id", id),
     isAdmin ? getActiveCoaches() : Promise.resolve([]),
   ]);
 

@@ -16,7 +16,7 @@ export async function logAudit(entry: {
     p_target_type: entry.targetType ?? null,
     p_target_id: entry.targetId ?? null,
     p_details: entry.details ?? {},
-    p_tenant_id: entry.tenantId || null,
+    p_club_id: entry.tenantId || null,
     p_organization_id: entry.organizationId || null,
     p_actor_id: entry.actorId ?? null,
     p_actor_role: entry.actorRole ?? null,

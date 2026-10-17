@@ -7,7 +7,7 @@ import { formatJakartaDate } from "@/lib/format";
 
 export async function ReadOnlyBanner({ canRenew }: { canRenew: boolean }) {
   const session = await getSession();
-  const endsOn = session?.tenant_id ? await getGraceEndsOn(session.tenant_id) : null;
+  const endsOn = session?.club_id ? await getGraceEndsOn(session.club_id) : null;
   return (
     <Alert variant="warning" className="mb-4">
       <AlertTitle>Langganan berakhir, data hanya bisa dibaca</AlertTitle>

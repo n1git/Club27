@@ -42,7 +42,7 @@ interface UsageRow {
   club_limit: number | null;
   clubs: number;
   members: number;
-  internal_users: number;
+  seats_used: number;
   seats: number | null;
   total: number | string | null;
   per_month: number | string | null;
@@ -59,9 +59,9 @@ export default async function SuperadminDashboardPage() {
 
   const [{ data: usage }, { data: tenants }, { data: owners }, { data: planRows }, { data: organizations }, renewals] = await Promise.all([
     supabase.from("platform_organization_usage").select("*"),
-    supabase.from("tenants").select("id, name, is_active, created_at, organization_id").order("created_at"),
-    supabase.from("organization_members").select("id, organization_id, email, full_name, is_active"),
-    supabase.from("subscription_plans").select(`${PLAN_COLUMNS}, is_active`).order("price_per_user_month"),
+    supabase.from("clubs").select("id, name, is_active, created_at, organization_id").order("created_at"),
+    supabase.from("organization_users").select("id, organization_id, email, full_name, is_active"),
+    supabase.from("subscription_plans").select(`${PLAN_COLUMNS}, is_active`).order("price_per_seat_month"),
     supabase.from("organizations").select("id, created_at").order("created_at", { ascending: false }),
     listPendingRenewals(),
   ]);
@@ -165,7 +165,7 @@ export default async function SuperadminDashboardPage() {
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Seat terpakai</div>
-                {row.internal_users} / {row.seats ?? "-"}
+                {row.seats_used} / {row.seats ?? "-"}
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Klub / batas · Anggota</div>

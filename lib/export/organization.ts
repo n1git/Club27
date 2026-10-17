@@ -7,13 +7,13 @@ const PAGE = 1000;
 const HIDDEN = new Set(["secret", "password_hash", "token_hash", "totp_secret", "totp_pending_secret", "sessions_valid_after"]);
 
 const CLUB_TABLES: { file: string; table: string; order?: string[] }[] = [
-  { file: "anggota", table: "members" },
+  { file: "anggota", table: "club_members" },
   { file: "paket_keanggotaan", table: "membership_packages" },
-  { file: "langganan_anggota", table: "subscriptions" },
+  { file: "langganan_anggota", table: "member_memberships" },
   { file: "tagihan", table: "invoices" },
   { file: "jenis_kelas", table: "class_types" },
   { file: "kelas", table: "classes" },
-  { file: "booking_kelas", table: "bookings" },
+  { file: "booking_kelas", table: "class_bookings" },
   { file: "lokasi", table: "locations" },
   { file: "fasilitas", table: "resources" },
   { file: "jam_fasilitas", table: "resource_hours", order: ["resource_id", "weekday"] },
@@ -27,7 +27,7 @@ const CLUB_TABLES: { file: string; table: string; order?: string[] }[] = [
   { file: "buku_kas", table: "cash_ledger" },
   { file: "penggajian", table: "payroll_runs" },
   { file: "sertifikasi_pelatih", table: "coach_certifications" },
-  { file: "promo", table: "promo" },
+  { file: "promo", table: "promos" },
   { file: "persetujuan", table: "consents" },
 ];
 
@@ -50,7 +50,7 @@ async function fetchAll(table: string, column: string, values: string[], order: 
 function clean(rows: Row[], clubs: Map<string, string>): Row[] {
   return rows.map((row) => {
     const out: Row = {};
-    if (typeof row.tenant_id === "string") out.klub = clubs.get(row.tenant_id) ?? "";
+    if (typeof row.club_id === "string") out.klub = clubs.get(row.club_id) ?? "";
     for (const [key, value] of Object.entries(row)) if (!HIDDEN.has(key)) out[key] = value;
     return out;
   });
@@ -60,7 +60,7 @@ export async function buildOrganizationExport(organizationId: string): Promise<{
   const supabase = createAdminSupabaseClient();
   const [{ data: org }, { data: tenants }] = await Promise.all([
     supabase.from("organizations").select("name").eq("id", organizationId).maybeSingle(),
-    supabase.from("tenants").select("id, name, slug, club_type").eq("organization_id", organizationId).order("created_at"),
+    supabase.from("clubs").select("id, name, slug, club_type").eq("organization_id", organizationId).order("created_at"),
   ]);
   if (!org) throw new Error("organization not found");
   const clubs = new Map((tenants ?? []).map((t) => [t.id as string, t.name as string]));
@@ -73,14 +73,14 @@ export async function buildOrganizationExport(organizationId: string): Promise<{
   counts.push(`klub: ${tenants?.length ?? 0}`);
 
   for (const { file, table, order } of CLUB_TABLES) {
-    const rows = tenantIds.length ? clean(await fetchAll(table, "tenant_id", tenantIds, order), clubs) : [];
+    const rows = tenantIds.length ? clean(await fetchAll(table, "club_id", tenantIds, order), clubs) : [];
     add(file, rows);
     counts.push(`${file}: ${rows.length}`);
   }
 
   const staff = tenantIds.length
     ? clean(
-        await fetchAll("profiles", "tenant_id", tenantIds),
+        await fetchAll("club_profiles", "club_id", tenantIds),
         clubs
       )
         .filter((row) => row.role === "owner" || row.role === "staff")

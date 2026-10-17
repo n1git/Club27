@@ -13,7 +13,7 @@ import {
 export async function CoachMembers({ coachId }: { coachId: string }) {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
-    .from("members")
+    .from("club_members")
     .select("id, full_name, is_active")
     .eq("coach_id", coachId)
     .order("full_name");

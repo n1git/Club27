@@ -32,7 +32,7 @@ export async function toggleOwnerActive(_prevState: ActionState, formData: FormD
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
 
   const { data: owner, error } = await createAdminSupabaseClient()
-    .from("organization_members")
+    .from("organization_users")
     .update({ is_active: parsed.data.isActive === "true" })
     .eq("id", parsed.data.ownerId)
     .select("organization_id")
@@ -183,7 +183,7 @@ export async function updatePlan(_prevState: ActionState, formData: FormData): P
   const { error } = await createAdminSupabaseClient()
     .from("subscription_plans")
     .update({
-      price_per_user_month: parsed.data.pricePerUserMonth,
+      price_per_seat_month: parsed.data.pricePerUserMonth,
       club_limit: parsed.data.clubLimit ?? null,
       trial_days: parsed.data.trialDays,
       yearly_free_months: parsed.data.yearlyFreeMonths,

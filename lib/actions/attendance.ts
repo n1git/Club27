@@ -13,7 +13,7 @@ export async function markAttendance(_prevState: ActionState, formData: FormData
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
-    .from("bookings")
+    .from("class_bookings")
     .update({
       is_attended: isAttended,
       attended_at: isAttended ? new Date().toISOString() : null,
@@ -36,7 +36,7 @@ export async function updateBookingNotes(_prevState: ActionState, formData: Form
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
-    .from("bookings")
+    .from("class_bookings")
     .update({ notes: notes || null })
     .eq("id", bookingId)
     .select("id");

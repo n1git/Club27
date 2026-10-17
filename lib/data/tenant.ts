@@ -10,7 +10,7 @@ export interface CurrentTenant {
 export async function getCurrentTenant(): Promise<CurrentTenant | null> {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
-    .from("tenants")
+    .from("clubs")
     .select("id, name, logo_url, primary_color")
     .maybeSingle();
   if (!data) return null;

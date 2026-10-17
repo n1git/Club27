@@ -93,7 +93,7 @@ export async function getBookingsInRange(fromIso: string, toIso: string, resourc
   const supabase = await createServerSupabaseClient();
   let query = supabase
     .from("resource_bookings")
-    .select("id, resource_id, member_id, guest_name, guest_phone, class_id, start_time, end_time, status, price, source, members(full_name)")
+    .select("id, resource_id, member_id, guest_name, guest_phone, class_id, start_time, end_time, status, price, source, members:club_members(full_name)")
     .lt("start_time", toIso)
     .gt("end_time", fromIso)
     .neq("status", "cancelled")
@@ -154,13 +154,13 @@ export interface ResourcePreset {
 
 export async function getResourcePreset(): Promise<ResourcePreset | null> {
   const supabase = await createServerSupabaseClient();
-  const { data: tenant } = await supabase.from("tenants").select("club_type").maybeSingle();
+  const { data: tenant } = await supabase.from("clubs").select("club_type").maybeSingle();
   if (!tenant?.club_type) return null;
   const { data } = await supabase
     .from("club_type_presets")
     .select("kind, name_pattern, default_count, slot_minutes, default_capacity")
     .eq("club_type", tenant.club_type)
-    .order("sort")
+    .order("sort_order")
     .limit(1)
     .maybeSingle();
   if (!data) return null;

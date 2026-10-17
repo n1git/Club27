@@ -37,7 +37,7 @@ export interface OrganizationSubscription {
 interface PlanRow {
   code: PlanCode;
   name: string;
-  price_per_user_month: number | string;
+  price_per_seat_month: number | string;
   club_limit: number | null;
   trial_days: number;
   yearly_free_months: number | string;
@@ -58,7 +58,7 @@ interface SubscriptionRow {
   pending_seats_from: string | null;
 }
 
-export const PLAN_COLUMNS = "code, name, price_per_user_month, club_limit, trial_days, yearly_free_months, grace_days";
+export const PLAN_COLUMNS = "code, name, price_per_seat_month, club_limit, trial_days, yearly_free_months, grace_days";
 export const SUBSCRIPTION_COLUMNS =
   "organization_id, plan_code, billing_period, status, trial_ends_at, current_period_start, current_period_end, club_limit_override, seats, pending_seats, pending_seats_from";
 
@@ -66,7 +66,7 @@ export function toPlan(row: PlanRow): PricingPlan {
   return {
     code: row.code,
     name: row.name,
-    pricePerUserMonth: Number(row.price_per_user_month),
+    pricePerUserMonth: Number(row.price_per_seat_month),
     clubLimit: row.club_limit,
     trialDays: row.trial_days,
     yearlyFreeMonths: Number(row.yearly_free_months),
@@ -97,7 +97,7 @@ export async function getActivePlans(): Promise<PricingPlan[]> {
       .from("subscription_plans")
       .select(PLAN_COLUMNS)
       .eq("is_active", true)
-      .order("price_per_user_month");
+      .order("price_per_seat_month");
     return ((data ?? []) as PlanRow[]).map(toPlan);
   } catch {
     return [];
@@ -107,7 +107,7 @@ export async function getActivePlans(): Promise<PricingPlan[]> {
 export async function getModules(): Promise<PlatformModule[]> {
   try {
     const supabase = await createServerSupabaseClient();
-    const { data } = await supabase.from("platform_modules").select("code, name, description, status").order("sort");
+    const { data } = await supabase.from("platform_modules").select("code, name, description, status").order("sort_order");
     return (data ?? []) as PlatformModule[];
   } catch {
     return [];
@@ -142,7 +142,7 @@ export async function serverQuote(plan: PlanCode, period: BillingPeriod, users: 
 }
 
 export async function internalUserCount(organizationId: string): Promise<number> {
-  const { data } = await createAdminSupabaseClient().rpc("organization_internal_users", { p_org: organizationId });
+  const { data } = await createAdminSupabaseClient().rpc("organization_seats_used", { p_org: organizationId });
   return Number(data ?? 0);
 }
 
@@ -162,8 +162,8 @@ export async function getOrganizationBilling(organizationId: string): Promise<Or
   const supabase = createAdminSupabaseClient();
   const [{ data: sub }, { data: planRows }, { count: clubs }, seatsUsed] = await Promise.all([
     supabase.from("organization_subscriptions").select(SUBSCRIPTION_COLUMNS).eq("organization_id", organizationId).maybeSingle(),
-    supabase.from("subscription_plans").select(PLAN_COLUMNS).eq("is_active", true).order("price_per_user_month"),
-    supabase.from("tenants").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
+    supabase.from("subscription_plans").select(PLAN_COLUMNS).eq("is_active", true).order("price_per_seat_month"),
+    supabase.from("clubs").select("id", { count: "exact", head: true }).eq("organization_id", organizationId),
     internalUserCount(organizationId),
   ]);
   if (!sub) return null;
@@ -213,7 +213,7 @@ export async function seatUsage(organizationId: string): Promise<SeatUsage | nul
 
 export async function getGraceEndsOn(tenantId: string): Promise<string | null> {
   const { data } = await createAdminSupabaseClient()
-    .from("tenants")
+    .from("clubs")
     .select("organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))")
     .eq("id", tenantId)
     .maybeSingle();
@@ -238,8 +238,8 @@ export interface InternalUserRow {
 
 export async function listInternalUsers(organizationId: string): Promise<InternalUserRow[]> {
   const { data } = await createAdminSupabaseClient()
-    .from("organization_members")
-    .select("id, full_name, email, base_role, organization_member_clubs(tenants(name))")
+    .from("organization_users")
+    .select("id, full_name, email, base_role, organization_member_clubs:organization_user_clubs(tenants:clubs(name))")
     .eq("organization_id", organizationId)
     .eq("is_active", true)
     .order("full_name");

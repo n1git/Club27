@@ -13,7 +13,7 @@ export async function toggleStaffActive(_prevState: ActionState, formData: FormD
   if (profileId === session.sub) {
     return { ok: false, error: "Anda tidak dapat menonaktifkan akun sendiri" };
   }
-  const failure = await setStaffProfileActive(session.tenant_id, profileId, isActive);
+  const failure = await setStaffProfileActive(session.club_id, profileId, isActive);
   if (failure) return { ok: false, error: failure };
 
   revalidatePath("/admin/staff");
@@ -28,7 +28,7 @@ export async function changeStaffRole(_prevState: ActionState, formData: FormDat
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
   if (parsed.data.profileId === session.sub) return { ok: false, error: "Anda tidak dapat mengubah peran sendiri" };
 
-  const failure = await setStaffProfileRole(session.tenant_id, parsed.data.profileId, parsed.data.roleId, false);
+  const failure = await setStaffProfileRole(session.club_id, parsed.data.profileId, parsed.data.roleId, false);
   if (failure) return { ok: false, error: failure };
 
   revalidatePath("/admin/staff");

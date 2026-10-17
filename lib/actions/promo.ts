@@ -32,17 +32,17 @@ export async function createPromo(
     if (file.size > PROMO_MAX_BYTES) return { ok: false, error: "Ukuran gambar maksimal 2 MB" };
     const image = await detectImage(file);
     if (!image) return { ok: false, error: "Gambar harus berformat PNG, JPEG, atau WebP" };
-    const path = `${session.tenant_id}/${crypto.randomUUID()}.${image.ext}`;
+    const path = `${session.club_id}/${crypto.randomUUID()}.${image.ext}`;
     const { error: uploadError } = await supabase.storage
-      .from("promo")
+      .from("promos")
       .upload(path, file, { contentType: image.type });
     if (uploadError) {
       return { ok: false, error: "Gagal mengunggah gambar" };
     }
-    imageUrl = supabase.storage.from("promo").getPublicUrl(path).data.publicUrl;
+    imageUrl = supabase.storage.from("promos").getPublicUrl(path).data.publicUrl;
   }
 
-  const { error } = await supabase.from("promo").insert({
+  const { error } = await supabase.from("promos").insert({
     title: parsed.data.title,
     body: parsed.data.body,
     image_url: imageUrl,
@@ -63,10 +63,10 @@ export async function deletePromo(_prevState: ActionState, formData: FormData): 
   await requireActionPermission("promo.manage");
   const promoId = String(formData.get("promoId"));
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from("promo").delete().eq("id", promoId).select("id, image_url");
+  const { data, error } = await supabase.from("promos").delete().eq("id", promoId).select("id, image_url");
   if (error || !data?.length) return { ok: false, error: "Gagal menghapus promo" };
   const path = promoObjectPath(data[0].image_url);
-  if (path) await supabase.storage.from("promo").remove([path]);
+  if (path) await supabase.storage.from("promos").remove([path]);
   revalidatePath("/admin/promo");
   return { ok: true, message: "Promo dihapus" };
 }

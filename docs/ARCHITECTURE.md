@@ -40,27 +40,27 @@ loading and caching" below.
 
 ## Multi-tenancy model
 
-Hierarchy: **organization (owner account) → tenants (clubs) → coaches →
+Hierarchy: **organization (owner account) → clubs (clubs) → coaches →
 members**. An organization (`organizations`) has one or more owners
-(`organization_members`) and as many clubs as its plan allows (Standard 3 unless a
+(`organization_users`) and as many clubs as its plan allows (Standard 3 unless a
 superadmin sets `club_limit_override`, Advanced unlimited; trigger error
 `SW004`).
 
-Every club is a row in `tenants` with a mandatory `organization_id`. All
+Every club is a row in `clubs` with a mandatory `organization_id`. All
 club-owned data (profiles, locations, class types, members, classes, bookings, packages, subscriptions, invoices,
-cash ledger, payroll, promo) carries a `tenant_id` and is isolated by
+cash ledger, payroll, promo) carries a `club_id` and is isolated by
 Postgres Row Level Security — the database, not the frontend, is the
-isolation boundary. `current_tenant_id()` reads the tenant id embedded in the
+isolation boundary. `current_club_id()` reads the tenant id embedded in the
 caller's session JWT, and every RLS policy filters by it; cross-tenant
 foreign key references (e.g. a booking's member and class must belong to the
 same tenant) are additionally rejected by trigger checks at write time.
 
 A profile belongs to exactly one tenant with one role (`admin` or `coach`).
-Each member has one primary coach (`members.coach_id`, same tenant, role
+Each member has one primary coach (`club_members.coach_id`, same tenant, role
 coach) plus plain-text `contact_name` / `contact_phone`. Coaches see only
 their own members and classes. An email is unique across owners and coach
 profiles (database-enforced), so a coach belongs to one club only. A club's own name, logo, and primary color live in
-`tenants` and are edited from Admin -> Pengaturan; they are not environment
+`clubs` and are edited from Admin -> Pengaturan; they are not environment
 variables.
 
 ## Auth model
@@ -68,7 +68,7 @@ variables.
 Authentication is **custom**, not Supabase Auth. Every person has one
 universal account in `accounts` (email, username, bcrypt hash, lockout,
 `sessions_valid_after`, `must_change_password`); it is the only place a password
-lives. `organization_members` and club `profiles` link to it through
+lives. `organization_users` and club `club_profiles` link to it through
 `account_id` (a profile is unique per account and club, and the link can only be
 set by the server). There is one `/login` (username or email + password, no club
 code): the server finds the account, with the same generic error for unknown
@@ -77,15 +77,15 @@ account and wrong password, plus per-IP rate limit and a 15-minute lockout after
 club staff, or **personal** when the account has none of them. It mints its own
 JWT signed with the Supabase project's JWT secret, carrying `sub` (club profile
 id, or the account id for personal), `account_id`, `ctx` (`personal`, `member`,
-`org`), `tenant_id`, `org_id` and `app_role` (admin, coach, ..., or `personal`).
+`org`), `club_id`, `org_id` and `app_role` (admin, coach, ..., or `personal`).
 A session without `account_id` is rejected.
 
-Organization membership lives in `organization_members` (formerly
+Organization membership lives in `organization_users` (formerly
 `org_owners`): one row per account and organization with a `base_role`:
 `p_owner` (exactly one per organization, enforced by a deferred constraint
 trigger; ownership moves by demoting the old row before promoting the new one in
 one transaction), `owner`, or `staff`. Staff are limited to the clubs listed in
-`organization_member_clubs` (an empty list means no club). One account can be
+`organization_user_clubs` (an empty list means no club). One account can be
 p_owner of several organizations, each with its own subscription. After login
 the server lists the account's contexts (`lib/auth/contexts.ts`: one entry per
 organization, per member club and per staff profile): one entry opens it
@@ -110,12 +110,12 @@ the server read them live, so a role change, a deactivation or a removed club
 assignment applies on the next request.
 
 A role is paid or free. A paid role (Admin, Resepsionis, Keuangan by default) needs
-an active `organization_members` row with base role `staff` and an
-`organization_member_clubs` assignment for the club (enforced by a trigger and
+an active `organization_users` row with base role `staff` and an
+`organization_user_clubs` assignment for the club (enforced by a trigger and
 by `has_permission`), and that membership is the seat. Free roles (Pelatih,
 Kepala Pelatih, Kasir) are frontend roles and use no seat. A coach is a staff
 profile whose role holds `classes.instruct` (view `instructors`); it needs no
-`members` row. `lib/accounts/staff-seat.ts` keeps memberships in step when staff
+`club_members` row. `lib/accounts/staff-seat.ts` keeps memberships in step when staff
 are created, deactivated or change role.
 
 Pages: the proxy only separates contexts (`canAccessPath`); each page and action
@@ -124,7 +124,7 @@ admin `template.tsx` checks the path against `adminPathAllowed`, and the menu is
 filtered with the same rules. Where a user lands after login comes from
 `staffHome(permissions)`.
 
-The **personal** context has no `tenant_id`, so every club policy returns zero
+The **personal** context has no `club_id`, so every club policy returns zero
 rows for it (`supabase/tests/accounts_phase1.sql` checks every RLS table). It
 lands on `/akun` (profile, change password). Anyone can create an account at
 `/daftar/akun` (free, no email verification, terms consent recorded as subject
@@ -134,28 +134,28 @@ are always created fresh. Registering a club creates the account first, then
 `register_organization(..., p_account_id, ...)`.
 
 An owner has no tenant-specific password: each owner gets one `admin`
-profile per club (`profiles.owner_id`) and signs in as the profile of their
+profile per club (`club_profiles.owner_id`) and signs in as the profile of their
 default club, landing on `/admin/klub` (club list with member and coach
 counts, "Tambah klub"). The tenant switcher re-mints the JWT for the owner's
 admin profile in another club after checking `owner_id` in the database, with
 no second password prompt. The owner is not an RLS role: RLS still sees a
-tenant `admin`. Deactivating an owner (`organization_members.is_active`) removes access
+tenant `admin`. Deactivating an owner (`organization_users.is_active`) removes access
 to all their clubs at once; changing the owner password revokes every
 owner session (`sessions_valid_after`). Coaches go to `/coach`.
 `/superadmin/login` stays a separate URL with its own isolated session.
 
 **Members** (swimmers) can sign in too, read-only, once a club has activated
 their account (module `member_portal`). One person has one account in
-`accounts`; each club membership is a `profiles` row with role
-`member` linked from `members.profile_id`.
+`accounts`; each club membership is a `club_profiles` row with role
+`member` linked from `club_members.profile_id`.
 After login, one club goes to `/member`; several go to `/member/klub` to
 choose (the session carries `club_pending` until they do, so no club data is
 shown first), and `switchClub` re-mints the JWT after checking
 `member_account_id` in the database. RLS for role `member` only selects the
-member's own `members`, `subscriptions`, `invoices` and `bookings` rows plus
+member's own `club_members`, `member_memberships`, `invoices` and `class_bookings` rows plus
 the tenant-wide classes and active promo; there is no write policy, and
 deactivating the member account cuts every club while deactivating the
-`members` row cuts only that club. Logout, password change and reset set
+`club_members` row cuts only that club. Logout, password change and reset set
 `accounts.sessions_valid_after`, which cuts every context of the account (checked
 in `checkSession` and in `is_active_user()`).
 
@@ -176,24 +176,24 @@ tokens won't validate against PostgREST — in that case use Supabase's
 Third-Party Auth (JWKS) support instead of `lib/auth/jwt.ts` as written.
 
 The service-role key is used only in a few narrow, reviewed places (never in
-client-reachable code): login lookup, owner reads of `organization_members` and the
+client-reachable code): login lookup, owner reads of `organization_users` and the
 organization overview, creating a coach account together with its
-credentials row, the `register_organization` / `create_tenant_for_owner`
+credentials row, the `register_organization` / `create_club_for_owner`
 functions (execute granted to `service_role` only), the monthly invoice-generation cron and
 its "generate now" admin button. Every other read/write goes through the
 per-request JWT-bound client, so RLS is the real security boundary. Every
-service-role write to a tenant-scoped table passes `tenant_id` explicitly
-(the service-role client has no session JWT for `current_tenant_id()` to
+service-role write to a tenant-scoped table passes `club_id` explicitly
+(the service-role client has no session JWT for `current_club_id()` to
 read).
 
-Deactivating an account (`profiles.is_active = false`) cuts off all DB
+Deactivating an account (`club_profiles.is_active = false`) cuts off all DB
 access immediately, even though its JWT technically hasn't expired — this is
 enforced inside the `is_admin()` / `is_coach()` SQL helper
 functions, not just in individual policies.
 
 ## Onboarding a new club
 
-Because isolation is enforced at the database level (RLS + `tenant_id`),
+Because isolation is enforced at the database level (RLS + `club_id`),
 new clubs are onboarded onto the **same** deployment and Supabase project —
 no new Supabase project or Vercel deployment needed. Two ways in:
 
@@ -204,7 +204,7 @@ no new Supabase project or Vercel deployment needed. Two ways in:
   admin profile, so nothing is left half-created. The owner lands on
   `/admin/klub`.
 - **More clubs**: the owner adds clubs from `/admin/klub` ("Tambah klub",
-  `create_tenant_for_owner`), within the plan's club limit.
+  `create_club_for_owner`), within the plan's club limit.
 - **Manual** (`npm run seed:admin` with `SEED_TENANT_NAME` and optionally
   `SEED_ORGANIZATION_NAME`) uses the same function.
 - **Member accounts**: an admin (or a coach for their own members) opens a
@@ -226,7 +226,7 @@ without any old subscription became Advanced + active. The owner then sets club 
 
 ## Club types, modules and gym check-in
 
-Every club has a type (`tenants.club_type`, chosen when the club is created
+Every club has a type (`clubs.club_type`, chosen when the club is created
 in `/daftar` or "Tambah klub"; `swimming` and `gym` are ready). A type lists
 its modules in `club_type_modules`; a club has a module when its type lists
 it and `platform_modules.status` is `ready` (`current_club_has_module`).
@@ -253,7 +253,7 @@ club's point (`CK005`), module off (`CK001`), inactive member (`CK002`), no
 active plan (`CK003`), session pack used up (`CK004`). A second scan within
 120 minutes returns the existing check-in (a per-member lock makes parallel
 scans create one row). For clubs with the module, each check-in counts as one
-session of a session pack (`subscription_usage` and `my_subscription_usage`
+session of a session pack (`membership_usage` and `my_membership_usage`
 count check-ins instead of attended bookings). Staff can also record a manual
 check-in (admin, or a coach for their own members) with the same rules.
 
@@ -266,7 +266,7 @@ only their own members', members only their own.
 ## Modules per club, facilities and booking
 
 A club's modules are its type's modules plus enabled overrides minus disabled
-overrides, limited to `ready` ones (`tenant_module_overrides`,
+overrides, limited to `ready` ones (`club_module_overrides`,
 `club_has_module`, `current_club_modules()`). The admin toggles them in
 `/admin/settings/modul` (`set_club_module`); `members` can never be disabled.
 Disabling hides navigation and returns 404 for the module's pages; data stays
@@ -300,7 +300,7 @@ Screens: `/admin/fasilitas` (admin), `/admin/booking` (admin, receptionist;
 day and week calendar, click a slot), `/member/booking`. A new club lands on
 `/admin/onboarding` (location, facilities, first package), every step can be
 skipped, and a banner stays on the dashboard until it is finished
-(`tenants.onboarding_completed_at`, `complete_onboarding()`).
+(`clubs.onboarding_completed_at`, `complete_onboarding()`).
 
 ## Products, orders and point of sale
 
@@ -470,7 +470,7 @@ status from `/superadmin`.
   tenant session JWT is rejected there. Every portal query uses the
   service-role client; the portal groups clubs by organization, edits plans,
   subscription status and the club-limit override, and can deactivate an
-  owner. `superadmins`, `platform_tenant_usage`, `platform_organization_usage`,
+  owner. `superadmins`, `platform_club_usage`, `platform_organization_usage`,
   and every write to `organization_subscriptions` and
   `subscription_plans` are unreachable from `anon`/`authenticated`.
 - Billing is per **organization**, not per club. `subscription_plans`
@@ -481,7 +481,7 @@ status from `/superadmin`.
   the seat columns (`seats`, `pending_seats`, `pending_seats_from`).
   `platform_modules` is a price-free registry (`ready` / `soon`) that club
   types will use later.
-- Status **suspended** or **cancelled** sets `tenants.is_active = false` on
+- Status **suspended** or **cancelled** sets `clubs.is_active = false` on
   every club of the organization (`set_organization_status`): new logins are
   refused and live sessions lose access immediately. No data is deleted.
   Switching back to **active** or **trial** restores access.
@@ -530,7 +530,7 @@ status from `/superadmin`.
   classes, bookings, orders, cash ledger, payroll, check-ins, staff, roles,
   audit log and more) and strips password hashes, check-in secrets and tokens;
   `lib/export/zip.ts` writes the archive without a dependency. A new table with
-  `tenant_id` needs an entry in that list.
+  `club_id` needs an entry in that list.
 
 ### Deleting an organization
 
@@ -544,7 +544,7 @@ status from `/superadmin`.
   `purge_organization(org, execute)` counts what would go by default; with
   `execute` it needs the candidate state and `platform_flags.purge_enabled`
   (off), deletes in a fixed order inside one transaction, checks that no row
-  with the organization's `tenant_id` or `organization_id` is left (it rolls
+  with the organization's `club_id` or `organization_id` is left (it rolls
   back otherwise) and writes `organization_purges`. Nothing calls it on a
   schedule. Accounts stay; files in storage buckets are not touched by SQL. `/superadmin/purge`
   shows candidates and the dry-run counts.
@@ -560,8 +560,8 @@ status from `/superadmin`.
 - **Grace period** (`subscription_plans.grace_days`, 365): after a trial or
   paid period lapses everyone can still sign in and read, but every write
   from a user session is rejected with `SW003` (trigger `a00_org_writable` on
-  every table that has `tenant_id`, except `audit_log`, `consents`,
-  `organization_member_clubs`; service-role work such
+  every table that has `club_id`, except `audit_log`, `consents`,
+  `organization_user_clubs`; service-role work such
   as renewals is unaffected). Layouts show a read-only banner. After the grace
   period (`ended`), and for `pending` or `unverified`, only the owner and
   holders of `billing.view` can open the billing page (`requireRole` redirect);
@@ -590,8 +590,8 @@ status from `/superadmin`.
 
 ### Pricing model
 
-- Price = **seats** × `price_per_user_month` × months. A seat is an active
-  `organization_members` row (owner or staff with a paid role; one per person
+- Price = **seats** × `price_per_seat_month` × months. A seat is an active
+  `organization_users` row (owner or staff with a paid role; one per person
   per organization however many clubs). Free roles, coaches, kasir and members
   take no seat. `seats` is what the organization bought (trial: 1); the
   trigger `organization_members_enforce_seats` rejects a new or reactivated

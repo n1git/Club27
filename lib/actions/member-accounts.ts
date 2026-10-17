@@ -26,7 +26,7 @@ const resetSchema = z.object({ memberId: z.string().uuid("Anggota tidak valid") 
 async function visibleMember(memberId: string, session: { sub: string; permissions: ReadonlySet<string> }) {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
-    .from("members")
+    .from("club_members")
     .select("id, coach_id, profile_id, full_name")
     .eq("id", memberId)
     .maybeSingle();
@@ -60,7 +60,7 @@ export async function activateMemberAccount(_prevState: ActionState, formData: F
   if (existing && !existing.is_active) return { ok: false, error: "Akun dengan email ini dinonaktifkan" };
   if (existing && !existing.email_verified_at) {
     const { count } = await supabase
-      .from("profiles")
+      .from("club_profiles")
       .select("id", { count: "exact", head: true })
       .eq("account_id", existing.id)
       .eq("role", "member");
@@ -99,7 +99,7 @@ export async function activateMemberAccount(_prevState: ActionState, formData: F
     targetType: "member",
     targetId: member.id,
     details: { created: Boolean(created) },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     actorId: session.sub,
     actorRole: session.app_role,
   });
@@ -121,20 +121,20 @@ export async function resetMemberPassword(_prevState: ActionState, formData: For
 
   const supabase = createAdminSupabaseClient();
   const { data: own } = await supabase
-    .from("profiles")
+    .from("club_profiles")
     .select("account_id")
     .eq("id", member.profile_id)
-    .eq("tenant_id", session.tenant_id)
+    .eq("club_id", session.club_id)
     .maybeSingle();
   if (!own?.account_id) return { ok: false, error: "Akun tidak ditemukan" };
 
   const [{ count: otherProfiles }, { count: owners }] = await Promise.all([
     supabase
-      .from("profiles")
+      .from("club_profiles")
       .select("id", { count: "exact", head: true })
       .eq("account_id", own.account_id)
       .neq("id", member.profile_id),
-    supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("account_id", own.account_id),
+    supabase.from("organization_users").select("id", { count: "exact", head: true }).eq("account_id", own.account_id),
   ]);
   if (otherProfiles || owners) {
     return { ok: false, error: "Akun ini juga terhubung ke klub lain. Kata sandi hanya bisa diatur ulang oleh pemiliknya." };
@@ -157,7 +157,7 @@ export async function resetMemberPassword(_prevState: ActionState, formData: For
     action: "password.reset",
     targetType: "member",
     targetId: member.id,
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     actorId: session.sub,
     actorRole: session.app_role,
   });

@@ -31,7 +31,7 @@ function revalidateRoles() {
 
 export async function createRole(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireActionPermission("roles.manage");
-  const organizationId = await organizationIdForTenant(session.tenant_id);
+  const organizationId = await organizationIdForTenant(session.club_id);
   if (!organizationId) return { ok: false, error: "Organisasi tidak ditemukan" };
   const input = await parseRole(formData);
   if ("error" in input) return { ok: false, error: input.error };
@@ -59,7 +59,7 @@ export async function createRole(_prevState: ActionState, formData: FormData): P
     targetType: "role",
     targetId: role.id,
     details: { name: input.data.name, paid: input.data.isPaid, permissions: input.data.permissions.length },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     organizationId,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -72,7 +72,7 @@ export async function updateRole(roleId: string, _prevState: ActionState, formDa
   const session = await requireActionPermission("roles.manage");
   const id = z.string().uuid().safeParse(roleId);
   if (!id.success) return { ok: false, error: "Peran tidak valid" };
-  const current = (await getTenantRoles(session.tenant_id)).find((r) => r.id === id.data);
+  const current = (await getTenantRoles(session.club_id)).find((r) => r.id === id.data);
   if (!current) return { ok: false, error: "Peran tidak ditemukan" };
   const input = await parseRole(formData);
   if ("error" in input) return { ok: false, error: input.error };
@@ -104,7 +104,7 @@ export async function updateRole(roleId: string, _prevState: ActionState, formDa
     targetType: "role",
     targetId: current.id,
     details: { name: input.data.name, added: toAdd, removed: toRemove },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     actorId: session.sub,
     actorRole: session.app_role,
   });
@@ -116,7 +116,7 @@ export async function deleteRole(_prevState: ActionState, formData: FormData): P
   const session = await requireActionPermission("roles.manage");
   const id = z.string().uuid().safeParse(formData.get("roleId"));
   if (!id.success) return { ok: false, error: "Peran tidak valid" };
-  const current = (await getTenantRoles(session.tenant_id)).find((r) => r.id === id.data);
+  const current = (await getTenantRoles(session.club_id)).find((r) => r.id === id.data);
   if (!current) return { ok: false, error: "Peran tidak ditemukan" };
   if (current.profileCount > 0) return { ok: false, error: "Peran masih dipakai staf. Pindahkan stafnya dulu." };
 
@@ -127,7 +127,7 @@ export async function deleteRole(_prevState: ActionState, formData: FormData): P
     targetType: "role",
     targetId: current.id,
     details: { name: current.name },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     actorId: session.sub,
     actorRole: session.app_role,
   });

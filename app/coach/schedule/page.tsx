@@ -25,7 +25,7 @@ export default async function HeadCoachSchedulePage() {
     supabase
       .from("classes")
       .select(
-        "id, start_time, end_time, instructor_id, substitute_id, instructor:profiles!classes_instructor_id_fkey(full_name), locations(name), class_types(name)"
+        "id, start_time, end_time, instructor_id, substitute_id, instructor:club_profiles!classes_instructor_id_fkey(full_name), locations(name), class_types(name)"
       )
       .gte("start_time", getJakartaDayRangeIso().start)
       .order("start_time"),

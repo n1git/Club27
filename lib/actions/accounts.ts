@@ -21,14 +21,14 @@ export async function resetUserPassword(
   const supabase = createAdminSupabaseClient();
   const [{ data: profile }, { data: caller }] = await Promise.all([
     supabase
-      .from("profiles")
+      .from("club_profiles")
       .select("id, role, account_id")
       .eq("id", parsed.data.profileId)
-      .eq("tenant_id", session.tenant_id)
+      .eq("club_id", session.club_id)
       .eq("role", "staff")
       .neq("id", session.sub)
       .maybeSingle(),
-    supabase.from("profiles").select("owner_id").eq("id", session.sub).maybeSingle(),
+    supabase.from("club_profiles").select("owner_id").eq("id", session.sub).maybeSingle(),
   ]);
   if (!profile) return { ok: false, error: "Akun tidak ditemukan" };
   const { data: granted } = await supabase.rpc("profile_permissions", { p_profile: profile.id });
@@ -37,14 +37,14 @@ export async function resetUserPassword(
   }
 
   if (!profile.account_id) return { ok: false, error: "Akun tidak ditemukan" };
-  const organizationId = await organizationIdForTenant(session.tenant_id);
+  const organizationId = await organizationIdForTenant(session.club_id);
   const [{ data: otherProfiles }, { data: memberships }] = await Promise.all([
     supabase
-      .from("profiles")
-      .select("id, tenants(organization_id)")
+      .from("club_profiles")
+      .select("id, tenants:clubs(organization_id)")
       .eq("account_id", profile.account_id)
       .neq("id", profile.id),
-    supabase.from("organization_members").select("organization_id, base_role").eq("account_id", profile.account_id),
+    supabase.from("organization_users").select("organization_id, base_role").eq("account_id", profile.account_id),
   ]);
   const foreignProfiles = (otherProfiles ?? []).filter((p) => {
     const tenant = p.tenants as unknown as { organization_id: string } | { organization_id: string }[] | null;
@@ -69,7 +69,7 @@ export async function resetUserPassword(
     targetType: "profile",
     targetId: profile.id,
     details: { role: profile.role },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     actorId: session.sub,
     actorRole: session.app_role,
   });

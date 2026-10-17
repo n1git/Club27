@@ -24,7 +24,7 @@ export async function findPendingInvitation(token: string): Promise<InvitationVi
   if (!TOKEN_PATTERN.test(token)) return null;
   const { data } = await createAdminSupabaseClient()
     .from("invitations")
-    .select("id, kind, email, full_name, email_sent, organizations(name), tenants(name), organization_roles(name)")
+    .select("id, kind, email, full_name, email_sent, organizations(name), tenants:clubs(name), organization_roles(name)")
     .eq("token_hash", hashToken(token))
     .eq("status", "pending")
     .gt("expires_at", new Date().toISOString())
@@ -63,7 +63,7 @@ export async function createInvitation(input: NewInvitation): Promise<Invitation
   const { token, hash } = newToken();
   const { data, error } = await supabase.rpc("create_invitation", {
     p_org: input.organizationId,
-    p_tenant: input.tenantId,
+    p_club: input.tenantId,
     p_kind: input.kind,
     p_role: input.roleId,
     p_email: input.email,
@@ -100,11 +100,11 @@ export interface PendingInvitationRow {
 export async function listPendingInvitations(scope: { tenantId: string } | { organizationId: string; kind: "owner" }) {
   let query = createAdminSupabaseClient()
     .from("invitations")
-    .select("id, email, full_name, kind, org_role_id, tenant_id, expires_at, organization_roles(name)")
+    .select("id, email, full_name, kind, org_role_id, club_id, expires_at, organization_roles(name)")
     .eq("status", "pending")
     .gt("expires_at", new Date().toISOString())
     .order("created_at", { ascending: false });
-  query = "tenantId" in scope ? query.eq("tenant_id", scope.tenantId) : query.eq("organization_id", scope.organizationId).eq("kind", scope.kind);
+  query = "tenantId" in scope ? query.eq("club_id", scope.tenantId) : query.eq("organization_id", scope.organizationId).eq("kind", scope.kind);
   const { data } = await query;
   return (data ?? []).map(
     (row): PendingInvitationRow => ({
@@ -113,7 +113,7 @@ export async function listPendingInvitations(scope: { tenantId: string } | { org
       fullName: row.full_name as string,
       kind: row.kind as "staff" | "owner",
       roleId: row.org_role_id as string | null,
-      tenantId: row.tenant_id as string | null,
+      tenantId: row.club_id as string | null,
       roleName: one(row.organization_roles as One<{ name: string }>)?.name ?? null,
       expiresAt: row.expires_at as string,
     })
@@ -123,10 +123,10 @@ export async function listPendingInvitations(scope: { tenantId: string } | { org
 export async function loadInvitationForAction(id: string, scope: { tenantId: string } | { organizationId: string }) {
   let query = createAdminSupabaseClient()
     .from("invitations")
-    .select("id, organization_id, tenant_id, kind, org_role_id, email, full_name, status")
+    .select("id, organization_id, club_id, kind, org_role_id, email, full_name, status")
     .eq("id", id)
     .eq("status", "pending");
-  query = "tenantId" in scope ? query.eq("tenant_id", scope.tenantId) : query.eq("organization_id", scope.organizationId).eq("kind", "owner");
+  query = "tenantId" in scope ? query.eq("club_id", scope.tenantId) : query.eq("organization_id", scope.organizationId).eq("kind", "owner");
   const { data } = await query.maybeSingle();
   return data;
 }

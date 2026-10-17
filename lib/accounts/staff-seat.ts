@@ -18,7 +18,7 @@ function seatFailure(error: { code?: string; message: string } | null): string {
 export async function grantPaidMembership(person: Person): Promise<string | null> {
   const supabase = createAdminSupabaseClient();
   const { data: existing } = await supabase
-    .from("organization_members")
+    .from("organization_users")
     .select("id, base_role, is_active")
     .eq("organization_id", person.organizationId)
     .eq("account_id", person.accountId)
@@ -27,12 +27,12 @@ export async function grantPaidMembership(person: Person): Promise<string | null
   let memberId = existing?.id as string | undefined;
   if (existing && (existing.base_role === "p_owner" || existing.base_role === "owner")) return null;
   if (existing && !existing.is_active) {
-    const { error } = await supabase.from("organization_members").update({ is_active: true }).eq("id", existing.id);
+    const { error } = await supabase.from("organization_users").update({ is_active: true }).eq("id", existing.id);
     if (error) return seatFailure(error);
   }
   if (!memberId) {
     const { data, error } = await supabase
-      .from("organization_members")
+      .from("organization_users")
       .insert({
         organization_id: person.organizationId,
         account_id: person.accountId,
@@ -46,15 +46,15 @@ export async function grantPaidMembership(person: Person): Promise<string | null
     memberId = data.id as string;
   }
   const { error } = await supabase
-    .from("organization_member_clubs")
-    .upsert({ member_id: memberId, tenant_id: person.tenantId }, { onConflict: "member_id,tenant_id", ignoreDuplicates: true });
+    .from("organization_user_clubs")
+    .upsert({ member_id: memberId, club_id: person.tenantId }, { onConflict: "member_id,club_id", ignoreDuplicates: true });
   return error ? seatFailure(error) : null;
 }
 
 export async function syncPaidMembership(accountId: string, organizationId: string) {
   const supabase = createAdminSupabaseClient();
   const { data: member } = await supabase
-    .from("organization_members")
+    .from("organization_users")
     .select("id, base_role")
     .eq("organization_id", organizationId)
     .eq("account_id", accountId)
@@ -62,8 +62,8 @@ export async function syncPaidMembership(accountId: string, organizationId: stri
   if (!member || member.base_role !== "staff") return;
 
   const { data: profiles } = await supabase
-    .from("profiles")
-    .select("tenant_id, organization_roles(is_paid), tenants!inner(organization_id)")
+    .from("club_profiles")
+    .select("club_id, organization_roles(is_paid), tenants:clubs!inner(organization_id)")
     .eq("account_id", accountId)
     .eq("role", "staff")
     .eq("is_active", true)
@@ -74,24 +74,24 @@ export async function syncPaidMembership(accountId: string, organizationId: stri
         const role = p.organization_roles as unknown as { is_paid: boolean } | { is_paid: boolean }[] | null;
         return Array.isArray(role) ? role[0]?.is_paid : role?.is_paid;
       })
-      .map((p) => p.tenant_id as string)
+      .map((p) => p.club_id as string)
   );
 
-  const { data: assigned } = await supabase.from("organization_member_clubs").select("tenant_id").eq("member_id", member.id);
+  const { data: assigned } = await supabase.from("organization_user_clubs").select("club_id").eq("member_id", member.id);
   for (const row of assigned ?? []) {
-    if (!wanted.has(row.tenant_id as string)) {
-      await supabase.from("organization_member_clubs").delete().eq("member_id", member.id).eq("tenant_id", row.tenant_id);
+    if (!wanted.has(row.club_id as string)) {
+      await supabase.from("organization_user_clubs").delete().eq("member_id", member.id).eq("club_id", row.club_id);
     }
   }
-  if (wanted.size === 0) await supabase.from("organization_members").update({ is_active: false }).eq("id", member.id);
+  if (wanted.size === 0) await supabase.from("organization_users").update({ is_active: false }).eq("id", member.id);
 }
 
 async function loadStaffProfile(profileId: string, tenantId: string) {
   const { data } = await createAdminSupabaseClient()
-    .from("profiles")
+    .from("club_profiles")
     .select("id, account_id, email, full_name, is_active, org_role_id, organization_roles(is_paid)")
     .eq("id", profileId)
-    .eq("tenant_id", tenantId)
+    .eq("club_id", tenantId)
     .eq("role", "staff")
     .maybeSingle();
   if (!data) return null;
@@ -117,7 +117,7 @@ export async function setStaffProfileActive(tenantId: string, profileId: string,
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
-    .from("profiles")
+    .from("club_profiles")
     .update({ is_active: isActive })
     .eq("id", profileId)
     .eq("role", "staff")
@@ -154,7 +154,7 @@ export async function setStaffProfileRole(
 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
-    .from("profiles")
+    .from("club_profiles")
     .update({ org_role_id: role.id })
     .eq("id", profileId)
     .eq("role", "staff")

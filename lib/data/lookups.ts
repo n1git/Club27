@@ -39,7 +39,7 @@ export async function getActivePackages(): Promise<PackageOption[]> {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from("membership_packages")
-    .select("id, name, price, pricing_mode, billing_cycle, sessions_included, validity_weeks")
+    .select("id, name, price, pricing_mode, billing_period, sessions_included, validity_weeks")
     .eq("is_active", true)
     .order("name");
   return (data ?? []).map((p) => ({
@@ -47,7 +47,7 @@ export async function getActivePackages(): Promise<PackageOption[]> {
     name: p.name,
     price: Number(p.price),
     pricingMode: p.pricing_mode,
-    billingCycle: p.billing_cycle,
+    billingCycle: p.billing_period,
     sessionsIncluded: p.sessions_included,
     validityWeeks: p.validity_weeks,
   }));

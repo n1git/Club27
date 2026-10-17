@@ -61,7 +61,7 @@ export async function changePassword(
     action: "password.change",
     targetType: "account",
     targetId: session.account_id,
-    tenantId: session.tenant_id || undefined,
+    tenantId: session.club_id || undefined,
     actorId: session.sub,
     actorRole: session.app_role,
   });
@@ -72,7 +72,7 @@ export async function changePassword(
     email: session.email,
     fullName: session.full_name,
     role: session.app_role,
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     orgId: session.org_id,
     clubPending: session.club_pending,
   });

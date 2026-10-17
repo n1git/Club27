@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   const admin = createAdminSupabaseClient();
   const { data: point } = await admin
     .from("checkin_points")
-    .select("tenant_id, is_active")
+    .select("club_id, is_active")
     .eq("id", pointId)
     .maybeSingle();
   if (!point?.is_active) return result("CK005");
@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
   let profileId = session.sub;
   let sessionToken = await getSessionToken();
 
-  if (point.tenant_id !== session.tenant_id || session.club_pending) {
+  if (point.club_id !== session.club_id || session.club_pending) {
     const clubs = await listMemberClubs(session.account_id);
-    const club = clubs.find((c) => c.tenantId === point.tenant_id);
+    const club = clubs.find((c) => c.tenantId === point.club_id);
     if (!club) return result("NOT_MEMBER");
     sessionToken = await createSession({
       id: club.profileId,

@@ -37,7 +37,7 @@ export default async function SubscriptionsPage({
   const { page, from, to } = pageRange(pageParam);
   const supabase = await createServerSupabaseClient();
   let query = supabase
-    .from("subscriptions")
+    .from("member_memberships")
     .select(
       "id, status, start_date, end_date, member_names(full_name), membership_packages(name)",
       { count: "exact" },
@@ -51,7 +51,7 @@ export default async function SubscriptionsPage({
     getActivePackages(),
   ]);
   const { data: usageRows } = await supabase
-    .from("subscription_usage")
+    .from("membership_usage")
     .select("subscription_id, sessions_used, sessions_included")
     .in(
       "subscription_id",

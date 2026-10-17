@@ -17,7 +17,7 @@ export default async function MemberDetailModal({
   const supabase = await createServerSupabaseClient();
   const [{ data: member }, locations, coaches, session] = await Promise.all([
     supabase
-      .from("members")
+      .from("club_members")
       .select(
         "id, full_name, date_of_birth, notes, address, preferred_location_id, is_active, coach_id, contact_name, contact_phone, profile_id"
       )

@@ -3,8 +3,8 @@ begin;
 
 create function pg_temp.act(p_profile uuid) returns void language sql as $f$
   select set_config('request.jwt.claims', jsonb_build_object(
-    'sub', p_profile, 'role', 'authenticated', 'tenant_id', (select tenant_id from profiles where id = p_profile),
-    'account_id', (select account_id from profiles where id = p_profile), 'iat', extract(epoch from now())::bigint
+    'sub', p_profile, 'role', 'authenticated', 'club_id', (select club_id from club_profiles where id = p_profile),
+    'account_id', (select account_id from club_profiles where id = p_profile), 'iat', extract(epoch from now())::bigint
   )::text, true)
 $f$;
 grant execute on function pg_temp.act(uuid) to public;
@@ -55,46 +55,46 @@ begin
   assert not exists (select 1 from role_permissions where role_id = role_admin and permission_code = 'classes.instruct'), 'admin preset is not an instructor';
 
   begin
-    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-    values (r1.tenant_id, 'staff', role_rec, 'Rec', 'rec@t.test', arec);
+    insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+    values (r1.club_id, 'staff', role_rec, 'Rec', 'rec@t.test', arec);
     assert false, 'a paid role needs a staff membership with a club assignment';
   exception when check_violation then null; end;
 
-  insert into organization_members (organization_id, account_id, email, full_name, base_role)
+  insert into organization_users (organization_id, account_id, email, full_name, base_role)
   values (r1.organization_id, arec, 'rec@t.test', 'Rec', 'staff') returning id into m_rec;
 
   begin
-    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-    values (r1.tenant_id, 'staff', role_rec, 'Rec', 'rec@t.test', arec);
+    insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+    values (r1.club_id, 'staff', role_rec, 'Rec', 'rec@t.test', arec);
     assert false, 'membership without a club assignment is not enough';
   exception when check_violation then null; end;
 
-  insert into organization_member_clubs (member_id, tenant_id) values (m_rec, r1.tenant_id);
-  insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-  values (r1.tenant_id, 'staff', role_rec, 'Rec', 'rec@t.test', arec) returning id into p_rec;
+  insert into organization_user_clubs (member_id, club_id) values (m_rec, r1.club_id);
+  insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+  values (r1.club_id, 'staff', role_rec, 'Rec', 'rec@t.test', arec) returning id into p_rec;
 
   begin
-    insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-    values (r1.tenant_id, 'staff', role_other, 'Q', 'q@t.test', aq);
+    insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+    values (r1.club_id, 'staff', role_other, 'Q', 'q@t.test', aq);
     assert false, 'a role of another organization cannot be assigned';
   exception when check_violation or raise_exception then null; end;
 
-  insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-  values (r1.tenant_id, 'staff', role_coach, 'Coach', 'coach@t.test', acoach) returning id into p_coach;
+  insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+  values (r1.club_id, 'staff', role_coach, 'Coach', 'coach@t.test', acoach) returning id into p_coach;
 
   assert is_instructor(p_coach), 'coach role is an instructor';
   assert not is_instructor(p_rec), 'receptionist is not an instructor';
   assert not is_instructor(p_owner), 'owner profile is not an instructor';
-  assert not exists (select 1 from members where profile_id = p_coach), 'coach has no members row';
+  assert not exists (select 1 from club_members where profile_id = p_coach), 'coach has no members row';
 
-  insert into locations (tenant_id, name) values (r1.tenant_id, 'L');
-  insert into class_types (tenant_id, name) values (r1.tenant_id, 'T');
-  insert into classes (tenant_id, instructor_id, location_id, class_type_id, start_time, end_time)
-  values (r1.tenant_id, p_coach, (select id from locations where tenant_id = r1.tenant_id), (select id from class_types where tenant_id = r1.tenant_id), now() + interval '2 days', now() + interval '2 days 1 hour');
+  insert into locations (club_id, name) values (r1.club_id, 'L');
+  insert into class_types (club_id, name) values (r1.club_id, 'T');
+  insert into classes (club_id, instructor_id, location_id, class_type_id, start_time, end_time)
+  values (r1.club_id, p_coach, (select id from locations where club_id = r1.club_id), (select id from class_types where club_id = r1.club_id), now() + interval '2 days', now() + interval '2 days 1 hour');
 
   begin
-    insert into classes (tenant_id, instructor_id, location_id, class_type_id, start_time, end_time)
-    values (r1.tenant_id, p_rec, (select id from locations where tenant_id = r1.tenant_id), (select id from class_types where tenant_id = r1.tenant_id), now() + interval '3 days', now() + interval '3 days 1 hour');
+    insert into classes (club_id, instructor_id, location_id, class_type_id, start_time, end_time)
+    values (r1.club_id, p_rec, (select id from locations where club_id = r1.club_id), (select id from class_types where club_id = r1.club_id), now() + interval '3 days', now() + interval '3 days 1 hour');
     assert false, 'a non-instructor cannot teach a class';
   exception when raise_exception then null; end;
 
@@ -112,16 +112,16 @@ begin
   assert is_member() is false, 'coach is not a member';
 
   set constraints all immediate;
-  update organization_members set is_active = false where id = m_rec;
+  update organization_users set is_active = false where id = m_rec;
   perform pg_temp.act(p_rec);
   assert not has_permission('members.view_all'), 'deactivating the staff membership cuts a paid role at once';
   assert profile_permissions(p_rec) = '{}', 'and the permission list is empty';
-  update organization_members set is_active = true where id = m_rec;
+  update organization_users set is_active = true where id = m_rec;
   perform pg_temp.act(p_rec);
   assert has_permission('members.view_all'), 'reactivation restores it';
-  delete from organization_member_clubs where member_id = m_rec;
+  delete from organization_user_clubs where member_id = m_rec;
   assert not has_permission('members.view_all'), 'removing the club assignment cuts a paid role at once';
-  insert into organization_member_clubs (member_id, tenant_id) values (m_rec, r1.tenant_id);
+  insert into organization_user_clubs (member_id, club_id) values (m_rec, r1.club_id);
 
   delete from role_permissions where role_id = role_rec and permission_code = 'members.view_all';
   assert not has_permission('members.view_all'), 'revoking a permission applies at once';
@@ -130,22 +130,22 @@ begin
   perform set_config('request.jwt.claims', '', true);
   insert into organization_roles (organization_id, name, is_paid) values (r1.organization_id, 'Penjaga Loket', false) returning id into role_custom;
   insert into role_permissions (role_id, permission_code) values (role_custom, 'checkin.view_all'), (role_custom, 'members.lookup');
-  insert into profiles (tenant_id, role, org_role_id, full_name, email, account_id)
-  values (r1.tenant_id, 'staff', role_custom, 'Custom', 'custom@t.test', acustom) returning id into p_custom;
+  insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
+  values (r1.club_id, 'staff', role_custom, 'Custom', 'custom@t.test', acustom) returning id into p_custom;
   perform pg_temp.act(p_custom);
   assert has_permission('checkin.view_all') and has_permission('members.lookup'), 'custom role permissions';
   assert not has_permission('members.view_all'), 'custom role stays limited';
 
   perform set_config('request.jwt.claims', '', true);
-  update organization_members set is_active = false where organization_id = r1.organization_id and account_id = ap;
+  update organization_users set is_active = false where organization_id = r1.organization_id and account_id = ap;
   perform pg_temp.act(p_owner);
   assert not has_permission('members.delete'), 'an inactive owner membership cuts every owner permission';
-  update organization_members set is_active = true where organization_id = r1.organization_id and account_id = ap;
+  update organization_users set is_active = true where organization_id = r1.organization_id and account_id = ap;
 
   p_q := r2.profile_id;
   perform pg_temp.act(p_q);
   assert has_permission('roles.manage'), 'the other organization owner holds its permissions';
-  perform set_config('request.jwt.claims', jsonb_build_object('sub', p_q, 'role', 'authenticated', 'tenant_id', r1.tenant_id, 'account_id', aq, 'iat', extract(epoch from now())::bigint)::text, true);
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', p_q, 'role', 'authenticated', 'club_id', r1.club_id, 'account_id', aq, 'iat', extract(epoch from now())::bigint)::text, true);
   assert not has_permission('members.view_all') and not is_active_user(), 'a token for another organization club grants nothing';
 end $$;
 
@@ -156,6 +156,7 @@ begin
   begin perform 1 from permissions; assert false, 'permissions closed'; exception when insufficient_privilege then null; end;
   begin perform 1 from organization_roles; assert false, 'roles closed'; exception when insufficient_privilege then null; end;
   begin perform 1 from role_permissions; assert false, 'role_permissions closed'; exception when insufficient_privilege then null; end;
+  begin perform 1 from instructors; exception when insufficient_privilege then assert false, 'the instructors view is readable without direct access to role_permissions'; end;
   begin perform profile_permissions(gen_random_uuid()); assert false, 'profile_permissions is server only'; exception when insufficient_privilege then null; end;
   begin perform seed_organization_roles(gen_random_uuid()); assert false, 'seed is server only'; exception when insufficient_privilege then null; end;
 end $$;

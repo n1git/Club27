@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export async function OnboardingBanner() {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase.from("tenants").select("onboarding_completed_at").maybeSingle();
+  const { data } = await supabase.from("clubs").select("onboarding_completed_at").maybeSingle();
   if (!data || data.onboarding_completed_at) return null;
 
   return (

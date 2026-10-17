@@ -72,13 +72,13 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
 
   if (!isMember && values.fullName) {
     if (ownerId) {
-      await supabase.from("organization_members").update({ full_name: values.fullName }).eq("id", ownerId);
-      await supabase.from("profiles").update({ full_name: values.fullName }).eq("owner_id", ownerId);
+      await supabase.from("organization_users").update({ full_name: values.fullName }).eq("id", ownerId);
+      await supabase.from("club_profiles").update({ full_name: values.fullName }).eq("owner_id", ownerId);
     } else if (isStaff) {
-      const { data: before } = await supabase.from("profiles").select("phone").eq("id", session.sub).single();
+      const { data: before } = await supabase.from("club_profiles").select("phone").eq("id", session.sub).single();
       const phone = values.phone || null;
       await supabase
-        .from("profiles")
+        .from("club_profiles")
         .update({ full_name: values.fullName, phone })
         .eq("id", session.sub)
         .is("owner_id", null)
@@ -94,7 +94,7 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
     targetType: "account",
     targetId: session.account_id,
     details: { changes },
-    tenantId: session.tenant_id,
+    tenantId: session.club_id,
     organizationId: session.org_id,
     actorId: session.sub,
     actorRole: session.app_role,
@@ -107,7 +107,7 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
       email: session.email,
       fullName,
       role: session.app_role,
-      tenantId: session.tenant_id,
+      tenantId: session.club_id,
       orgId: session.org_id,
       clubPending: session.club_pending,
     });

@@ -22,7 +22,7 @@ export default async function PackagesPage() {
   const supabase = await createServerSupabaseClient();
   const { data: packages } = await supabase
     .from("membership_packages")
-    .select("id, name, price, billing_cycle, is_active")
+    .select("id, name, price, billing_period, is_active")
     .order("name");
 
   return (
@@ -48,7 +48,7 @@ export default async function PackagesPage() {
             <TableRow key={p.id}>
               <TableCell>{p.name}</TableCell>
               <TableCell>Rp {Number(p.price).toLocaleString("id-ID")}</TableCell>
-              <TableCell>{CYCLE_LABEL[p.billing_cycle] ?? p.billing_cycle}</TableCell>
+              <TableCell>{CYCLE_LABEL[p.billing_period] ?? p.billing_period}</TableCell>
             </TableRow>
           ))}
           {(packages ?? []).length === 0 ? (

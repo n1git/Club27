@@ -13,10 +13,10 @@ export interface OwnerContext {
 
 export async function loadOwner(profileId: string, tenantId: string): Promise<OwnerContext | null> {
   const { data } = await createAdminSupabaseClient()
-    .from("profiles")
-    .select("owner_id, account_id, organization_members(id, organization_id, is_active, base_role)")
+    .from("club_profiles")
+    .select("owner_id, account_id, organization_members:organization_users(id, organization_id, is_active, base_role)")
     .eq("id", profileId)
-    .eq("tenant_id", tenantId)
+    .eq("club_id", tenantId)
     .not("owner_id", "is", null)
     .maybeSingle();
   const owner = data?.organization_members as unknown as { id: string; organization_id: string; is_active: boolean; base_role: "p_owner" | "owner" } | null;
@@ -33,7 +33,7 @@ export async function requireOwner() {
 
 export async function requireOwnerAction(options: { allowBillingLocked?: boolean } = {}): Promise<OwnerContext> {
   const session = await requireActionRole("owner", options);
-  const owner = await loadOwner(session.sub, session.tenant_id);
+  const owner = await loadOwner(session.sub, session.club_id);
   if (!owner) throw new UnauthorizedError("Hanya pemilik organisasi yang dapat melakukan aksi ini");
   return owner;
 }

@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         .select("organization_id");
       if (!claimed?.length) continue;
       const { data: owners } = await supabase
-        .from("organization_members")
+        .from("organization_users")
         .select("email")
         .eq("organization_id", row.organization_id)
         .in("base_role", ["p_owner", "owner"])
