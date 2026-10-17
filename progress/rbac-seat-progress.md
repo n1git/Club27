@@ -284,3 +284,5 @@ Tidak ada skrip balik: tabel yang dihapus kosong di hosted (diperiksa 2026-10-17
 `20250101000047_instructors_view.sql`: view `instructors` (security invoker) membaca `role_permissions` yang tidak boleh dibaca peran `authenticated`, sehingga daftar pelatih dan pemilih pelatih kosong untuk pengguna biasa. Kini memakai `is_instructor()`.
 
 Uji: tes SQL fase 1-6 (diganti nama), seed demo dan purge nyata atas 5 organisasi, penelusuran halaman semua persona (pemilik, admin, resepsionis, keuangan, kepala pelatih, pelatih, anggota) dengan data demo tanpa galat dari PostgREST, e2e anggota/undangan/hapus. Tidak ada skrip balik otomatis; pulihkan dari cadangan.
+
+Status: 046 dan 047 sudah diterapkan ke hosted (2026-10-17); riwayat migrasi dicatat sebagai versi 046 dan 047. Tabel lama dan kolom `tenant_id` tidak ada lagi; paket, modul, dan jenis klub utuh, organisasi tetap 0.
