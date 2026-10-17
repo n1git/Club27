@@ -38,21 +38,20 @@ export async function resetUserPassword(
 
   if (!profile.account_id) return { ok: false, error: "Akun tidak ditemukan" };
   const organizationId = await organizationIdForTenant(session.tenant_id);
-  const [{ data: otherProfiles }, { data: memberships }, { count: memberAccounts }] = await Promise.all([
+  const [{ data: otherProfiles }, { data: memberships }] = await Promise.all([
     supabase
       .from("profiles")
       .select("id, tenants(organization_id)")
       .eq("account_id", profile.account_id)
       .neq("id", profile.id),
     supabase.from("organization_members").select("organization_id, base_role").eq("account_id", profile.account_id),
-    supabase.from("member_accounts").select("id", { count: "exact", head: true }).eq("account_id", profile.account_id),
   ]);
   const foreignProfiles = (otherProfiles ?? []).filter((p) => {
     const tenant = p.tenants as unknown as { organization_id: string } | { organization_id: string }[] | null;
     return (Array.isArray(tenant) ? tenant[0]?.organization_id : tenant?.organization_id) !== organizationId;
   });
   const foreignMemberships = (memberships ?? []).filter((m) => m.organization_id !== organizationId || m.base_role !== "staff");
-  if (foreignProfiles.length || foreignMemberships.length || memberAccounts) {
+  if (foreignProfiles.length || foreignMemberships.length) {
     return { ok: false, error: "Akun ini juga terhubung ke konteks lain. Kata sandi hanya bisa diatur ulang oleh pemiliknya." };
   }
 

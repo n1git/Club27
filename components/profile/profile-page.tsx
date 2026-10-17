@@ -11,7 +11,7 @@ export async function ProfilePage({ roles }: { roles: AppRole[] }) {
     profileId: profile.id,
     accountId: profile.accountId,
     ownerId: profile.ownerId,
-    memberAccountId: profile.memberAccountId,
+    isMember: profile.isMember,
     personal: session.app_role === "personal",
   });
   if (!data) notFound();

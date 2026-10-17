@@ -268,3 +268,10 @@ Uji: `supabase/tests/deletion_phase6.sql` (simulasi tidak menghapus, hak p_owner
 Batas: file di storage (gambar promo) tidak dihapus oleh SQL.
 
 Ekspor data (ditambahkan setelah Fase 6): `/admin/klub/ekspor` -> `POST /api/export/organization` (sesi pemilik, kata sandi ulang, 3 per jam, audit `organization.export`, tetap bisa dibuka saat langganan terkunci); ZIP berisi 25 CSV + `BACA_SAYA.txt`, tanpa hash kata sandi, rahasia titik check-in, dan token. Diuji pada data demo skala penuh (zip valid, tidak ada hash kata sandi, kata sandi salah ditolak). Gambar promo di storage tidak ikut diekspor.
+
+
+## Migrasi pembersihan akhir
+
+`20250101000045_cleanup_legacy.sql`: dihapus `auth_credentials`, `member_accounts`, `platform_subscriptions`, `platform_plans`, `organizations.max_tenants`, kolom kata sandi/username/lockout di `organization_members`, `profiles.member_account_id`/`username`/`must_change_password`/`sessions_valid_after`, trigger email `member_accounts`. Profil anggota kini cukup `profiles.role = 'member'` dengan `account_id` (constraint `profiles_member_has_account`). Fungsi ditulis ulang: `is_active_user`, `activate_member_account`, `anonymise_member`, `discard_unverified_registration`, `enforce_profile_identity`, `enforce_username`, `username_taken`, `purge_organization`. Trigger `org_owners_*` diganti nama `organization_members_*`. Aplikasi: guard, konteks, daftar klub anggota, profil, check-in, dan tindakan akun anggota memakai `profiles` + `account_id`.
+
+Tidak ada skrip balik: tabel yang dihapus kosong di hosted (diperiksa 2026-10-17; `platform_plans` berisi 4 baris paket lama yang tidak dibaca kode) dan produksi masih tanpa organisasi. Pulihkan dari cadangan bila perlu.

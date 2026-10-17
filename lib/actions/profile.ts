@@ -45,11 +45,11 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
   const check = await checkSession(session);
   if (!check.ok) redirect(sessionEndedPath(check.reason));
   if (check.mustChangePassword) redirect("/change-password");
-  const { ownerId, memberAccountId } = check.profile;
+  const { ownerId, isMember } = check.profile;
   const supabase = createAdminSupabaseClient();
-  const isStaff = !ownerId && !memberAccountId && session.app_role !== "personal";
+  const isStaff = !ownerId && !isMember && session.app_role !== "personal";
 
-  const parsed = (memberAccountId ? memberSchema : isStaff ? staffSchema : ownerSchema).safeParse({
+  const parsed = (isMember ? memberSchema : isStaff ? staffSchema : ownerSchema).safeParse({
     fullName: formData.get("fullName"),
     username: formData.get("username"),
     phone: formData.get("phone") || undefined,
@@ -62,15 +62,15 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
     .select("full_name, username")
     .eq("id", session.account_id)
     .single();
-  const after: Values = memberAccountId
+  const after: Values = isMember
     ? { username: values.username }
     : { full_name: values.fullName ?? null, username: values.username };
   const { error } = await supabase.from("accounts").update(after).eq("id", session.account_id);
   if (error) return failure(error);
   let changes = diff(account ?? {}, after);
-  const fullName = memberAccountId ? session.full_name : (values.fullName ?? session.full_name);
+  const fullName = isMember ? session.full_name : (values.fullName ?? session.full_name);
 
-  if (!memberAccountId && values.fullName) {
+  if (!isMember && values.fullName) {
     if (ownerId) {
       await supabase.from("organization_members").update({ full_name: values.fullName }).eq("id", ownerId);
       await supabase.from("profiles").update({ full_name: values.fullName }).eq("owner_id", ownerId);
@@ -82,7 +82,7 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
         .update({ full_name: values.fullName, phone })
         .eq("id", session.sub)
         .is("owner_id", null)
-        .is("member_account_id", null);
+        .neq("role", "member");
       changes = { ...changes, ...diff(before ?? {}, { phone }) };
     }
   }

@@ -44,12 +44,7 @@ export async function GET(request: NextRequest) {
   let sessionToken = await getSessionToken();
 
   if (point.tenant_id !== session.tenant_id || session.club_pending) {
-    const { data: own } = await admin
-      .from("profiles")
-      .select("member_account_id")
-      .eq("id", session.sub)
-      .maybeSingle();
-    const clubs = own?.member_account_id ? await listMemberClubs(own.member_account_id) : [];
+    const clubs = await listMemberClubs(session.account_id);
     const club = clubs.find((c) => c.tenantId === point.tenant_id);
     if (!club) return result("NOT_MEMBER");
     sessionToken = await createSession({

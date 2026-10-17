@@ -73,26 +73,24 @@ export async function listContexts(accountId: string): Promise<ContextList> {
     });
   }
 
-  const { data: memberAccount } = await supabase.from("member_accounts").select("id").eq("account_id", accountId).maybeSingle();
-  if (memberAccount) {
-    identities += 1;
-    for (const club of await listMemberClubs(memberAccount.id)) {
-      entries.push({
-        key: `club:${club.profileId}`,
-        kind: "member",
-        label: club.tenantName,
-        detail: "Anggota",
-        target: {
-          profileId: club.profileId,
-          email: club.email,
-          fullName: club.fullName,
-          role: "member",
-          tenantId: club.tenantId,
-          orgId: club.orgId,
-          redirectTo: roleHome("member"),
-        },
-      });
-    }
+  const memberClubs = await listMemberClubs(accountId);
+  if (memberClubs.length > 0) identities += 1;
+  for (const club of memberClubs) {
+    entries.push({
+      key: `club:${club.profileId}`,
+      kind: "member",
+      label: club.tenantName,
+      detail: "Anggota",
+      target: {
+        profileId: club.profileId,
+        email: club.email,
+        fullName: club.fullName,
+        role: "member",
+        tenantId: club.tenantId,
+        orgId: club.orgId,
+        redirectTo: roleHome("member"),
+      },
+    });
   }
 
   const { data: staff } = await supabase

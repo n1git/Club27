@@ -43,8 +43,8 @@ begin
   select id into a from accounts where email = 'owner@t.test';
   select * into r from register_organization('Org A', 'Club A', a, 'standard', 'monthly', 'swimming');
   assert (select account_id from organization_members where id = r.owner_id) = a, 'owner linked to account';
+  assert not exists (select 1 from information_schema.columns where table_schema = 'public' and column_name = 'password_hash' and table_name <> all (array['accounts', 'superadmins'])), 'passwords live only in accounts and superadmins';
   assert (select account_id from profiles where id = r.profile_id) = a, 'owner profile linked to account';
-  assert (select password_hash from organization_members where id = r.owner_id) is null, 'owner has no password of its own';
 
   select id into a from accounts where email = 'owner2@t.test';
   select * into r2 from register_organization('Org C', 'Club C', a, 'standard', 'monthly', 'gym');
@@ -65,13 +65,13 @@ begin
   insert into members (tenant_id, full_name, date_of_birth) values (r2.tenant_id, 'Member One', '2010-01-01') returning id into v_member;
   perform activate_member_account(v_member, (select id from accounts where email = 'member@t.test'));
   assert (select count(*) from profiles where account_id = (select id from accounts where email = 'member@t.test')) = 2, 'same account is a member in two clubs';
-  assert (select count(*) from member_accounts where account_id = (select id from accounts where email = 'member@t.test')) = 1, 'one member_accounts row per account';
+  assert (select count(*) from profiles where role = 'member' and account_id = (select id from accounts where email = 'member@t.test')) = 2, 'member profiles are plain club profiles of the account';
 
   insert into members (tenant_id, full_name, date_of_birth) values (r.tenant_id, 'Owner As Member', '2010-01-01') returning id into v_member;
   begin
     perform activate_member_account(v_member, (select id from accounts where email = 'owner@t.test'));
-    assert false, 'owner account cannot be activated as member in phase 1';
-  exception when unique_violation then null; end;
+    assert false, 'an account already linked to the club cannot be activated as member there';
+  exception when sqlstate 'MP001' then null; end;
 end $$;
 
 do $$

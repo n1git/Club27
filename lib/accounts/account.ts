@@ -53,12 +53,11 @@ export async function createAccount(input: NewAccount): Promise<CreateAccountRes
 
 export async function discardUnusedAccount(accountId: string) {
   const supabase = createAdminSupabaseClient();
-  const [{ count: profiles }, { count: owners }, { count: members }] = await Promise.all([
+  const [{ count: profiles }, { count: owners }] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("account_id", accountId),
     supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("account_id", accountId),
-    supabase.from("member_accounts").select("id", { count: "exact", head: true }).eq("account_id", accountId),
   ]);
-  if (!profiles && !owners && !members) await supabase.from("accounts").delete().eq("id", accountId);
+  if (!profiles && !owners) await supabase.from("accounts").delete().eq("id", accountId);
 }
 
 export async function revokeAccountSessions(accountId: string) {

@@ -42,7 +42,7 @@ loading and caching" below.
 
 Hierarchy: **organization (owner account) → tenants (clubs) → coaches →
 members**. An organization (`organizations`) has one or more owners
-(`org_owners`) and as many clubs as its plan allows (Standard 3 unless a
+(`organization_members`) and as many clubs as its plan allows (Standard 3 unless a
 superadmin sets `club_limit_override`, Advanced unlimited; trigger error
 `SW004`).
 
@@ -68,7 +68,7 @@ variables.
 Authentication is **custom**, not Supabase Auth. Every person has one
 universal account in `accounts` (email, username, bcrypt hash, lockout,
 `sessions_valid_after`, `must_change_password`); it is the only place a password
-lives. `org_owners`, `member_accounts` and club `profiles` link to it through
+lives. `organization_members` and club `profiles` link to it through
 `account_id` (a profile is unique per account and club, and the link can only be
 set by the server). There is one `/login` (username or email + password, no club
 code): the server finds the account, with the same generic error for unknown
@@ -139,15 +139,15 @@ default club, landing on `/admin/klub` (club list with member and coach
 counts, "Tambah klub"). The tenant switcher re-mints the JWT for the owner's
 admin profile in another club after checking `owner_id` in the database, with
 no second password prompt. The owner is not an RLS role: RLS still sees a
-tenant `admin`. Deactivating an owner (`org_owners.is_active`) removes access
+tenant `admin`. Deactivating an owner (`organization_members.is_active`) removes access
 to all their clubs at once; changing the owner password revokes every
 owner session (`sessions_valid_after`). Coaches go to `/coach`.
 `/superadmin/login` stays a separate URL with its own isolated session.
 
 **Members** (swimmers) can sign in too, read-only, once a club has activated
 their account (module `member_portal`). One person has one account in
-`member_accounts`; each club membership is a `profiles` row with role
-`member` (`profiles.member_account_id`) linked from `members.profile_id`.
+`accounts`; each club membership is a `profiles` row with role
+`member` linked from `members.profile_id`.
 After login, one club goes to `/member`; several go to `/member/klub` to
 choose (the session carries `club_pending` until they do, so no club data is
 shown first), and `switchClub` re-mints the JWT after checking
@@ -176,7 +176,7 @@ tokens won't validate against PostgREST — in that case use Supabase's
 Third-Party Auth (JWKS) support instead of `lib/auth/jwt.ts` as written.
 
 The service-role key is used only in a few narrow, reviewed places (never in
-client-reachable code): login lookup, owner reads of `org_owners` and the
+client-reachable code): login lookup, owner reads of `organization_members` and the
 organization overview, creating a coach account together with its
 credentials row, the `register_organization` / `create_tenant_for_owner`
 functions (execute granted to `service_role` only), the monthly invoice-generation cron and
@@ -471,7 +471,7 @@ status from `/superadmin`.
   service-role client; the portal groups clubs by organization, edits plans,
   subscription status and the club-limit override, and can deactivate an
   owner. `superadmins`, `platform_tenant_usage`, `platform_organization_usage`,
-  `org_owners` and every write to `organization_subscriptions` and
+  and every write to `organization_subscriptions` and
   `subscription_plans` are unreachable from `anon`/`authenticated`.
 - Billing is per **organization**, not per club. `subscription_plans`
   (Standard, Advanced) holds the only copy of prices and limits;
@@ -480,9 +480,7 @@ status from `/superadmin`.
   `cancelled`), trial end, period dates, an optional club-limit override and
   the seat columns (`seats`, `pending_seats`, `pending_seats_from`).
   `platform_modules` is a price-free registry (`ready` / `soon`) that club
-  types will use later. `platform_plans`, `platform_subscriptions` and
-  `organizations.max_tenants` are no longer read; they stay in the schema
-  until a later cleanup migration.
+  types will use later.
 - Status **suspended** or **cancelled** sets `tenants.is_active = false` on
   every club of the organization (`set_organization_status`): new logins are
   refused and live sessions lose access immediately. No data is deleted.
@@ -548,8 +546,7 @@ status from `/superadmin`.
   (off), deletes in a fixed order inside one transaction, checks that no row
   with the organization's `tenant_id` or `organization_id` is left (it rolls
   back otherwise) and writes `organization_purges`. Nothing calls it on a
-  schedule. Accounts stay; legacy `member_accounts` left without a profile are
-  removed; files in storage buckets are not touched by SQL. `/superadmin/purge`
+  schedule. Accounts stay; files in storage buckets are not touched by SQL. `/superadmin/purge`
   shows candidates and the dry-run counts.
 
 ### Renewals and payment
@@ -564,7 +561,7 @@ status from `/superadmin`.
   paid period lapses everyone can still sign in and read, but every write
   from a user session is rejected with `SW003` (trigger `a00_org_writable` on
   every table that has `tenant_id`, except `audit_log`, `consents`,
-  `platform_subscriptions`, `organization_member_clubs`; service-role work such
+  `organization_member_clubs`; service-role work such
   as renewals is unaffected). Layouts show a read-only banner. After the grace
   period (`ended`), and for `pending` or `unverified`, only the owner and
   holders of `billing.view` can open the billing page (`requireRole` redirect);

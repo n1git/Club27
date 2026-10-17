@@ -17,7 +17,7 @@ Portal:
 
 | Area blueprint | Status | Catatan |
 | :--- | :--- | :--- |
-| Member & CRM | Ada | `members`; akun login member (`member_accounts`), bukan akun orang tua; tanpa data medis terstruktur |
+| Member & CRM | Ada | `members`; akun login member (`accounts` + profil `member`), bukan akun orang tua; tanpa data medis terstruktur |
 | Paket & langganan | Ada | bulanan dan paket sesi; sisa sesi dihitung dari absensi atau check-in |
 | Jadwal kelas | Ada | pelatih, kapasitas, pelatih pengganti, fasilitas (`resource_id`) menggantikan kolam dan lane |
 | Private lesson | Belum | booking fasilitas ada, sesi privat per pelatih belum |

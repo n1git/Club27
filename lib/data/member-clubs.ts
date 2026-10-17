@@ -13,13 +13,11 @@ type TenantJoin = { name: string; is_active: boolean; organization_id: string; c
 
 export async function listMemberClubs(accountId: string): Promise<MemberClub[]> {
   const supabase = createAdminSupabaseClient();
-  const { data: account } = await supabase.from("member_accounts").select("is_active").eq("id", accountId).maybeSingle();
-  if (!account?.is_active) return [];
-
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, email, full_name, tenant_id, tenants(name, is_active, organization_id, created_at)")
-    .eq("member_account_id", accountId)
+    .eq("account_id", accountId)
+    .eq("role", "member")
     .eq("is_active", true);
   const ids = (profiles ?? []).map((p) => p.id as string);
   if (ids.length === 0) return [];
@@ -44,8 +42,8 @@ export async function listMemberClubs(accountId: string): Promise<MemberClub[]> 
 export async function listClubsForProfile(profileId: string): Promise<MemberClub[]> {
   const { data } = await createAdminSupabaseClient()
     .from("profiles")
-    .select("member_account_id")
+    .select("account_id, role")
     .eq("id", profileId)
     .maybeSingle();
-  return data?.member_account_id ? listMemberClubs(data.member_account_id) : [];
+  return data?.role === "member" && data.account_id ? listMemberClubs(data.account_id as string) : [];
 }

@@ -49,7 +49,7 @@ export async function getProfileData(ids: {
   profileId: string;
   accountId: string;
   ownerId: string | null;
-  memberAccountId: string | null;
+  isMember: boolean;
   personal?: boolean;
 }): Promise<ProfileData | null> {
   const supabase = createAdminSupabaseClient();
@@ -100,8 +100,8 @@ export async function getProfileData(ids: {
     };
   }
 
-  if (ids.memberAccountId) {
-    const clubs = await listMemberClubs(ids.memberAccountId);
+  if (ids.isMember) {
+    const clubs = await listMemberClubs(ids.accountId);
     const { data: members } = clubs.length
       ? await supabase
           .from("members")
@@ -125,7 +125,7 @@ export async function getProfileData(ids: {
     .select("id, phone, role, specialization, session_rate, tenant_id, tenants(name), organization_roles(name)")
     .eq("id", ids.profileId)
     .is("owner_id", null)
-    .is("member_account_id", null)
+    .neq("role", "member")
     .maybeSingle();
   if (!profile) return null;
 

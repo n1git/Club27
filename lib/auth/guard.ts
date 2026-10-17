@@ -18,7 +18,7 @@ interface ValidProfile {
   accountId: string;
   fullName: string;
   ownerId: string | null;
-  memberAccountId: string | null;
+  isMember: boolean;
 }
 
 export type SessionCheck =
@@ -64,7 +64,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
         accountId: account!.id,
         fullName: account!.full_name as string,
         ownerId: null,
-        memberAccountId: null,
+        isMember: false,
       },
     };
   }
@@ -72,7 +72,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "id, tenant_id, role, is_active, full_name, sessions_valid_after, owner_id, member_account_id, account_id, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))), organization_members(is_active), member_accounts(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
+      "id, tenant_id, role, is_active, full_name, owner_id, account_id, tenants(is_active, organizations(organization_subscriptions(status, trial_ends_at, current_period_end, subscription_plans(grace_days)))), organization_members(is_active), accounts(id, is_active, must_change_password, sessions_valid_after)"
     )
     .eq("id", session.sub)
     .maybeSingle();
@@ -84,12 +84,6 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
   const account = one(profile.accounts as One<AccountRow>);
   const accountReason = accountRevoked(account, session);
   if (accountReason) return { ok: false, reason: accountReason };
-  if (
-    profile.sessions_valid_after &&
-    (session.iat ?? 0) < Math.floor(Date.parse(profile.sessions_valid_after) / 1000)
-  ) {
-    return { ok: false, reason: "revoked" };
-  }
   const tenant = one(
     profile.tenants as One<{ is_active: boolean; organizations: One<{ organization_subscriptions: One<SubscriptionRow> }> }>
   );
@@ -114,10 +108,9 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
     return { ok: false, reason: "deactivated" };
   }
 
-  if (profile.member_account_id) {
-    const memberAccount = one(profile.member_accounts as One<{ is_active: boolean }>);
+  if (profile.role === "member") {
     const { data: member } = await admin.from("members").select("is_active").eq("profile_id", profile.id).maybeSingle();
-    if (!memberAccount?.is_active || !member?.is_active) return { ok: false, reason: "deactivated" };
+    if (!member?.is_active) return { ok: false, reason: "deactivated" };
   }
 
   return {
@@ -130,7 +123,7 @@ export async function checkSession(session: SessionClaims): Promise<SessionCheck
       accountId: account!.id,
       fullName: profile.full_name as string,
       ownerId: profile.owner_id,
-      memberAccountId: profile.member_account_id,
+      isMember: profile.role === "member",
     },
   };
 }

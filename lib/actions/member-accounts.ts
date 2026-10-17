@@ -60,9 +60,10 @@ export async function activateMemberAccount(_prevState: ActionState, formData: F
   if (existing && !existing.is_active) return { ok: false, error: "Akun dengan email ini dinonaktifkan" };
   if (existing && !existing.email_verified_at) {
     const { count } = await supabase
-      .from("member_accounts")
+      .from("profiles")
       .select("id", { count: "exact", head: true })
-      .eq("account_id", existing.id);
+      .eq("account_id", existing.id)
+      .eq("role", "member");
     if (!count) {
       return { ok: false, error: "Email ini sudah punya akun yang belum terverifikasi. Gunakan email lain atau minta pemilik email masuk ke akunnya." };
     }
