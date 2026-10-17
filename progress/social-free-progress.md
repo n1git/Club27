@@ -36,3 +36,9 @@ Batas: halaman hanya untuk konteks `personal`; pengguna dengan satu klub langsun
 
 Login selalu membuka konteks `personal` (`/akun`), apa pun peran akunnya. Menu: Beranda (`/akun`: ringkasan latihan, daftar klub dan organisasi untuk masuk, tempat feed), Profil (`/akun/profil`), Latihan (`/akun/latihan`), Upgrade (`/akun/upgrade`, buat organisasi dan langganan), Pengaturan (`/akun/pengaturan`, kata sandi), Keluar (tombol di header). Masuk ke klub lewat tombol "Masuk" di Beranda; kembali lewat "Akun saya" di header klub. Undangan yang baru diterima tetap langsung membuka klub tujuan (`resolveClubTarget`).
 Diuji end to end lokal: daftar, menu, latihan, target, keluar, login ulang, pemilik organisasi tetap mendarat di Beranda, masuk klub dan kembali.
+
+### Fase 3: teman dan feed (selesai, diterapkan ke hosted)
+
+Migrasi 049: `friendships`, `blocks`, `posts` (teks atau cuplikan latihan, `visibility` hanya `friends`), `post_reactions`, `post_comments`, `reports`, view `social_people`, fungsi `request_friend` / `respond_friend` / `remove_friend` / `block_account` / `unblock_account` / `create_post` / `share_workout`. Pertemanan ditulis hanya lewat RPC; pencarian hanya username yang persis sama (tanpa daftar pengguna). Blokir menghapus pertemanan dan menyembunyikan konten dua arah. Batas harian: 50 postingan, 200 komentar, 50 laporan; 100 permintaan tertunda, 1.000 hubungan.
+UI: Beranda (composer + feed, halaman berikutnya lewat `?sebelum=`), `/akun/teman`, tombol Bagikan di Latihan. Tes: `supabase/tests/friends_feed_phase3.sql` dan e2e dua akun lokal (permintaan, terima, posting, suka, komentar, bagikan latihan, blokir, buka blokir).
+Untuk publik nanti: perlu migrasi yang melonggarkan `posts.visibility`, kebijakan `posts_visible`, dan moderasi. Laporan hanya tersimpan; belum ada layar peninjauan untuk superadmin.

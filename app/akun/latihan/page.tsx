@@ -2,6 +2,8 @@ import { requireRole } from "@/lib/auth/guard";
 import { getReadyClubTypes } from "@/lib/club-type";
 import { getWorkoutData } from "@/lib/data/workouts";
 import { deleteWorkout } from "@/lib/actions/workouts";
+import { shareWorkout } from "@/lib/actions/social";
+import { ActionButton } from "@/components/shared/action-button";
 import { formatJakartaDate } from "@/lib/format";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
@@ -81,7 +83,8 @@ export default async function WorkoutPage() {
                   <TableCell>{log.durationMin} menit</TableCell>
                   <TableCell>{log.distanceM ? distance(log.distanceM) : "-"}</TableCell>
                   <TableCell className="max-w-xs truncate">{log.notes ?? ""}</TableCell>
-                  <TableCell>
+                  <TableCell className="flex gap-2">
+                    <ActionButton action={shareWorkout} fields={{ workoutId: log.id }} label="Bagikan" />
                     <ActionForm action={deleteWorkout}>
                       <input type="hidden" name="workoutId" value={log.id} />
                       <ActionSubmitButton variant="destructive" size="sm" confirmMessage="Hapus catatan ini?">
