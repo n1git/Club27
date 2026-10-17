@@ -17,6 +17,12 @@ Anak di klub renang adalah anggota (`club_members`) yang dikelola klub, tanpa pe
 5. Grup dan event: `groups`, `group_members`, `events`, `event_rsvps`.
 6. Keamanan dan privasi: rate limit, moderasi, ekspor dan hapus akun, tinjauan hukum.
 
+## Keputusan (2026-10-17)
+
+- Tetap memakai auth kustom yang ada (JWT `app_session`, konteks `personal`).
+- Email hanya diminta saat daftar, tanpa email verifikasi untuk akun pribadi. Satu email satu akun: `accounts.email` unik, huruf kecil, dan dipangkas di zod.
+- Feed hanya teman dulu; publik menyusul lewat kolom visibilitas.
+
 ## Status
 
-Belum mulai. Menunggu OK untuk fase 1.
+Fase 1 sudah terpenuhi oleh kode yang ada: `/daftar/akun` membuat `accounts` saja dan sesi `personal` di `/akun`, `/akun` punya form "Buat organisasi" memakai akun yang sama, handle = `accounts.username` (unik). Ditambah tautan dari `/daftar`. Fase 2 belum mulai.

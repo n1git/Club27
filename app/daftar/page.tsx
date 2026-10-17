@@ -48,6 +48,11 @@ export default async function RegisterClubPage({
           <Link href="/login" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Masuk
           </Link>
+          {" · "}
+          Belum punya klub?{" "}
+          <Link href="/daftar/akun" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+            Buat akun gratis
+          </Link>
         </>
       }
     >
