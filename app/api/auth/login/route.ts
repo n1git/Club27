@@ -2,17 +2,15 @@ import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { verifyPasswordOrDummy } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
-import { resolveTarget } from "@/lib/auth/contexts";
+import { personalTarget, resolveTarget } from "@/lib/auth/contexts";
 import { loginSchema, LOGIN_ERROR } from "@/lib/validations/auth";
 import { isRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { isCrossSite, readJsonBody } from "@/lib/auth/request";
-import { APP_NAME } from "@/lib/config";
 
 const LOCKOUT_THRESHOLD = 5;
 const LOCKOUT_MINUTES = 15;
 const GENERIC_ERROR = LOGIN_ERROR;
 const UNVERIFIED_ERROR = "Email pendaftaran belum diverifikasi. Buka tautan verifikasi di email Anda.";
-const DEACTIVATED_ERROR = `Akses klub Anda sedang dinonaktifkan. Data klub tetap tersimpan. Hubungi admin platform ${APP_NAME} untuk mengaktifkannya kembali.`;
 
 interface LoginAccount {
   id: string;
@@ -65,13 +63,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
-  const target = await resolveTarget(account);
-  if (target === "deactivated") {
-    return NextResponse.json({ error: DEACTIVATED_ERROR }, { status: 403 });
-  }
-  if (target === "unverified") {
+  if ((await resolveTarget(account)) === "unverified") {
     return NextResponse.json({ error: UNVERIFIED_ERROR }, { status: 403 });
   }
+  const target = personalTarget(account);
 
   await supabase
     .from("accounts")

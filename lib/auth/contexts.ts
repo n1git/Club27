@@ -136,7 +136,12 @@ export function personalTarget(account: { id: string; email: string; full_name: 
   };
 }
 
-export async function resolveTarget(account: {
+export async function resolveTarget(account: { id: string }): Promise<"unverified" | "ok"> {
+  const { entries, unverified } = await listContexts(account.id);
+  return unverified && entries.length === 0 ? "unverified" : "ok";
+}
+
+export async function resolveClubTarget(account: {
   id: string;
   email: string;
   full_name: string;

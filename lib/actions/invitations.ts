@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireActionPermission } from "@/lib/auth/guard";
 import { getSession } from "@/lib/auth/session";
-import { resolveTarget } from "@/lib/auth/contexts";
+import { resolveClubTarget } from "@/lib/auth/contexts";
 import { createSession } from "@/lib/auth/session";
 import { hashPassword } from "@/lib/auth/password";
 import { isKeyRateLimited } from "@/lib/auth/rate-limit";
@@ -237,7 +237,7 @@ export async function acceptInvitationNewAccount(_prevState: ActionState, formDa
   });
   await recordAccepted(result.row, account.id);
 
-  const target = await resolveTarget({ id: account.id, email: invitation.email, full_name: invitation.fullName });
+  const target = await resolveClubTarget({ id: account.id, email: invitation.email, full_name: invitation.fullName });
   if (typeof target === "string") redirect("/login");
   await createSession({
     id: target.profileId,

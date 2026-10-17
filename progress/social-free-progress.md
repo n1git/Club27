@@ -31,3 +31,8 @@ Fase 1 sudah terpenuhi oleh kode yang ada: `/daftar/akun` membuat `accounts` saj
 
 Migrasi 048: `current_account_id()` (akun aktif dan sesi belum dicabut, dari klaim `account_id`), `workout_logs` (olahraga = `club_types.code`, tanggal 2000..hari ini WIB, durasi 1..1440, jarak 1..1.000.000 m, catatan <= 2000, maksimal 10.000 baris per akun), `workout_goals` (target sesi per minggu 1..21). RLS: hanya pemilik akun. Halaman `/akun/latihan` (ringkasan 4 minggu, target, form, riwayat). Tes: `supabase/tests/workout_logs_phase2.sql`.
 Batas: halaman hanya untuk konteks `personal`; pengguna dengan satu klub langsung masuk ke klub itu dan belum punya jalan ke `/akun/latihan`. Perlu diputuskan di fase 3 (pengalih konteks).
+
+### Beranda gaya media sosial (selesai)
+
+Login selalu membuka konteks `personal` (`/akun`), apa pun peran akunnya. Menu: Beranda (`/akun`: ringkasan latihan, daftar klub dan organisasi untuk masuk, tempat feed), Profil (`/akun/profil`), Latihan (`/akun/latihan`), Upgrade (`/akun/upgrade`, buat organisasi dan langganan), Pengaturan (`/akun/pengaturan`, kata sandi), Keluar (tombol di header). Masuk ke klub lewat tombol "Masuk" di Beranda; kembali lewat "Akun saya" di header klub. Undangan yang baru diterima tetap langsung membuka klub tujuan (`resolveClubTarget`).
+Diuji end to end lokal: daftar, menu, latihan, target, keluar, login ulang, pemilik organisasi tetap mendarat di Beranda, masuk klub dan kembali.

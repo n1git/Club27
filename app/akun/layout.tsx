@@ -9,8 +9,11 @@ export default async function PersonalLayout({ children }: { children: React.Rea
   const navGroups: NavGroup[] = [
     {
       items: [
-        { href: PERSONAL_HOME, label: "Akun Saya", icon: "profile", exact: true, primary: true },
+        { href: PERSONAL_HOME, label: "Beranda", icon: "home", exact: true, primary: true },
+        { href: "/akun/profil", label: "Profil", icon: "profile", primary: true },
         { href: "/akun/latihan", label: "Latihan", icon: "visits", primary: true },
+        { href: "/akun/upgrade", label: "Upgrade", icon: "club", primary: true },
+        { href: "/akun/pengaturan", label: "Pengaturan", icon: "settings", primary: true },
       ],
     },
   ];
@@ -18,7 +21,7 @@ export default async function PersonalLayout({ children }: { children: React.Rea
     <AppShell
       navGroups={navGroups}
       fullName={user.fullName}
-      profileHref={PERSONAL_HOME}
+      profileHref="/akun/profil"
       roleLabel="Akun"
       clubName={APP_NAME}
     >

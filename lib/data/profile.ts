@@ -1,6 +1,5 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listMemberClubs } from "@/lib/data/member-clubs";
-import { listContexts } from "@/lib/auth/contexts";
 
 type One<T> = T | T[] | null;
 const one = <T>(value: One<T>): T | null => (Array.isArray(value) ? (value[0] ?? null) : value);
@@ -13,7 +12,7 @@ export interface Certification {
 }
 
 export type ProfileData =
-  | { kind: "personal"; email: string; fullName: string; username: string; contexts: { key: string; label: string; detail: string }[] }
+  | { kind: "personal"; email: string; fullName: string; username: string }
   | {
       kind: "owner";
       email: string;
@@ -60,14 +59,7 @@ export async function getProfileData(ids: {
     .maybeSingle();
   if (!account) return null;
   if (ids.personal) {
-    const { entries } = await listContexts(ids.accountId);
-    return {
-      kind: "personal",
-      email: account.email,
-      fullName: account.full_name,
-      username: account.username,
-      contexts: entries.map((e) => ({ key: e.key, label: e.label, detail: e.detail })),
-    };
+    return { kind: "personal", email: account.email, fullName: account.full_name, username: account.username };
   }
 
   if (ids.ownerId) {
