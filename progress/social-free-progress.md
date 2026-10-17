@@ -26,3 +26,8 @@ Anak di klub renang adalah anggota (`club_members`) yang dikelola klub, tanpa pe
 ## Status
 
 Fase 1 sudah terpenuhi oleh kode yang ada: `/daftar/akun` membuat `accounts` saja dan sesi `personal` di `/akun`, `/akun` punya form "Buat organisasi" memakai akun yang sama, handle = `accounts.username` (unik). Ditambah tautan dari `/daftar`. Fase 2 belum mulai.
+
+### Fase 2: catatan latihan (selesai, diterapkan ke hosted)
+
+Migrasi 048: `current_account_id()` (akun aktif dan sesi belum dicabut, dari klaim `account_id`), `workout_logs` (olahraga = `club_types.code`, tanggal 2000..hari ini WIB, durasi 1..1440, jarak 1..1.000.000 m, catatan <= 2000, maksimal 10.000 baris per akun), `workout_goals` (target sesi per minggu 1..21). RLS: hanya pemilik akun. Halaman `/akun/latihan` (ringkasan 4 minggu, target, form, riwayat). Tes: `supabase/tests/workout_logs_phase2.sql`.
+Batas: halaman hanya untuk konteks `personal`; pengguna dengan satu klub langsung masuk ke klub itu dan belum punya jalan ke `/akun/latihan`. Perlu diputuskan di fase 3 (pengalih konteks).
