@@ -50,13 +50,13 @@ Every club is a row in `clubs` with a mandatory `organization_id`. All
 club-owned data (profiles, locations, class types, members, classes, bookings, packages, subscriptions, invoices,
 cash ledger, payroll, promo) carries a `club_id` and is isolated by
 Postgres Row Level Security — the database, not the frontend, is the
-isolation boundary. `current_club_id()` reads the tenant id embedded in the
-caller's session JWT, and every RLS policy filters by it; cross-tenant
+isolation boundary. `current_club_id()` reads the club id embedded in the
+caller's session JWT, and every RLS policy filters by it; cross-club
 foreign key references (e.g. a booking's member and class must belong to the
-same tenant) are additionally rejected by trigger checks at write time.
+same club) are additionally rejected by trigger checks at write time.
 
-A profile belongs to exactly one tenant with one role (`admin` or `coach`).
-Each member has one primary coach (`club_members.coach_id`, same tenant, role
+A profile belongs to exactly one club with one role (`admin` or `coach`).
+Each member has one primary coach (`club_members.coach_id`, same club, role
 coach) plus plain-text `contact_name` / `contact_phone`. Coaches see only
 their own members and classes. An email is unique across owners and coach
 profiles (database-enforced), so a coach belongs to one club only. A club's own name, logo, and primary color live in
@@ -133,13 +133,13 @@ account's email is verified or it is already a member somewhere; staff accounts
 are always created fresh. Registering a club creates the account first, then
 `register_organization(..., p_account_id, ...)`.
 
-An owner has no tenant-specific password: each owner gets one `admin`
+An owner has no club-specific password: each owner gets one `admin`
 profile per club (`club_profiles.owner_id`) and signs in as the profile of their
 default club, landing on `/admin/klub` (club list with member and coach
-counts, "Tambah klub"). The tenant switcher re-mints the JWT for the owner's
+counts, "Tambah klub"). The club switcher re-mints the JWT for the owner's
 admin profile in another club after checking `owner_id` in the database, with
 no second password prompt. The owner is not an RLS role: RLS still sees a
-tenant `admin`. Deactivating an owner (`organization_users.is_active`) removes access
+club `admin`. Deactivating an owner (`organization_users.is_active`) removes access
 to all their clubs at once; changing the owner password revokes every
 owner session (`sessions_valid_after`). Coaches go to `/coach`.
 `/superadmin/login` stays a separate URL with its own isolated session.
@@ -153,7 +153,7 @@ choose (the session carries `club_pending` until they do, so no club data is
 shown first), and `switchClub` re-mints the JWT after checking
 `member_account_id` in the database. RLS for role `member` only selects the
 member's own `club_members`, `member_memberships`, `invoices` and `class_bookings` rows plus
-the tenant-wide classes and active promo; there is no write policy, and
+the club-wide classes and active promo; there is no write policy, and
 deactivating the member account cuts every club while deactivating the
 `club_members` row cuts only that club. Logout, password change and reset set
 `accounts.sessions_valid_after`, which cuts every context of the account (checked
@@ -166,7 +166,7 @@ has at most one member profile per club (a parent using one email for two
 children in the same club cannot activate both). That JWT is stored in an
 httpOnly cookie and attached as the `Authorization` header on every Supabase
 request, so Postgres RLS (`auth.uid()`, `auth.jwt()`) enforces both role and
-tenant scoping exactly as it would with Supabase Auth.
+club scoping exactly as it would with Supabase Auth.
 
 **Before running migrations against a real project**, check Project
 Settings → API → JWT Keys. This setup requires the legacy shared **HS256
@@ -182,7 +182,7 @@ credentials row, the `register_organization` / `create_club_for_owner`
 functions (execute granted to `service_role` only), the monthly invoice-generation cron and
 its "generate now" admin button. Every other read/write goes through the
 per-request JWT-bound client, so RLS is the real security boundary. Every
-service-role write to a tenant-scoped table passes `club_id` explicitly
+service-role write to a club-scoped table passes `club_id` explicitly
 (the service-role client has no session JWT for `current_club_id()` to
 read).
 
@@ -500,7 +500,7 @@ bands are light. A signed-in session is redirected to its home.
   `use-full-prefetch.ts` prefetches the pages in `CACHED_PATHS` in full after
   load; `refresh-on-focus.tsx` refreshes live pages when the window regains focus.
 - Lazy loading: charts (`components/reports/lazy-charts.tsx`), the check-in
-  hourly chart, the QR generator, club and tenant switchers and the toaster
+  hourly chart, the QR generator, club switchers and the toaster
   (armed after load or first interaction) load on demand; client bundles must
   not import zod or recharts eagerly. Measurements are in
   `progress/cache-lazy-progress.md`.
@@ -518,7 +518,7 @@ Signed-in pages share one structure (the `.app-ui` class on the shell root scope
 ## Platform billing (superadmin)
 
 The platform bills clubs separately from how a club bills its members. A
-superadmin is not tied to any tenant and manages every club's plan and
+superadmin is not tied to any club and manages every club's plan and
 status from `/superadmin`.
 
 - Bootstrap the first superadmin from the CLI (there is deliberately no UI
@@ -530,7 +530,7 @@ status from `/superadmin`.
 - `/superadmin/login` uses its own `superadmin_session` cookie. The JWT
   carries `{ sub, superadmin: true, email, full_name }` with audience
   `club27-superadmin`, is never sent to Supabase as a bearer token, and a
-  tenant session JWT is rejected there. Every portal query uses the
+  club session JWT is rejected there. Every portal query uses the
   service-role client; the portal groups clubs by organization, edits plans,
   subscription status and the club-limit override, and can deactivate an
   owner. `superadmins`, `platform_club_usage`, `platform_organization_usage`,
