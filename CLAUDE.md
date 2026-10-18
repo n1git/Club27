@@ -60,3 +60,39 @@ Aturan teknis
 - Idempotensi: pesanan kasir lewat `create_order_once`, pembayaran lewat `add_order_payment_once`, penyesuaian buku kas dengan `client_request_id`; klien mengirim `requestId` (UUID per form, diganti setelah sukses, `RequestIdInput`), kirim ulang dengan ID sama tidak membuat baris baru. Tombol `ActionSubmitButton` terkunci selama form memproses.
 - Akun pribadi (tanpa organisasi): login selalu membuka sesi `personal` (`/akun`, Beranda); klub dibuka lewat "Masuk" di Beranda (`switchContext`), kecuali undangan baru (`resolveClubTarget`). `/daftar/akun` hanya membuat `accounts` dan sesi `personal`; email unik, tanpa verifikasi. Data pribadi (`workout_logs`, `workout_goals`) tidak punya `club_id`; RLS lewat `current_account_id()` (klaim `account_id`, akun aktif, sesi belum dicabut). Teman dan feed (`friendships`, `posts`, `post_comments`, `post_reactions`, `blocks`, `reports`): hanya teman yang saling melihat; tabel pertemanan hanya ditulis lewat RPC; akun lain dicari dengan username persis. Gabung klub: akun dewasa mengirim `club_join_requests` dengan kode klub (`clubs.slug`); admin dengan `members.create` menyetujui lewat aksi server (`decide_club_join`, service role). Grup dan event (`groups`, `group_members`, `events`, `event_rsvps`): privat, hanya lewat RPC, undangan hanya ke teman. Laporan ditinjau superadmin di `/superadmin/laporan` (pemilik atau staf klub hanya kehilangan fitur sosial lewat `accounts.social_banned_at`; email notifikasi laporan baru lewat `REPORT_NOTIFY_EMAIL`); kode klub bisa diganti admin (`rotate_club_code`); username dibatasi sekali per 30 hari; akun pribadi punya ekspor dan hapus akun di `/akun/pengaturan`. Rencana: `progress/social-free-progress.md`; hal yang perlu perhatian pemilik: `progress/social-free-attention.md`.
 - Log audit (`audit_log`) hanya ditambah: lewat trigger atau `logAudit` (`lib/audit.ts`, service role). Superadmin wajib TOTP (`SUPERADMIN_JWT_SECRET`).
+
+## Pelajaran dari pengerjaan fitur sosial (jangan diulang)
+
+Format: kesalahan, lalu langkah yang berlaku sejak sekarang.
+
+Klaim dan catatan
+- Menyatakan fakta dari ingatan atau dari catatan lama tanpa memeriksa kode (misalnya "username tidak bisa diubah", "CSP belum membatasi script"). Keduanya salah. Langkah: sebelum menulis sebuah fakta ke daftar atau ringkasan, grep kodenya; catatan tim lama dianggap belum tentu benar sampai dicek.
+- Menyimpulkan "lulus" dari output kosong atau dari `| tail`. Langkah: jalankan tes dengan `-v ON_ERROR_STOP=1`, baca kode keluarnya, dan sebut tes mana yang dijalankan; output kosong bukan bukti.
+- Menemukan terlambat bahwa fitur baru tidak terjangkau dari jalur login sebagian peran (konteks personal vs klub). Langkah: saat menambah konteks atau halaman baru, tuliskan di awal bagaimana tiap peran sampai ke sana.
+
+Lingkungan uji lokal
+- `pkill -f` atau `pgrep -f` dengan pola yang cocok dengan baris perintah shell sendiri mematikan shell sesi (kode keluar 144). Langkah: matikan proses dengan PID atau `pgrep -x`, jangan dengan `-f` yang memuat kata yang juga ada di perintah.
+- Proxy atau Next mati diam-diam, lalu kegagalan terlihat seperti bug kode (pembatas laju gagal tertutup sehingga semua pendaftaran ditolak). Langkah: sebelum e2e, cek `curl` ke Next, ke proxy, dan ke PostgREST; jika ada 429 atau 503 yang aneh, curigai layanan dulu.
+- Memindahkan PostgREST ke database lain atau membangun ulang skema tanpa memuat ulang cache skema. Langkah: setelah membangun ulang, kirim `kill -USR1` ke PostgREST dan tunggu respons 200.
+- Menulis SQL berisi `$` (hash bcrypt) lewat `psql -c` di dalam tanda kutip shell; hash rusak (panjang 54, bukan 60). Langkah: kirim SQL lewat stdin (`input:`) atau parameter, lalu cek panjang hash.
+- Menjalankan seluruh rangkaian tes SQL di database yang sudah berisi data e2e, sehingga asersi yang menghitung seluruh tabel gagal. Langkah: jalankan rangkaian tes di database yang baru dibangun; pakai database terpisah untuk e2e.
+
+Tes dan alat uji (bukan bug produk, tetapi sempat dibaca sebagai bug)
+- `innerText` Playwright mengikuti CSS `uppercase`; pencocokan teks judul gagal. Langkah: cocokkan tanpa membedakan huruf besar kecil.
+- Selektor teks yang juga cocok dengan judul dialog tersembunyi. Langkah: batasi ke `dialog[open]` atau ke kelas elemen yang dituju.
+- Username dan nilai lain dibuat otomatis sehingga tes memakai nilai yang salah. Langkah: baca nilainya dari database sebelum dipakai di tes.
+- Formulir aksi server dikosongkan setelah kiriman gagal sehingga tes dan pengguna kehilangan isian. Langkah: pakai `ActionForm` (menahan reset saat galat); tes yang mengirim ulang tetap mengisi ulang semua kolom.
+- Asersi di bawah peran `authenticated` membaca baris yang disembunyikan RLS atau tabel yang ditutup. Langkah: baca di luar peran itu atau ubah asersinya.
+- Menggunakan akun uji yang sama dua kali, atau menghapus akun yang masih punya profil klub (kunci asing menahan). Langkah: pakai surel unik per uji atau bangun ulang database.
+
+SQL dan migrasi
+- Mengacu `new.kolom` milik tabel lain dalam cabang yang "tidak jalan" dalam satu fungsi trigger bersama; plpgsql tetap gagal. Langkah: pecah menjadi cabang `if` terpisah per tabel atau fungsi terpisah.
+- Memanggil operasi sistem (membuat profil anggota) dari fungsi `security definer` yang berjalan dengan JWT pengguna, sehingga trigger yang membaca `auth.uid()` menolaknya. Langkah: operasi seperti itu dibuat RPC khusus service role dengan izin diperiksa di aksi server (pola `activate_member_account`, `decide_club_join`).
+- Memilih izin untuk membatasi akses tanpa melihat preset peran (pelatih ternyata punya `members.portal`). Langkah: sebelum memakai kode izin sebagai pagar, cek `role_permissions` tiap preset.
+- Lupa bahwa tes isolasi akun (`accounts_phase1`) dan tes jumlah tabel berskala klub (`seats_phase4`) menghitung semua objek baru. Langkah: setiap tabel atau view baru dicek terhadap keduanya, dan pengecualian ditulis di tes.
+- Tabel baru tanpa pembatasan kolom insert untuk peran klien. Langkah: untuk tabel yang diisi pengguna tetapi memuat kolom moderasi atau status, beri `grant insert (kolom...)` hanya pada kolom yang boleh diisi.
+- Setelah `apply_migration` ke hosted, versi di `supabase_migrations.schema_migrations` memakai cap waktu. Langkah: ganti versinya dengan nomor berkas, lalu tampilkan daftar versi untuk memastikan.
+
+Kode
+- Memanggil fungsi tak murni (`Date.now()`) di komponen server memicu galat lint kemurnian. Langkah: hitung nilai itu di lapisan data.
+- Mengubah `ActionForm` (dipakai di seluruh aplikasi) tanpa menjalankan alur yang sudah ada. Langkah: setelah mengubah komponen bersama, jalankan ulang satu e2e yang memakai alur sukses dan alur gagal.
