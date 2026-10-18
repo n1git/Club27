@@ -4,6 +4,7 @@ import { getJakartaDateString } from "@/lib/format";
 export const NAME_MAX = 200;
 export const TEXT_MAX = 2000;
 export const PHONE_MAX = 30;
+export const ADDRESS_MAX = 500;
 
 export function nameField(label: string) {
   return z.string().trim().min(2, `${label} wajib diisi`).max(NAME_MAX, `${label} maksimal ${NAME_MAX} karakter`);
@@ -14,6 +15,8 @@ export function longText(label: string) {
 }
 
 export const phoneField = z.string().trim().max(PHONE_MAX, `Nomor telepon maksimal ${PHONE_MAX} karakter`);
+
+export const addressField = z.string().trim().max(ADDRESS_MAX, `Alamat maksimal ${ADDRESS_MAX} karakter`);
 
 export const birthDateField = z
   .string()

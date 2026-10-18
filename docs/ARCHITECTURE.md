@@ -221,6 +221,8 @@ co-members of a group, by username, never a user list.
 | Groups, events | `groups`, `group_members`, `events`, `event_rsvps`; create, invite, respond, leave, remove, delete group; create, cancel event; `rsvp_event` | `/home/groups`, `/home/groups/[id]` |
 | Moderation | `reports` (status open, dismissed, removed, suspended); `accounts.social_banned_at` | `/superadmin/reports` |
 
+Profile (`/profile`, `lib/data/profile.ts`) is read by account, never by the current context, and has four sections: personal info (`accounts`: name, username, phone, address; email read-only because there is no email verification), organizations (every active `organization_users` row; counts are limited to the clubs a staff member can access; only `p_owner` and `owner` may rename, checked in `updateOrganizationName`), coaching (`club_profiles` rows of the account that hold `classes.instruct`; only the specialization is editable, checked in `updateCoachProfile`; rate and certifications belong to the club admin) and other (member clubs, password). Staff phone numbers are kept in sync from the account phone.
+
 Rules worth knowing:
 
 - Friends only. Blocking removes the friendship, hides content both ways and
