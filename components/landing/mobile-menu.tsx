@@ -58,7 +58,7 @@ export function MobileMenu() {
             <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg" })}>
               Masuk
             </Link>
-            <Link href="/daftar" className={buttonVariants({ size: "lg" })}>
+            <Link href="/signup" className={buttonVariants({ size: "lg" })}>
               Daftarkan klub
             </Link>
           </div>

@@ -68,10 +68,10 @@ export function hasAny(permissions: PermissionSet, codes: PermissionCode | reado
 }
 
 const ADMIN_PATH_RULES: { prefix: string; any: readonly PermissionCode[] }[] = [
-  { prefix: "/admin/permintaan-gabung", any: ["members.create"] },
+  { prefix: "/admin/join-requests", any: ["members.create"] },
   { prefix: "/admin/members", any: ["members.view_all"] },
-  { prefix: "/admin/kasir", any: ["pos.sell"] },
-  { prefix: "/admin/pesanan", any: ["pos.orders_view"] },
+  { prefix: "/admin/pos", any: ["pos.sell"] },
+  { prefix: "/admin/orders", any: ["pos.orders_view"] },
   { prefix: "/admin/booking", any: ["resource_bookings.view"] },
   { prefix: "/admin/schedule/new", any: ["schedule.manage"] },
   { prefix: "/admin/schedule", any: ["schedule.view"] },
@@ -84,19 +84,19 @@ const ADMIN_PATH_RULES: { prefix: string; any: readonly PermissionCode[] }[] = [
   { prefix: "/admin/staff", any: ["staff.manage"] },
   { prefix: "/admin/checkin", any: ["checkin.manage"] },
   { prefix: "/admin/audit", any: ["audit.view"] },
-  { prefix: "/admin/produk", any: ["pos.products_manage"] },
-  { prefix: "/admin/fasilitas", any: ["resources.manage"] },
+  { prefix: "/admin/products", any: ["pos.products_manage"] },
+  { prefix: "/admin/facilities", any: ["resources.manage"] },
   { prefix: "/admin/onboarding", any: ["club.settings"] },
   { prefix: "/admin/promo", any: ["promo.manage"] },
   { prefix: "/admin/settings", any: ["club.settings"] },
-  { prefix: "/admin/peran", any: ["roles.manage"] },
+  { prefix: "/admin/roles", any: ["roles.manage"] },
 ];
 
-const OWNER_ONLY_PREFIXES = ["/admin/klub"];
+const OWNER_ONLY_PREFIXES = ["/admin/club"];
 
-const BILLING_PREFIX = "/admin/klub/langganan";
+const BILLING_PREFIX = "/admin/club/subscription";
 
-const FREE_PREFIXES = ["/admin/profile"];
+const FREE_PREFIXES = ["/profile"];
 
 function under(pathname: string, prefix: string) {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
@@ -140,13 +140,13 @@ const HOME_RULES: { permission: PermissionCode; href: string }[] = [
   { permission: "teaching.portal", href: "/coach" },
   { permission: "schedule.view", href: "/admin/schedule" },
   { permission: "invoices.view", href: "/admin/billing/invoices" },
-  { permission: "pos.sell", href: "/admin/kasir" },
+  { permission: "pos.sell", href: "/admin/pos" },
   { permission: "members.view_all", href: "/admin/members" },
   { permission: "cash_ledger.view", href: "/admin/cash-ledger" },
   { permission: "payroll.view", href: "/admin/payroll" },
-  { permission: "pos.orders_view", href: "/admin/pesanan" },
+  { permission: "pos.orders_view", href: "/admin/orders" },
 ];
 
 export function staffHome(permissions: PermissionSet): string {
-  return HOME_RULES.find((r) => permissions.has(r.permission))?.href ?? "/admin/profile";
+  return HOME_RULES.find((r) => permissions.has(r.permission))?.href ?? "/profile";
 }

@@ -22,8 +22,8 @@ export function AcceptInvitationNewAccount({ token, email }: { token: string; em
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" name="acceptTerms" required className="mt-1" />
         <span>
-          Saya menyetujui <Link href="/syarat" className="underline">Syarat &amp; Ketentuan</Link> dan{" "}
-          <Link href="/privasi" className="underline">Kebijakan Privasi</Link>.
+          Saya menyetujui <Link href="/terms" className="underline">Syarat &amp; Ketentuan</Link> dan{" "}
+          <Link href="/privacy" className="underline">Kebijakan Privasi</Link>.
         </span>
       </label>
       <ActionSubmitButton className="w-fit">Buat akun dan terima undangan</ActionSubmitButton>

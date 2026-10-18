@@ -51,7 +51,7 @@ export default async function CheckinResultPage({
             <p className="text-sm text-muted-foreground">{CHECKIN_RESULT_MESSAGE[code] ?? CHECKIN_RESULT_MESSAGE.ERROR}</p>
           )}
           <div className="flex flex-col gap-2">
-            <Link href="/member/kunjungan" className={buttonVariants({ className: "w-full" })}>
+            <Link href="/member/visits" className={buttonVariants({ className: "w-full" })}>
               Lihat kunjungan
             </Link>
             <Link href="/member" className={buttonVariants({ variant: "outline", className: "w-full" })}>

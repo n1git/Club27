@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 const Toaster = dynamic(() => import("sonner").then((m) => m.Toaster), { ssr: false });
 
-const NO_TOAST_PATHS = new Set(["/", "/login", "/privasi", "/syarat"]);
+const NO_TOAST_PATHS = new Set(["/", "/login", "/privacy", "/terms"]);
 const WAKE_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
 
 export function LazyToaster() {

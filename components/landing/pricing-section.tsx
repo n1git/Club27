@@ -30,7 +30,7 @@ export function PricingSection({ plans, modules }: { plans: PricingPlan[]; modul
       {plans.length === 0 ? (
         <div className="flex flex-col items-start gap-4 rounded-lg border border-dashed border-border bg-card p-6">
           <p className="text-muted-foreground">Daftar harga sedang tidak dapat dimuat. Harga tetap ditampilkan saat Anda mendaftar.</p>
-          <Link href="/daftar" className={buttonVariants()}>
+          <Link href="/signup" className={buttonVariants()}>
             Lanjut ke pendaftaran
           </Link>
         </div>

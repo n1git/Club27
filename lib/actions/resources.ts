@@ -12,7 +12,7 @@ import { PLAN_LIMIT_CODES, type ActionState } from "./types";
 const MODULE_ERROR: ActionState = { ok: false, error: "Fasilitas & Booking tidak aktif untuk klub ini" };
 
 function revalidateResources() {
-  revalidatePath("/admin/fasilitas");
+  revalidatePath("/admin/facilities");
   revalidatePath("/admin/booking");
   revalidatePath("/admin/onboarding");
   revalidatePath("/member/booking");

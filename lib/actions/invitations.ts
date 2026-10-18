@@ -174,11 +174,11 @@ export async function acceptInvitationAsCurrent(_prevState: ActionState, formDat
   const token = tokenSchema.safeParse(formData.get("token"));
   if (!token.success) return { ok: false, error: "Undangan tidak valid" };
   const session = await getSession();
-  if (!session?.account_id) redirect(`/login?next=${encodeURIComponent(`/undangan/${token.data}`)}`);
+  if (!session?.account_id) redirect(`/login?next=${encodeURIComponent(`/invite/${token.data}`)}`);
   const result = await accept(token.data, session.account_id);
   if (!result.ok) return result;
   await recordAccepted(result.row, session.account_id);
-  redirect("/akun");
+  redirect("/home");
 }
 
 const newAccountSchema = z.object({

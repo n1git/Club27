@@ -60,7 +60,7 @@ export function LoginForm({ next }: { next: string | null }) {
           required
           autoComplete="current-password"
         />
-        <Link href="/lupa-sandi" className="w-fit text-sm text-accent-foreground underline-offset-4 hover:underline">
+        <Link href="/forgot-password" className="w-fit text-sm text-accent-foreground underline-offset-4 hover:underline">
           Lupa kata sandi?
         </Link>
       </div>

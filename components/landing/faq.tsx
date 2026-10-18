@@ -91,7 +91,7 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
       a: (
         <>
           Buka{" "}
-          <Link href="/daftar" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+          <Link href="/signup" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             halaman pendaftaran
           </Link>
           , isi nama klub, akun pemilik, jenis klub, paket, dan periode. Setelah itu Anda langsung masuk ke penyiapan klub.

@@ -5,7 +5,7 @@ import { createSession } from "@/lib/auth/session";
 import { isRateLimited } from "@/lib/auth/rate-limit";
 
 export async function GET(request: NextRequest) {
-  const failed = NextResponse.redirect(new URL("/daftar?verifikasi=gagal", request.url));
+  const failed = NextResponse.redirect(new URL("/signup?verifikasi=gagal", request.url));
   if (await isRateLimited(request, "verify", 20, 3600, true)) return failed;
   const token = request.nextUrl.searchParams.get("token") ?? "";
   if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) return failed;

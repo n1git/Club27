@@ -226,7 +226,7 @@ export async function requireAdminArea() {
 
 export async function requireMemberClub() {
   const user = await requireRole("member");
-  if (user.clubPending) redirect("/member/klub");
+  if (user.clubPending) redirect("/member/clubs");
   return user;
 }
 

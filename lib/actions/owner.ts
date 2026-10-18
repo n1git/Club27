@@ -33,7 +33,7 @@ export async function createTenant(_prevState: ActionState, formData: FormData):
     ? await supabase.from("club_profiles").select("id, email, full_name").eq("id", created.profile_id).maybeSingle()
     : { data: null };
   if (!created || !profile) {
-    revalidatePath("/admin/klub");
+    revalidatePath("/admin/club");
     return { ok: true, message: "Klub berhasil ditambahkan" };
   }
 

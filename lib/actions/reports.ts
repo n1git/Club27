@@ -81,7 +81,7 @@ export async function resolveReport(_prevState: ActionState, formData: FormData)
     actorRole: "superadmin",
     actorLabel: superadmin.email,
   });
-  revalidatePath("/superadmin/laporan");
+  revalidatePath("/superadmin/reports");
   return { ok: true, message: { dismissed: "Laporan diabaikan", removed: "Konten dihapus", suspended: socialOnly ? "Fitur sosial akun dinonaktifkan (akses klubnya tetap jalan)" : "Akun dinonaktifkan" }[status] };
 }
 
@@ -100,6 +100,6 @@ export async function reactivateAccount(_prevState: ActionState, formData: FormD
     actorRole: "superadmin",
     actorLabel: superadmin.email,
   });
-  revalidatePath("/superadmin/laporan");
+  revalidatePath("/superadmin/reports");
   return { ok: true, message: "Akun diaktifkan kembali" };
 }

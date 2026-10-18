@@ -28,7 +28,7 @@ export function LandingPricing({ plans, modules }: { plans: PricingPlan[]; modul
             onUsersChange={setUsers}
             action={
               <Link
-                href={`/daftar?plan=${plan.code}&period=${period}&users=${users}`}
+                href={`/signup?plan=${plan.code}&period=${period}&users=${users}`}
                 className={buttonVariants({ variant: plan.trialDays > 0 ? "default" : "outline", className: "w-full" })}
               >
                 {plan.trialDays > 0 ? "Mulai Trial Gratis" : `Pilih ${plan.name}`}

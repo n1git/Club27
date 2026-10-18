@@ -74,7 +74,7 @@ export async function createInvitation(input: NewInvitation): Promise<Invitation
   if (error || !data) {
     return { ok: false, error: error?.code && KNOWN_CODES.has(error.code) ? error.message : "Gagal membuat undangan" };
   }
-  const link = `${SITE_URL}/undangan/${token}`;
+  const link = `${SITE_URL}/invite/${token}`;
   let emailSent = false;
   if (isEmailConfigured()) {
     emailSent = await sendEmail({

@@ -22,8 +22,8 @@ function parse(formData: FormData) {
 }
 
 function refresh() {
-  revalidatePath("/admin/produk");
-  revalidatePath("/admin/kasir");
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/pos");
 }
 
 export async function createProduct(_prevState: ActionState, formData: FormData): Promise<ActionState> {

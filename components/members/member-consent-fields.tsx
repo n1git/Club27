@@ -14,7 +14,7 @@ export function MemberConsentFields({ dateOfBirth }: { dateOfBirth: string }) {
         <input type="checkbox" name="consentMemberData" required className="mt-0.5 size-5 shrink-0 accent-primary" />
         <span>
           Anggota atau walinya menyetujui data ini dicatat dan dipakai klub sesuai{" "}
-          <Link href="/privasi" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+          <Link href="/privacy" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Kebijakan Privasi
           </Link>{" "}
           (versi {PRIVACY_VERSION}).

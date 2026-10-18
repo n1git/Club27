@@ -19,14 +19,14 @@ function fail(error: { code?: string; message: string } | null, fallback: string
 }
 
 function done(): ActionState {
-  revalidatePath("/akun", "layout");
+  revalidatePath("/home", "layout");
   return { ok: true };
 }
 
 async function notifyNewReport(targetType: string) {
   const to = process.env.REPORT_NOTIFY_EMAIL?.trim();
   if (!to || !isEmailConfigured()) return;
-  const link = `${SITE_URL}/superadmin/laporan`;
+  const link = `${SITE_URL}/superadmin/reports`;
   await sendEmail({
     to,
     subject: `Laporan baru di ${APP_NAME}`,
@@ -45,7 +45,7 @@ export async function sendFriendRequest(_prevState: ActionState, formData: FormD
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("request_friend", { p_username: parsed.data.username });
   if (error) return fail(error, "Gagal mengirim permintaan");
-  revalidatePath("/akun", "layout");
+  revalidatePath("/home", "layout");
   return { ok: true, message: data === "accepted" ? "Kalian sekarang berteman" : "Permintaan pertemanan dikirim" };
 }
 
@@ -109,7 +109,7 @@ export async function shareWorkout(_prevState: ActionState, formData: FormData):
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("share_workout", { p_log: id.data, p_body: note || null });
   if (error) return fail(error, "Gagal membagikan latihan");
-  revalidatePath("/akun", "layout");
+  revalidatePath("/home", "layout");
   return { ok: true, message: "Latihan dibagikan ke teman" };
 }
 

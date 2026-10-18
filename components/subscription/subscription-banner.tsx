@@ -40,7 +40,7 @@ export async function SubscriptionBanner() {
           {canRenew ? " Ajukan perpanjangan dan selesaikan pembayaran sebelum tanggal berakhir." : " Hubungi pemilik klub untuk memperpanjang."}
         </span>
         {canRenew ? (
-          <Link href="/admin/klub/langganan" className={buttonVariants({ size: "sm", className: "w-fit" })}>
+          <Link href="/admin/club/subscription" className={buttonVariants({ size: "sm", className: "w-fit" })}>
             Perpanjang langganan
           </Link>
         ) : null}

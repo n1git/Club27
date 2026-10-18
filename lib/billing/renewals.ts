@@ -125,7 +125,7 @@ export async function preparePayment(renewal: Renewal, customer: { name: string;
         ? `${APP_NAME} tambah ${renewal.seatsAdded} seat`
         : `${APP_NAME} ${renewal.planName ?? renewal.planCode} ${PERIOD_LABEL[renewal.billingPeriod]}`,
     customer,
-    finishUrl: `${SITE_URL}/admin/klub/langganan?bayar=selesai`,
+    finishUrl: `${SITE_URL}/admin/club/subscription?bayar=selesai`,
   });
   if (!url) return null;
   const { error } = await createAdminSupabaseClient()

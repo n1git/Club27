@@ -7,7 +7,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { weeklyGoalSchema, workoutSchema } from "@/lib/validations/workout";
 import { type ActionState } from "./types";
 
-const PATH = "/akun/latihan";
+const PATH = "/home/workouts";
 
 export async function addWorkout(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireActionRole("personal");

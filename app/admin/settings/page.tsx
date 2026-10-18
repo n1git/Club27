@@ -59,7 +59,7 @@ export default async function SettingsPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Modul</CardTitle>
-            <Link href="/admin/settings/modul" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <Link href="/admin/settings/modules" className={buttonVariants({ variant: "outline", size: "sm" })}>
               Kelola
             </Link>
           </CardHeader>

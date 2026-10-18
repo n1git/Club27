@@ -67,7 +67,7 @@ export async function JsonLd({ plans }: { plans: PricingPlan[] }) {
         priceCurrency: "IDR",
         unitText: "seat per bulan",
       },
-      url: `${SITE_URL}/daftar?plan=${p.code}`,
+      url: `${SITE_URL}/signup?plan=${p.code}`,
     })),
   };
   const data = { "@context": "https://schema.org", "@graph": [organization, website, application] };

@@ -12,7 +12,7 @@ export function FinalCta({ trialDays }: { trialDays: number }) {
           <p className="mt-3 max-w-xl text-muted-foreground">Daftar, pilih jenis klub, lalu ikuti penyiapan klub langkah demi langkah.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/daftar" className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
+          <Link href="/signup" className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
             {trialDays > 0 ? `Coba gratis ${trialDays} hari` : "Daftarkan klub"}
           </Link>
           <Link

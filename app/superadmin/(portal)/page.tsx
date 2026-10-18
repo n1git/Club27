@@ -221,7 +221,7 @@ export default async function SuperadminDashboardPage() {
       })}
       {rows.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Belum ada organisasi. Organisasi baru muncul di sini setelah mendaftar lewat halaman /daftar.
+          Belum ada organisasi. Organisasi baru muncul di sini setelah mendaftar lewat halaman /signup.
         </p>
       ) : null}
     </div>

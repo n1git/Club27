@@ -24,7 +24,7 @@ async function parseRole(formData: FormData) {
 }
 
 function revalidateRoles() {
-  revalidatePath("/admin/peran");
+  revalidatePath("/admin/roles");
   revalidatePath("/admin/staff");
   revalidatePath("/admin/coaches");
 }

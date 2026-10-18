@@ -64,7 +64,7 @@ export function SportPage({
               Kelola {describe(type, ready)} dalam satu aplikasi.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link href={`/daftar?jenis=${type.code}`} className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
+              <Link href={`/signup?jenis=${type.code}`} className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
                 {cta}
               </Link>
               <Link href="/#harga" className={buttonVariants({ variant: "outline", size: "lg", className: "h-12 px-6 text-base" })}>
@@ -123,7 +123,7 @@ export function SportPage({
               <ul className="mt-6 flex flex-wrap gap-3">
                 {others.map((o) => (
                   <li key={o.code}>
-                    <Link href={`/olahraga/${o.code}`} className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+                    <Link href={`/sports/${o.code}`} className={buttonVariants({ variant: "outline", className: "gap-2" })}>
                       {o.name}
                       <ArrowRight className="size-4" aria-hidden />
                     </Link>

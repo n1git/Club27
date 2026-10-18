@@ -20,13 +20,13 @@ export default async function MemberLayout({ children }: { children: React.React
   ]);
 
   const navItems: NavItem[] = user.clubPending
-    ? [{ href: "/member/klub", label: "Pilih Klub", icon: "switchClub", primary: true } satisfies NavItem]
+    ? [{ href: "/member/clubs", label: "Pilih Klub", icon: "switchClub", primary: true } satisfies NavItem]
     : [
         { href: "/member", label: "Beranda", icon: "home", exact: true, primary: true } satisfies NavItem,
         ...(bookingOn ? [{ href: "/member/booking", label: "Booking", icon: "booking", primary: true } satisfies NavItem] : []),
-        ...(posOn ? [{ href: "/member/pesanan", label: "Pesanan", icon: "orders", primary: true } satisfies NavItem] : []),
-        ...(checkinOn ? [{ href: "/member/kunjungan", label: "Kunjungan", icon: "visits", primary: true } satisfies NavItem] : []),
-        ...(clubs.length > 1 ? [{ href: "/member/klub", label: "Klub Saya", icon: "switchClub" } satisfies NavItem] : []),
+        ...(posOn ? [{ href: "/member/orders", label: "Pesanan", icon: "orders", primary: true } satisfies NavItem] : []),
+        ...(checkinOn ? [{ href: "/member/visits", label: "Kunjungan", icon: "visits", primary: true } satisfies NavItem] : []),
+        ...(clubs.length > 1 ? [{ href: "/member/clubs", label: "Klub Saya", icon: "switchClub" } satisfies NavItem] : []),
       ];
 
   return (
@@ -34,7 +34,7 @@ export default async function MemberLayout({ children }: { children: React.React
       personalSwitch
       navGroups={[{ items: navItems }] satisfies NavGroup[]}
       fullName={user.fullName}
-      profileHref="/member/profile"
+      profileHref="/profile"
       roleLabel="Anggota"
       clubName={user.clubPending ? APP_NAME : (tenant?.name ?? APP_NAME)}
       tenantSwitcher={

@@ -128,7 +128,7 @@ export function PosTerminal({
       const r = await createOrder({}, fd);
       if (r.ok && r.orderId) {
         toast.success(r.message ?? "Pesanan tersimpan");
-        router.push(`/admin/pesanan/${r.orderId}`);
+        router.push(`/admin/orders/${r.orderId}`);
       } else {
         setError(r.error ?? "Gagal menyimpan pesanan");
       }

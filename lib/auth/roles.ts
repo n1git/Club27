@@ -2,9 +2,9 @@ export type AppRole = "owner" | "staff" | "member" | "personal";
 
 export const APP_ROLES: AppRole[] = ["owner", "staff", "member", "personal"];
 
-export const OWNER_HOME = "/admin/klub";
+export const OWNER_HOME = "/admin/club";
 
-export const PERSONAL_HOME = "/akun";
+export const PERSONAL_HOME = "/home";
 
 export function roleHome(role: AppRole, staffHome = "/admin"): string {
   switch (role) {
@@ -17,12 +17,6 @@ export function roleHome(role: AppRole, staffHome = "/admin"): string {
     case "personal":
       return PERSONAL_HOME;
   }
-}
-
-export function profilePath(role: AppRole, teachingOnly = false): string {
-  if (role === "member") return "/member/profile";
-  if (role === "personal") return PERSONAL_HOME;
-  return teachingOnly ? "/coach/profile" : "/admin/profile";
 }
 
 function underPath(pathname: string, prefix: string) {

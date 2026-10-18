@@ -48,7 +48,7 @@ export async function inviteOwner(_prevState: ActionState, formData: FormData): 
     actorId: owner.profileId,
     actorRole: "owner",
   });
-  revalidatePath("/admin/klub/pemilik");
+  revalidatePath("/admin/club/owners");
   return {
     ok: true,
     message: result.emailSent ? "Undangan dikirim ke email penerima" : "Undangan dibuat. Kirim tautan di bawah ke penerima; tautan hanya ditampilkan sekali.",
@@ -63,7 +63,7 @@ export async function revokeOwnerInvitation(_prevState: ActionState, formData: F
   const invitation = await loadInvitationForAction(id.data, { organizationId: owner.organizationId });
   if (!invitation) return { ok: false, error: "Undangan tidak ditemukan" };
   await revokeInvitation(invitation.id as string);
-  revalidatePath("/admin/klub/pemilik");
+  revalidatePath("/admin/club/owners");
   return { ok: true, message: "Undangan dibatalkan" };
 }
 
@@ -91,6 +91,6 @@ export async function transferOwnership(_prevState: ActionState, formData: FormD
     actorId: owner.profileId,
     actorRole: "owner",
   });
-  revalidatePath("/admin/klub/pemilik");
+  revalidatePath("/admin/club/owners");
   return { ok: true, message: "Kepemilikan utama dipindahkan" };
 }

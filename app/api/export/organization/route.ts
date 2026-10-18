@@ -8,7 +8,7 @@ import { REAUTH_ERROR, verifyReauth } from "@/lib/auth/reauth";
 import { buildOrganizationExport } from "@/lib/export/organization";
 import { logAudit } from "@/lib/audit";
 
-const PAGE = "/admin/klub/ekspor";
+const PAGE = "/admin/club/export";
 
 function back(request: Request, error: string) {
   return NextResponse.redirect(new URL(`${PAGE}?galat=${error}`, request.url), 303);

@@ -77,11 +77,11 @@ export function LandingFooter() {
               </a>
             </li>
             <li className="flex flex-wrap items-center gap-x-2">
-              <Link href="/syarat" className={linkClass}>
+              <Link href="/terms" className={linkClass}>
                 Syarat & ketentuan
               </Link>
               <span aria-hidden="true">•</span>
-              <Link href="/privasi" className={linkClass}>
+              <Link href="/privacy" className={linkClass}>
                 Privasi
               </Link>
             </li>

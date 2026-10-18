@@ -14,7 +14,7 @@ export function Hero({ trialDays }: { trialDays: number }) {
             beberapa klub di bawah satu organisasi.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link href="/daftar" className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
+            <Link href="/signup" className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
               {trialDays > 0 ? `Coba gratis ${trialDays} hari` : "Daftarkan klub"}
             </Link>
             <a href="#fitur" className={buttonVariants({ variant: "outline", size: "lg", className: "h-12 px-6 text-base" })}>

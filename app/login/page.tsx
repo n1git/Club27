@@ -32,11 +32,11 @@ export default async function LoginPage({
       footer={
         <>
           Belum punya akun?{" "}
-          <Link href="/daftar/akun" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+          <Link href="/signup/account" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Buat akun
           </Link>
           {" · "}
-          <Link href="/daftar" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+          <Link href="/signup" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
             Daftarkan klub
           </Link>
         </>

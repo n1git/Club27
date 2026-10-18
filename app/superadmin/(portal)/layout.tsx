@@ -30,7 +30,7 @@ export default async function SuperadminPortalLayout({ children }: { children: R
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/superadmin/laporan" className={buttonVariants({ variant: "ghost", size: "sm" })}>
+          <Link href="/superadmin/reports" className={buttonVariants({ variant: "ghost", size: "sm" })}>
             Laporan
           </Link>
           <Link href="/superadmin/purge" className={buttonVariants({ variant: "ghost", size: "sm" })}>

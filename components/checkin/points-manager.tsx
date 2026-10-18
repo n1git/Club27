@@ -59,7 +59,7 @@ export function PointsManager({ points, locations }: { points: CheckinPoint[]; l
             <div className="ml-auto flex flex-wrap items-center gap-2">
               {point.isActive ? (
                 <Link
-                  href={`/admin/checkin/layar/${point.id}`}
+                  href={`/admin/checkin/screen/${point.id}`}
                   target="_blank"
                   className={buttonVariants({ size: "sm" })}
                 >

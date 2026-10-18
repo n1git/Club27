@@ -6,14 +6,14 @@ const CACHED_PATHS = new Set([
   "/admin/members",
   "/admin/coaches",
   "/admin/staff",
-  "/admin/produk",
-  "/admin/fasilitas",
+  "/admin/products",
+  "/admin/facilities",
   "/admin/promo",
   "/admin/settings",
   "/admin/audit",
-  "/admin/klub",
+  "/admin/club",
   "/coach/members",
-  "/member/klub",
+  "/member/clubs",
 ]);
 
 interface ConnectionInfo {

@@ -29,7 +29,7 @@ export function SportsSection({ types, readyModules }: { types: PublicClubType[]
                   <CircleCheck className="mt-0.5 size-5 shrink-0 text-accent-foreground" aria-hidden />
                   <div>
                     <p className="font-heading font-semibold">
-                      <Link href={`/olahraga/${t.code}`} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:rounded-lg">
+                      <Link href={`/sports/${t.code}`} className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring focus-visible:after:rounded-lg">
                         {t.name}
                       </Link>
                     </p>

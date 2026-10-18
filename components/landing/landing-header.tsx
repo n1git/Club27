@@ -40,7 +40,7 @@ export function LandingHeader() {
             <Link href="/login" className={buttonVariants({ variant: "ghost" })}>
               Masuk
             </Link>
-            <Link href="/daftar" className={buttonVariants()}>
+            <Link href="/signup" className={buttonVariants()}>
               Daftarkan klub
             </Link>
           </div>

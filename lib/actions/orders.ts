@@ -9,12 +9,12 @@ import { orderPayloadSchema, paymentSchema } from "@/lib/validations/commerce";
 import { type ActionState } from "./types";
 
 function refresh() {
-  revalidatePath("/admin/kasir");
-  revalidatePath("/admin/pesanan");
-  revalidatePath("/admin/produk");
+  revalidatePath("/admin/pos");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/products");
   revalidatePath("/admin/booking");
   revalidatePath("/admin/cash-ledger");
-  revalidatePath("/member/pesanan");
+  revalidatePath("/member/orders");
 }
 
 export async function createOrder(_prevState: ActionState, formData: FormData): Promise<ActionState> {

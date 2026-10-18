@@ -73,7 +73,7 @@ export default async function BookingPage({
       {resources.length === 0 ? (
         <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-border p-6">
           <p className="text-sm text-muted-foreground">Belum ada {terms.resource.toLowerCase()} yang aktif.</p>
-          <Link href="/admin/fasilitas" className={buttonVariants({ size: "sm" })}>
+          <Link href="/admin/facilities" className={buttonVariants({ size: "sm" })}>
             Tambah {terms.resource}
           </Link>
         </div>

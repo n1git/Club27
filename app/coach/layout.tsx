@@ -20,7 +20,7 @@ export default async function CoachLayout({ children }: { children: React.ReactN
       personalSwitch
       navGroups={navGroups}
       fullName={session.fullName}
-      profileHref="/coach/profile"
+      profileHref="/profile"
       roleLabel={await loadRoleLabel(session.id, session.role)}
       clubName={tenant?.name ?? APP_NAME}
     >
