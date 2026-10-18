@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-20
+
+- Free personal accounts: sign up without an organization and use the social side. Every login opens Beranda at `/akun` with the menu Beranda, Profil, Latihan, Teman, Grup, Klub, Upgrade, Pengaturan; clubs and organizations are entered from there. A paid plan is only needed to run a business (Upgrade).
+- Workout log with a weekly goal and a 4-week summary (`/akun/latihan`).
+- Friends and a friends-only feed: requests by exact username, posts, likes, comments, sharing a workout, blocking and reporting.
+- Join a club as a member with the club code (18+). Club admins approve or reject at `/admin/permintaan-gabung`, see and rotate the code there, and the approved person lands in `/member`.
+- Private groups with events and RSVPs, with capacity.
+- Moderation at `/superadmin/laporan`: preview, dismiss, remove content, suspend the author, reactivate. Owners and staff lose only the social features. New reports can email `REPORT_NOTIFY_EMAIL`.
+- Settings: export your account data as ZIP, delete your own account (refused while linked to a club or organization), username changeable once per 30 days.
+- Menu badges for friend requests, group invitations and pending join requests; Beranda lists clubs that were switched off.
+- Forms that fail to save keep what was typed instead of clearing (all forms).
+- Database migrations 046 to 053 (rename, workouts, friends and feed, join requests, groups and events, report review, trust and safety); a person who signs in after this opens `/akun` first, so deep links to `/admin/...` end on Beranda.
+
 ## 2026-10-19
 
 - Database naming: a club is now `clubs`/`club_id` everywhere (was `tenants`/`tenant_id`), club members are `club_members`, per-club profiles `club_profiles`, back-office users with a seat `organization_users`, and member memberships `member_memberships`. Sessions signed in before this change must sign in again.

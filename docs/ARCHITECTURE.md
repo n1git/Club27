@@ -24,12 +24,12 @@ Supabase Postgres (RLS, security definer RPCs, triggers) ◀┘
 ```
 
 Portals: public (`/`, `/olahraga/<code>`, `/daftar`, `/login`, `/privasi`,
-`/syarat`), admin (`/admin`: admin, receptionist, finance and head coach, each limited by `canAccessPath`), coach (`/coach`), member (`/member`, read-only plus booking), and the
+`/syarat`), personal (`/akun`, every login lands here), admin (`/admin`: admin, receptionist, finance and head coach, each limited by `canAccessPath`), coach (`/coach`), member (`/member`, read-only plus booking), and the
 platform superadmin (`/superadmin`, separate session). Folders: `app/` routes
 and server actions entry points, `lib/actions` server actions, `lib/data`
 reads, `lib/auth` session, roles and JWT, `lib/validations` zod schemas
 (mirrored by `CHECK` constraints), `components/` per feature plus `ui/` and
-`shared/`, `supabase/migrations` (001 to 038, applied in order), `scripts/`
+`shared/`, `supabase/migrations` (001 to 053, applied in order), `scripts/`
 seed and test helpers.
 
 Cross-cutting rules: all times in WIB through `lib/format.ts`; money and
@@ -190,6 +190,69 @@ Deactivating an account (`club_profiles.is_active = false`) cuts off all DB
 access immediately, even though its JWT technically hasn't expired — this is
 enforced inside the `is_admin()` / `is_coach()` SQL helper
 functions, not just in individual policies.
+
+## Personal accounts and social features
+
+An account needs no organization to be useful. `/daftar/akun` creates only an
+`accounts` row; every login opens the personal context (`ctx = personal`, empty
+`club_id`) at `/akun`, whatever else the account owns. Menu: Beranda, Profil,
+Latihan, Teman, Grup, Klub, Upgrade, Pengaturan; the header has Keluar. Clubs
+and organizations are entered from Beranda and left through "Akun saya";
+`resolveClubTarget` still sends a freshly accepted invitation straight to its
+club. A club that is switched off no longer blocks login: Beranda lists it as
+inactive. `/akun/upgrade` is the only place a paid plan starts (organization and
+subscription), on the same account.
+
+Isolation: personal tables carry no `club_id` and use `current_account_id()`
+(security definer; the `account_id` claim must belong to an active account whose
+sessions were not revoked after the token's `iat`). Social writes go only
+through security definer RPCs; clients cannot insert friendships, posts,
+reactions, comments, group rows or RSVPs directly. System operations that must
+bypass the `auth.uid()` triggers are service-role-only RPCs whose permission is
+checked in the server action (`decide_club_join`, `activate_member_account`).
+`social_people` is the only view of other people: own row, friends and
+co-members of a group, by username, never a user list.
+
+| Area | Tables and RPCs | Pages |
+|------|-----------------|-------|
+| Workout log | `workout_logs` (sport = `club_types.code`, max 10,000 rows), `workout_goals` | `/akun/latihan` |
+| Friends, feed | `friendships`, `blocks`, `posts` (text or shared workout, visibility `friends` only), `post_reactions`, `post_comments`; `request_friend`, `respond_friend`, `remove_friend`, `block_account`, `unblock_account`, `create_post`, `share_workout` | `/akun`, `/akun/teman` |
+| Join a club | `club_join_requests`; `request_club_join`, `cancel_club_join`, `decide_club_join`, `rotate_club_code` | `/akun/klub`, `/admin/permintaan-gabung` |
+| Groups, events | `groups`, `group_members`, `events`, `event_rsvps`; create, invite, respond, leave, remove, delete group; create, cancel event; `rsvp_event` | `/akun/grup`, `/akun/grup/[id]` |
+| Moderation | `reports` (status open, dismissed, removed, suspended); `accounts.social_banned_at` | `/superadmin/laporan` |
+
+Rules worth knowing:
+
+- Friends only. Blocking removes the friendship, hides content both ways and
+  removes one side from groups owned by the other. Public feed later needs a
+  looser `posts.visibility`, the `posts_visible` policy and stronger moderation.
+- Join a club: 18+ only, by club code (`clubs.slug`, rotatable by an admin with
+  `club.settings`); the club needs the `member_portal` module and a trial or
+  active subscription. Approval (permission `members.create`, so coaches do not
+  see the queue) creates a `club_members` row or links an existing member
+  without an account. Children are registered by the club, never by a social
+  account, and club member data never appears in the social features.
+- Groups are private: only the owner invites, only friends can be invited, only
+  members see members and events; events exist only inside groups.
+- Limits: app-level rate limits per hour (`lib/auth/social-limit.ts`), daily
+  caps and row caps in triggers (50 posts, 200 comments, 50 reports a day; 1,000
+  friendships, 20 owned and 50 joined groups, 200 members per group, 30
+  upcoming events per group). All are first numbers, not tuned on real use.
+- Moderation: a report on a post, comment, group or event goes to the superadmin
+  screen, which previews the content and can dismiss, remove the content or
+  suspend the author. A plain account is deactivated and its sessions revoked;
+  an owner or staff member only loses the social features
+  (`social_banned_at`, enforced in the app, not in RLS). Reactivation is only
+  offered for the 20 most recent reviews. New reports email `REPORT_NOTIFY_EMAIL`
+  (type and link only).
+- Account data: usernames are unique and changeable once per 30 days. Settings
+  offers a ZIP of CSV files (`/api/export/akun`, password required, 3 per hour,
+  audited) and account deletion (password plus the word HAPUS). Deletion is
+  refused while the account is still linked to a club or organization; a purely
+  personal account is removed permanently with its social data.
+- Menu badges count incoming friend requests, group invitations and, for
+  admins, pending join requests. There are no notifications for likes,
+  comments, join decisions or events, and no email or push.
 
 ## Onboarding a new club
 
@@ -631,12 +694,11 @@ status from `/superadmin`.
 - WhatsApp is not integrated. A club's member invoices are marked paid
   manually by an admin; Midtrans is used only for the platform subscription.
 - Admins invite coaches and staff by link (no temporary password). Members sign in read-only after an admin or their coach activates
-  the account; there is no self-registration and no parent role.
+  the account, or after a club approves a join request from a personal account; there is no parent role.
 - Not built: taxes and discounts on orders, barcode scanners, receipt printers (the browser prints), returns and partial refunds, supplier purchasing, member-invoice payment gateway, invoices or receipts for the platform itself,
   proration, automatic charging, coupons,
   per-module pricing, a coach in several clubs, moving a club between
-  organizations, self-registration, member self-booking of classes,
-  invitations or password reset by email, one person as both coach and
-  member, check-out, geofence, staff scanning the member's QR, door
+  organizations, member self-booking of classes, one person as both coach and
+  member, public feed, comments or posts inside groups, notifications for social activity, appeals against moderation, check-out, geofence, staff scanning the member's QR, door
   hardware, CSV export of check-ins, push notifications.
 
