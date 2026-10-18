@@ -79,11 +79,11 @@ Pages send a Content-Security-Policy with a per-request nonce (`script-src 'nonc
 ## 3. Smoke test
 
 1. Open `/` and confirm the pricing section lists Standard and Advanced (needs migration 014).
-2. Register a club at `/daftar`, land on `/admin/onboarding`.
+2. Register a club at `/signup`, land on `/admin/onboarding`.
 3. Log out, log in at `/login`, open `/admin`.
 4. Log in at `/superadmin/login` with the seeded superadmin and activate the organization.
 5. `curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/generate-invoices` returns `{"generated": n}`; without the header or with a wrong value it returns 401.
-6. Sign in as a club admin and open `/admin/members`, `/admin/booking` and `/admin/kasir` (these exercise the row policies for an authenticated user).
+6. Sign in as a club admin and open `/admin/members`, `/admin/booking` and `/admin/pos` (these exercise the row policies for an authenticated user).
 
 ## 4. Demo data
 

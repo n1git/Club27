@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-21
+
+- Page addresses are now in English: `/signup`, `/signup/account`, `/forgot-password`, `/reset-password/<token>`, `/invite/<token>`, `/privacy`, `/terms`, `/sports/<code>`; the personal area moved from `/akun` to `/home` (`/home/friends`, `/home/groups`, `/home/workouts`, `/home/join-club`, `/home/upgrade`, `/home/settings`); in the club area `/admin/klub` is `/admin/club` (`subscription`, `owners`, `export`, `delete`), and `fasilitas`, `kasir`, `pesanan`, `produk`, `peran`, `permintaan-gabung` became `facilities`, `pos`, `orders`, `products`, `roles`, `join-requests`; members get `/member/orders`, `/member/visits`, `/member/clubs`; the moderation page is `/superadmin/reports`; the account export is `/api/export/account`. Old addresses, including links already emailed (invitation, password reset), redirect to the new ones.
+- One profile page for everyone: `/profile` replaces `/admin/profile`, `/coach/profile`, `/member/profile` and `/akun/profil`. It shows the same account section (email, username, name, password) whichever way you signed in; organization, club and coach details still appear below it when they apply.
+
 ## 2026-10-20
 
 - Free personal accounts: sign up without an organization and use the social side. Every login opens Beranda at `/akun` with the menu Beranda, Profil, Latihan, Teman, Grup, Klub, Upgrade, Pengaturan; clubs and organizations are entered from there. A paid plan is only needed to run a business (Upgrade).

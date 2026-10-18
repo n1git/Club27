@@ -23,8 +23,8 @@ Supabase Postgres (RLS, security definer RPCs, triggers) ◀┘
    └── Resend (email) and Cloudflare Turnstile (captcha), each optional
 ```
 
-Portals: public (`/`, `/olahraga/<code>`, `/daftar`, `/login`, `/privasi`,
-`/syarat`), personal (`/akun`, every login lands here), admin (`/admin`: admin, receptionist, finance and head coach, each limited by `canAccessPath`), coach (`/coach`), member (`/member`, read-only plus booking), and the
+Portals: public (`/`, `/sports/<code>`, `/signup`, `/login`, `/privacy`,
+`/terms`), personal (`/home`, every login lands here), admin (`/admin`: admin, receptionist, finance and head coach, each limited by `canAccessPath`), coach (`/coach`), member (`/member`, read-only plus booking), and the
 platform superadmin (`/superadmin`, separate session). Folders: `app/` routes
 and server actions entry points, `lib/actions` server actions, `lib/data`
 reads, `lib/auth` session, roles and JWT, `lib/validations` zod schemas
@@ -89,10 +89,10 @@ one transaction), `owner`, or `staff`. Staff are limited to the clubs listed in
 p_owner of several organizations, each with its own subscription. After login
 the server lists the account's contexts (`lib/auth/contexts.ts`: one entry per
 organization, per member club and per staff profile): one entry opens it
-directly, several open the personal page `/akun`, which lists them ("Masuk
+directly, several open the personal page `/home`, which lists them ("Masuk
 sebagai"). `switchContext` (`lib/actions/context.ts`) mints a new JWT for the
 chosen entry or for `personal`; the header button "Akun saya" goes back to
-`/akun`. The older club switchers still move between clubs of one context.
+`/home`. The older club switchers still move between clubs of one context.
 
 ### Roles and permissions
 
@@ -102,7 +102,7 @@ name. `permissions` is a fixed catalog (about 55 codes such as `members.view_all
 organization has its own roles (`organization_roles`, `role_permissions`), seeded
 from `role_presets` (Admin, Resepsionis, Keuangan, Kepala Pelatih, Pelatih,
 Kasir) when the organization is created and editable by the owner at
-`/admin/peran`. A profile has `role` `owner` (p_owner and owner base roles hold
+`/admin/roles`. A profile has `role` `owner` (p_owner and owner base roles hold
 every permission), `staff` (one organization role in `org_role_id`) or `member`.
 Owner-only permissions (`roles.manage`) can never be put in a role. Permissions
 are not in the JWT: `has_permission(code)` in SQL and `profile_permissions()` for
@@ -126,8 +126,8 @@ filtered with the same rules. Where a user lands after login comes from
 
 The **personal** context has no `club_id`, so every club policy returns zero
 rows for it (`supabase/tests/accounts_phase1.sql` checks every RLS table). It
-lands on `/akun` (profile, change password). Anyone can create an account at
-`/daftar/akun` (free, no email verification, terms consent recorded as subject
+lands on `/home` (profile, change password). Anyone can create an account at
+`/signup/account` (free, no email verification, terms consent recorded as subject
 type `account`). A club can attach an existing account as a member only if the
 account's email is verified or it is already a member somewhere; staff accounts
 are always created fresh. Registering a club creates the account first, then
@@ -135,7 +135,7 @@ are always created fresh. Registering a club creates the account first, then
 
 An owner has no club-specific password: each owner gets one `admin`
 profile per club (`club_profiles.owner_id`) and signs in as the profile of their
-default club, landing on `/admin/klub` (club list with member and coach
+default club, landing on `/admin/club` (club list with member and coach
 counts, "Tambah klub"). The club switcher re-mints the JWT for the owner's
 admin profile in another club after checking `owner_id` in the database, with
 no second password prompt. The owner is not an RLS role: RLS still sees a
@@ -148,7 +148,7 @@ owner session (`sessions_valid_after`). Coaches go to `/coach`.
 their account (module `member_portal`). One person has one account in
 `accounts`; each club membership is a `club_profiles` row with role
 `member` linked from `club_members.profile_id`.
-After login, one club goes to `/member`; several go to `/member/klub` to
+After login, one club goes to `/member`; several go to `/member/clubs` to
 choose (the session carries `club_pending` until they do, so no club data is
 shown first), and `switchClub` re-mints the JWT after checking
 `member_account_id` in the database. RLS for role `member` only selects the
@@ -193,14 +193,14 @@ functions, not just in individual policies.
 
 ## Personal accounts and social features
 
-An account needs no organization to be useful. `/daftar/akun` creates only an
+An account needs no organization to be useful. `/signup/account` creates only an
 `accounts` row; every login opens the personal context (`ctx = personal`, empty
-`club_id`) at `/akun`, whatever else the account owns. Menu: Beranda, Profil,
+`club_id`) at `/home`, whatever else the account owns. Menu: Beranda, Profil (`/profile`, the one profile page for every context, in the personal shell for personal sessions and a minimal shell with the "Akun saya" switch otherwise),
 Latihan, Teman, Grup, Klub, Upgrade, Pengaturan; the header has Keluar. Clubs
 and organizations are entered from Beranda and left through "Akun saya";
 `resolveClubTarget` still sends a freshly accepted invitation straight to its
 club. A club that is switched off no longer blocks login: Beranda lists it as
-inactive. `/akun/upgrade` is the only place a paid plan starts (organization and
+inactive. `/home/upgrade` is the only place a paid plan starts (organization and
 subscription), on the same account.
 
 Isolation: personal tables carry no `club_id` and use `current_account_id()`
@@ -215,11 +215,11 @@ co-members of a group, by username, never a user list.
 
 | Area | Tables and RPCs | Pages |
 |------|-----------------|-------|
-| Workout log | `workout_logs` (sport = `club_types.code`, max 10,000 rows), `workout_goals` | `/akun/latihan` |
-| Friends, feed | `friendships`, `blocks`, `posts` (text or shared workout, visibility `friends` only), `post_reactions`, `post_comments`; `request_friend`, `respond_friend`, `remove_friend`, `block_account`, `unblock_account`, `create_post`, `share_workout` | `/akun`, `/akun/teman` |
-| Join a club | `club_join_requests`; `request_club_join`, `cancel_club_join`, `decide_club_join`, `rotate_club_code` | `/akun/klub`, `/admin/permintaan-gabung` |
-| Groups, events | `groups`, `group_members`, `events`, `event_rsvps`; create, invite, respond, leave, remove, delete group; create, cancel event; `rsvp_event` | `/akun/grup`, `/akun/grup/[id]` |
-| Moderation | `reports` (status open, dismissed, removed, suspended); `accounts.social_banned_at` | `/superadmin/laporan` |
+| Workout log | `workout_logs` (sport = `club_types.code`, max 10,000 rows), `workout_goals` | `/home/workouts` |
+| Friends, feed | `friendships`, `blocks`, `posts` (text or shared workout, visibility `friends` only), `post_reactions`, `post_comments`; `request_friend`, `respond_friend`, `remove_friend`, `block_account`, `unblock_account`, `create_post`, `share_workout` | `/home`, `/home/friends` |
+| Join a club | `club_join_requests`; `request_club_join`, `cancel_club_join`, `decide_club_join`, `rotate_club_code` | `/home/join-club`, `/admin/join-requests` |
+| Groups, events | `groups`, `group_members`, `events`, `event_rsvps`; create, invite, respond, leave, remove, delete group; create, cancel event; `rsvp_event` | `/home/groups`, `/home/groups/[id]` |
+| Moderation | `reports` (status open, dismissed, removed, suspended); `accounts.social_banned_at` | `/superadmin/reports` |
 
 Rules worth knowing:
 
@@ -246,7 +246,7 @@ Rules worth knowing:
   offered for the 20 most recent reviews. New reports email `REPORT_NOTIFY_EMAIL`
   (type and link only).
 - Account data: usernames are unique and changeable once per 30 days. Settings
-  offers a ZIP of CSV files (`/api/export/akun`, password required, 3 per hour,
+  offers a ZIP of CSV files (`/api/export/account`, password required, 3 per hour,
   audited) and account deletion (password plus the word HAPUS). Deletion is
   refused while the account is still linked to a club or organization; a purely
   personal account is removed permanently with its social data.
@@ -260,13 +260,13 @@ Because isolation is enforced at the database level (RLS + `club_id`),
 new clubs are onboarded onto the **same** deployment and Supabase project —
 no new Supabase project or Vercel deployment needed. Two ways in:
 
-- **Self-service** (`/daftar`): enter club name and your own
+- **Self-service** (`/signup`): enter club name and your own
   name/email/password. One database call (`register_organization`) creates
   the organization, subscription (chosen plan and period; both plans start a
   14-day `trial` with 1 seat), owner, first club and owner
   admin profile, so nothing is left half-created. The owner lands on
-  `/admin/klub`.
-- **More clubs**: the owner adds clubs from `/admin/klub` ("Tambah klub",
+  `/admin/club`.
+- **More clubs**: the owner adds clubs from `/admin/club` ("Tambah klub",
   `create_club_for_owner`), within the plan's club limit.
 - **Manual** (`npm run seed:admin` with `SEED_TENANT_NAME` and optionally
   `SEED_ORGANIZATION_NAME`) uses the same function.
@@ -290,7 +290,7 @@ without any old subscription became Advanced + active. The owner then sets club 
 ## Club types, modules and gym check-in
 
 Every club has a type (`clubs.club_type`, chosen when the club is created
-in `/daftar` or "Tambah klub"; `swimming` and `gym` are ready). A type lists
+in `/signup` or "Tambah klub"; `swimming` and `gym` are ready). A type lists
 its modules in `club_type_modules`; a club has a module when its type lists
 it and `platform_modules.status` is `ready` (`current_club_has_module`).
 `requireModule` and the module checks in actions and in SQL use that
@@ -298,7 +298,7 @@ per-club answer. The `terms` helper (`lib/club-type.ts`) gives the wording
 per type for the check-in screens only; older screens keep their wording.
 
 **Gym check-in** (module `checkin`, gym clubs): staff create check-in points
-under `/admin/checkin` and open `/admin/checkin/layar/<id>` full screen at the
+under `/admin/checkin` and open `/admin/checkin/screen/<id>` full screen at the
 entrance. The screen redraws a QR every 20 seconds pointing at
 `/checkin?p=<point>&t=<token>`. Token scheme: `window = floor(epoch / 30)`,
 `token` = first 12 hex characters of HMAC-SHA256(point secret, point id +
@@ -331,7 +331,7 @@ only their own members', members only their own.
 A club's modules are its type's modules plus enabled overrides minus disabled
 overrides, limited to `ready` ones (`club_module_overrides`,
 `club_has_module`, `current_club_modules()`). The admin toggles them in
-`/admin/settings/modul` (`set_club_module`); `members` can never be disabled.
+`/admin/settings/modules` (`set_club_module`); `members` can never be disabled.
 Disabling hides navigation and returns 404 for the module's pages; data stays
 and comes back when it is enabled again. Terms (`club_types.terms`, merged
 with neutral defaults in `lib/club-type.ts`) hold the wording per type
@@ -359,7 +359,7 @@ payment. Error codes: `RB001` slot full, `RB002` outside hours or off grid,
 no active subscription, `RB007` conflicts with a class, `RB008` invalid or
 not allowed.
 
-Screens: `/admin/fasilitas` (admin), `/admin/booking` (admin, receptionist;
+Screens: `/admin/facilities` (admin), `/admin/booking` (admin, receptionist;
 day and week calendar, click a slot), `/member/booking`. A new club lands on
 `/admin/onboarding` (location, facilities, first package), every step can be
 skipped, and a banner stays on the dashboard until it is finished
@@ -369,11 +369,11 @@ skipped, and a banner stays on the dashboard until it is finished
 
 Module `pos` ("Produk & Kasir"). Products (`products`: price, optional SKU and
 category, optional stock tracking) are managed by the admin in
-`/admin/produk`. Admin and receptionist sell in `/admin/kasir` (optional
+`/admin/products`. Admin and receptionist sell in `/admin/pos` (optional
 member or customer name, product lines, a member's unpaid priced bookings,
-split payment, printable receipt); finance reads orders in `/admin/pesanan`;
+split payment, printable receipt); finance reads orders in `/admin/orders`;
 a coach has no access; a member sees their own paid orders in
-`/member/pesanan` (read-only, needs `member_portal`).
+`/member/orders` (read-only, needs `member_portal`).
 
 All writes go through security definer functions: `create_order` (can take
 the payments in the same transaction), `add_order_payment`, `void_order`.
@@ -449,7 +449,7 @@ bands are light. A signed-in session is redirected to its home.
   prices, club limits, trial and yearly discount come from
   `subscription_plans` (`getActivePlans`) and the module list from
   `platform_modules`. The pricing picker hands plan, period and users to
-  `/daftar?plan=&period=&users=`.
+  `/signup?plan=&period=&users=`.
 - Product visuals are the app's own components with sample data and carry a
   "Contoh data" label (`sample-label.tsx`). No testimonials, client names,
   logos or invented figures.
@@ -457,17 +457,17 @@ bands are light. A signed-in session is redirected to its home.
   table in `progress/landing-rework-progress.md` that points to the code or
   migration proving it. When a feature changes, update the sentence and its
   row together; a `soon` module or club type is shown as "Segera hadir".
-- Per-sport pages: `/olahraga/<code>` (`app/olahraga/[code]/page.tsx`,
+- Per-sport pages: `/sports/<code>` (`app/sports/[code]/page.tsx`,
   `components/landing/sport-page.tsx`, wording in `sport-copy.ts`) is read
   from `club_types` for ready types; the sign-up button preselects the type
-  (`/daftar?jenis=<code>`). The landing cards link to them and the sitemap
+  (`/signup?jenis=<code>`). The landing cards link to them and the sitemap
   lists them. An unknown code returns HTTP 200 with `noindex` (a side effect
   of the root `loading.tsx`) and the not-found view.
 - SEO: `lib/seo.ts` (`pageMetadata`: title, description, canonical, Open Graph,
   Twitter per page), `app/sitemap.ts` (with `lastModified`), `app/robots.ts`,
   `app/opengraph-image.tsx`, and a JSON-LD graph in `components/landing/json-ld.tsx`
   (Organization, WebSite, SoftwareApplication with offers from live plans).
-  `/login` is `noindex` and not in the sitemap; `/privasi` and `/syarat` are
+  `/login` is `noindex` and not in the sitemap; `/privacy` and `/terms` are
   drafts with `noindex` and a visible "Draf" notice and need legal review.
   `app/not-found.tsx` and `app/error.tsx` are branded (`status-page.tsx`).
 - Env vars: `NEXT_PUBLIC_SITE_URL` (canonical URL; set it once a custom
@@ -552,7 +552,7 @@ status from `/superadmin`.
   yearly +1 year by default), or an owner's paid renewal does it (see
   "Renewals and payment").
 - Anyone holding `billing.view` reads the subscription at
-  `/admin/klub/langganan`; `billing.manage` requests renewals and seat
+  `/admin/club/subscription`; `billing.manage` requests renewals and seat
   purchases there. The superadmin edits plans, status, trial end and
   club-limit override.
 
@@ -560,7 +560,7 @@ status from `/superadmin`.
 
 - **Invitations** (`invitations`, `create_invitation`, `accept_invitation`): an
   admin with `staff.manage` or `coaches.manage` invites a name and email to
-  one club with a role; the page `/undangan/<token>` lets the person create an
+  one club with a role; the page `/invite/<token>` lets the person create an
   account (username and password) or, when the email already has an account,
   sign in and accept. Only the SHA-256 of the token is stored; links last 7
   days, work once, and a new invitation to the same club and email replaces the
@@ -569,7 +569,7 @@ status from `/superadmin`.
   verified); otherwise it is shown once to the inviter. A co-owner invitation
   is organization-wide: the person becomes `owner` and gets an owner profile in
   every club, and every club created later gives every owner a profile.
-- **Password reset** (`password_resets`, `consume_password_reset`): `/lupa-sandi`
+- **Password reset** (`password_resets`, `consume_password_reset`): `/forgot-password`
   emails a one-hour single-use link (hashed token, rate limited per IP and per
   email, same answer whether or not the email exists); an admin can create the
   same link for staff from `/admin/staff`. Using it replaces the password,
@@ -577,16 +577,16 @@ status from `/superadmin`.
 - **Re-authentication**: inviting a co-owner and transferring ownership ask for
   the acting account's password again (`lib/auth/reauth.ts`, five failures per
   ten minutes lock further attempts).
-- **Ownership transfer** (`/admin/klub/pemilik`, `transfer_ownership`): only the
+- **Ownership transfer** (`/admin/club/owners`, `transfer_ownership`): only the
   main owner (`p_owner`) can move the role to another active owner; the previous
   main owner stays an owner; recorded in `audit_log`.
-- **Create an organization from an account** (`/akun`): any signed-in account,
+- **Create an organization from an account** (`/home`): any signed-in account,
   including a member, can create its own organization; it keeps its other
   contexts.
 
 ### Data export
 
-- Owners download everything as a ZIP of CSV files from `/admin/klub/ekspor`
+- Owners download everything as a ZIP of CSV files from `/admin/club/export`
   (`POST /api/export/organization`: owner session, password re-entered, three
   per hour, audit-logged, also reachable when the subscription is locked).
   `lib/export/organization.ts` lists the tables (members, packages, invoices,
@@ -597,10 +597,10 @@ status from `/superadmin`.
 
 ### Deleting an organization
 
-- The main owner (`/admin/klub/hapus`, name + password) calls
+- The main owner (`/admin/club/delete`, name + password) calls
   `request_organization_deletion`: subscription becomes `cancelled` (previous
   status remembered), every club is switched off, pending invitations are
-  revoked and `purge_after` is set 30 days ahead. Signing in lands on `/akun`,
+  revoked and `purge_after` is set 30 days ahead. Signing in lands on `/home`,
   where `cancel_organization_deletion` restores everything until `purge_after`.
 - `purge_candidates()` lists organizations past `purge_after` (`owner_deleted`)
   and organizations past the grace period (`grace_expired`).

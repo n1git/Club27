@@ -4,8 +4,8 @@ Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai sel
 
 ## Sebelum fitur dibuka untuk umum
 
-- [ ] `/privasi` dan `/syarat` masih draf. Tinjauan ahli hukum wajib karena situs menyimpan data anggota klub, dan sekarang juga profil, postingan, teman, dan lokasi acara.
-- [ ] Tugaskan satu orang yang membuka `/superadmin/laporan` tiap hari. Layar dan semua tombol aksinya sudah diuji lewat browser (login TOTP lokal). Notifikasi email laporan baru aktif bila `REPORT_NOTIFY_EMAIL` diisi bersama `EMAIL_API_KEY`; isinya hanya tipe laporan dan tautan, tanpa konten.
+- [ ] `/privacy` dan `/terms` masih draf. Tinjauan ahli hukum wajib karena situs menyimpan data anggota klub, dan sekarang juga profil, postingan, teman, dan lokasi acara.
+- [ ] Tugaskan satu orang yang membuka `/superadmin/reports` tiap hari. Layar dan semua tombol aksinya sudah diuji lewat browser (login TOTP lokal). Notifikasi email laporan baru aktif bila `REPORT_NOTIFY_EMAIL` diisi bersama `EMAIL_API_KEY`; isinya hanya tipe laporan dan tautan, tanpa konten.
 - [x] Menonaktifkan penulis dari laporan: akun biasa dinonaktifkan penuh; pemilik atau staf klub hanya kehilangan fitur sosial (`accounts.social_banned_at`), akses klubnya tetap jalan. Penegakannya di aplikasi (aksi dan halaman sosial), bukan di RLS database.
 - [ ] Mengaktifkan kembali hanya bisa dari daftar "Terakhir ditinjau" (20 terakhir); setelah itu hanya lewat SQL.
 - [ ] Moderasi lanjutan belum ada: tidak ada penyembunyian konten otomatis dan tidak ada banding.
@@ -19,8 +19,8 @@ Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai sel
 - [x] Username dibuat otomatis dari nama atau email saat daftar. Koreksi dari catatan sebelumnya: username sudah bisa diubah di Profil. Sekarang dibatasi sekali per 30 hari. Username otomatis masih bisa membocorkan bagian depan email; pengguna perlu tahu bisa menggantinya.
 - [ ] Alias email (`nama+1@gmail.com`) dianggap email berbeda karena tidak ada verifikasi email.
 - [ ] Feed publik: perlu migrasi yang melonggarkan `posts.visibility`, kebijakan `posts_visible`, dan moderasi (fase scale up).
-- [x] Kode klub = `clubs.slug` (misalnya `klub-e-14a3b5`). Admin dengan izin `club.settings` sekarang bisa menggantinya di `/admin/permintaan-gabung`. Siapa pun yang tahu kodenya tetap bisa mengirim permintaan gabung (maksimal 200 tertunda per klub, 5 per akun). Kode klub juga tampil di URL atau log lain yang memakai slug.
-- [ ] Pemohon gabung klub tidak diberi tahu saat disetujui atau ditolak. Statusnya tampil di `/akun/klub`, dan klub baru muncul di Beranda.
+- [x] Kode klub = `clubs.slug` (misalnya `klub-e-14a3b5`). Admin dengan izin `club.settings` sekarang bisa menggantinya di `/admin/join-requests`. Siapa pun yang tahu kodenya tetap bisa mengirim permintaan gabung (maksimal 200 tertunda per klub, 5 per akun). Kode klub juga tampil di URL atau log lain yang memakai slug.
+- [ ] Pemohon gabung klub tidak diberi tahu saat disetujui atau ditolak. Statusnya tampil di `/home/join-club`, dan klub baru muncul di Beranda.
 - [ ] Gabung klub hanya untuk usia 18+. Anak didaftarkan oleh klub (tanpa peran orang tua).
 - [ ] Pelatih tidak melihat antrean gabung klub (hanya yang punya izin `members.create`).
 - [ ] Grup: hanya pemilik yang bisa mengundang, hanya teman yang bisa diundang. Tidak ada postingan di dalam grup. Event hanya ada di dalam grup.
