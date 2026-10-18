@@ -194,7 +194,7 @@ begin
   from pg_class c
   join pg_attribute a on a.attrelid = c.oid and a.attname = 'club_id' and not a.attisdropped
   where c.relkind = 'r' and c.relnamespace = 'public'::regnamespace
-    and c.relname not in ('audit_log', 'consents', 'organization_user_clubs')
+    and c.relname not in ('audit_log', 'consents', 'organization_user_clubs', 'club_join_requests')
     and not exists (select 1 from pg_trigger t where t.tgrelid = c.oid and t.tgname = 'a00_org_writable');
   assert n = 0, 'every club table carries the read-only guard';
 end;

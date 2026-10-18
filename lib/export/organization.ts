@@ -29,6 +29,7 @@ const CLUB_TABLES: { file: string; table: string; order?: string[] }[] = [
   { file: "sertifikasi_pelatih", table: "coach_certifications" },
   { file: "promo", table: "promos" },
   { file: "persetujuan", table: "consents" },
+  { file: "permintaan_gabung", table: "club_join_requests" },
 ];
 
 type Row = Record<string, unknown>;

@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PageHeader } from "@/components/ui/page-header";
 
 export default async function PersonalHomePage({ searchParams }: { searchParams: Promise<{ sebelum?: string }> }) {
-  const { profile, session } = await requireValidSession();
+  const { profile } = await requireValidSession();
   const { sebelum } = await searchParams;
   const before = sebelum && !Number.isNaN(Date.parse(sebelum)) ? sebelum : undefined;
   const [{ entries }, deletions, workouts, feed, clubTypes] = await Promise.all([
@@ -56,7 +56,10 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
               <ContextList options={entries.map((e) => ({ key: e.key, label: e.label, detail: e.detail }))} />
             ) : (
               <>
-                Minta admin klub mengaktifkan akun anggota Anda memakai email {session.email}, atau{" "}
+                <Link href="/akun/klub" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+                  Gabung klub
+                </Link>{" "}
+                dengan kode dari admin klub, atau{" "}
                 <Link href="/akun/upgrade" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                   buat klub sendiri
                 </Link>

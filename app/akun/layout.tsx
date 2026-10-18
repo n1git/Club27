@@ -13,6 +13,7 @@ export default async function PersonalLayout({ children }: { children: React.Rea
         { href: "/akun/teman", label: "Teman", icon: "members", primary: true },
         { href: "/akun/latihan", label: "Latihan", icon: "visits", primary: true },
         { href: "/akun/profil", label: "Profil", icon: "profile", primary: true },
+        { href: "/akun/klub", label: "Gabung klub", icon: "switchClub" },
         { href: "/akun/upgrade", label: "Upgrade", icon: "club" },
         { href: "/akun/pengaturan", label: "Pengaturan", icon: "settings" },
       ],

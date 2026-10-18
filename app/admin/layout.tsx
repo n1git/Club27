@@ -22,6 +22,7 @@ const adminGroups = (resourceLabel: string): AdminNavGroup[] => [
     label: "Orang",
     items: [
       { href: "/admin/members", label: "Anggota", icon: "members", primary: true },
+      { href: "/admin/permintaan-gabung", label: "Permintaan gabung", icon: "switchClub", module: "member_portal" },
       { href: "/admin/coaches", label: "Pelatih", icon: "coaches" },
       { href: "/admin/staff", label: "Staf", icon: "staff" },
     ],
