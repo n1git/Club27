@@ -1,26 +1,26 @@
-# Paket Langganan 27club
+# Paket Langganan 27 Club
 
 Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah hanya bukti rancangan; nilai sebenarnya ada di tabel `subscription_plans` dan bisa diubah superadmin.
 
 ## 1. Model
 
 - Langganan per **organisasi** (pemilik), bukan per klub. Satu organisasi punya satu paket, satu periode, dan satu status.
-- Harga per **pengguna internal**: pemilik aktif ditambah admin, pelatih, resepsionis, dan keuangan aktif di semua klub organisasi. Akun admin milik pemilik di tiap klub tidak dihitung lagi (pemilik dihitung satu kali). Anggota tidak dihitung dan tidak dibatasi. Minimal 1 pengguna.
-- Rumus: pengguna x harga per pengguna per bulan x bulan (bulanan 1, tahunan 12 - bulan gratis). Dihitung ulang di server lewat fungsi `platform_quote`; harga dari klien tidak dipakai.
+- Harga per **seat** yang dibeli (lihat bagian 4). Seat dipakai pemilik dan staf berperan berbayar; pelatih, kasir, peran gratis, dan anggota tidak memakai seat. Anggota tidak dibatasi. Minimal 1 seat.
+- Rumus: seat x harga per seat per bulan x bulan (bulanan 1, tahunan 12 - bulan gratis). Dihitung ulang di server lewat `platform_quote` (perpanjangan) dan `seat_quote` (tambah seat prorata); harga dari klien tidak dipakai.
 - Komitmen bulanan atau tahunan. Tahunan = 12 dikurangi bulan gratis (awal: 0,5, jadi 11,5 bulan).
 
 ## 2. Dua paket
 
 | | Standard | Advanced |
 |---|---|---|
-| Harga | Rp 150.000 / pengguna / bulan | Rp 250.000 / pengguna / bulan |
+| Harga | Rp 150.000 / seat / bulan | Rp 250.000 / seat / bulan |
 | Klub | maks 3 (bisa dinaikkan per organisasi oleh superadmin) | tak terbatas |
 | Anggota dan lokasi | tak terbatas | tak terbatas |
 | Modul | semua modul `ready` | semua modul `ready` |
 | Trial | 14 hari, 1 seat | 14 hari, 1 seat |
 | Tahunan | 11,5 bulan | 11,5 bulan |
 
-Contoh: Standard bulanan 4 pengguna = Rp 600.000; Standard tahunan 4 pengguna = 4 x 150.000 x 11,5 = Rp 6.900.000 (setara Rp 575.000/bulan); Advanced bulanan 2 pengguna = Rp 500.000.
+Contoh: Standard bulanan 4 seat = Rp 600.000; Standard tahunan 4 seat = 4 x 150.000 x 11,5 = Rp 6.900.000 (setara Rp 575.000/bulan); Advanced bulanan 2 seat = Rp 500.000.
 
 ## 3. Modul (`platform_modules`)
 
@@ -41,7 +41,7 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 
 | Komponen | Asumsi | Dampak |
 |---|---|---|
-| Infrastruktur tetap | Vercel Pro ~$24 + Supabase Pro ~$25 + buffer ~$20-30 = Rp1,3 juta/bulan | Break-even ~9 pengguna Standard atau ~6 pengguna Advanced |
+| Infrastruktur tetap | Vercel Pro ~$24 + Supabase Pro ~$25 + buffer ~$20-30 = Rp1,3 juta/bulan | Break-even ~9 seat Standard atau ~6 seat Advanced |
 | Biaya organisasi tambahan | ~Rp0 sampai pemakaian naik tier | Margin tinggi |
 
 ## 6. Pertanyaan terbuka
@@ -49,4 +49,4 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 1. Apa yang terjadi pada data setelah masa tenggang berakhir (kebijakan retensi)? Belum diputuskan; penghapusan belum dijalankan.
 2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
 3. Apakah batas klub Standard (3) perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
-4. Invoice/kwitansi 27club dan proration belum dirancang.
+4. Invoice/kwitansi belum dirancang.

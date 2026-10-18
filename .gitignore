@@ -49,3 +49,4 @@ __pycache__/
 
 # audit output (private, never commit)
 /audit/
+proxy.log

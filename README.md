@@ -36,4 +36,3 @@ Link the repo to a Vercel project and set the same environment variables; `verce
 - [`docs/CHANGELOG.md`](docs/CHANGELOG.md): changes by date.
 - [`CLAUDE.md`](CLAUDE.md): team notes and technical rules.
 - `progress/`: one progress file per task (status, phases, measurements, landing claims table).
-- `trash/`: retired prototype and finished progress logs; nothing imports it and it can be deleted.
