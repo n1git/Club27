@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { requireActionRole } from "@/lib/auth/guard";
 import { isKeyRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { socialLimited } from "@/lib/auth/social-limit";
+import { socialBlocked } from "@/lib/auth/social-access";
+import { isEmailConfigured, sendEmail } from "@/lib/email";
+import { SITE_URL } from "@/lib/site";
+import { APP_NAME } from "@/lib/config";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { commentSchema, friendUsernameSchema, postSchema, reportSchema, uuidField } from "@/lib/validations/social";
 import { type ActionState } from "./types";
@@ -19,10 +23,24 @@ function done(): ActionState {
   return { ok: true };
 }
 
+async function notifyNewReport(targetType: string) {
+  const to = process.env.REPORT_NOTIFY_EMAIL?.trim();
+  if (!to || !isEmailConfigured()) return;
+  const link = `${SITE_URL}/superadmin/laporan`;
+  await sendEmail({
+    to,
+    subject: `Laporan baru di ${APP_NAME}`,
+    text: `Ada laporan baru (${targetType}). Tinjau di ${link}`,
+    html: `<p>Ada laporan baru (${targetType}).</p><p>Tinjau di <a href="${link}">${link}</a></p>`,
+  }).catch(() => false);
+}
+
 export async function sendFriendRequest(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireActionRole("personal");
   const parsed = friendUsernameSchema.safeParse({ username: formData.get("username") });
   if (!parsed.success || !parsed.data.username) return { ok: false, error: "Username tidak valid" };
+  const blocked = await socialBlocked(session.account_id);
+  if (blocked) return blocked;
   if (await isKeyRateLimited(`friend-request:${session.account_id}`, 30, 3600, true)) return { ok: false, error: RATE_LIMIT_ERROR };
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("request_friend", { p_username: parsed.data.username });
@@ -32,7 +50,9 @@ export async function sendFriendRequest(_prevState: ActionState, formData: FormD
 }
 
 export async function respondFriend(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const blocked = await socialBlocked(session.account_id);
+  if (blocked) return blocked;
   const id = uuidField.safeParse(formData.get("friendshipId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
@@ -107,6 +127,10 @@ export async function toggleReaction(_prevState: ActionState, formData: FormData
   const id = uuidField.safeParse(formData.get("postId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
+  if (formData.get("liked") !== "1") {
+    const blocked = await socialBlocked(session.account_id);
+    if (blocked) return blocked;
+  }
   if (formData.get("liked") === "1") {
     const { error } = await supabase.from("post_reactions").delete().eq("post_id", id.data).eq("account_id", session.account_id);
     return error ? { ok: false, error: "Gagal membatalkan suka" } : done();
@@ -150,5 +174,7 @@ export async function reportContent(_prevState: ActionState, formData: FormData)
     .from("reports")
     .insert({ target_type: parsed.data.targetType, target_id: parsed.data.targetId, reason: parsed.data.reason });
   if (error?.code === "23505") return { ok: true, message: "Laporan sudah kami terima" };
-  return error ? fail(error, "Gagal mengirim laporan") : { ok: true, message: "Laporan terkirim. Terima kasih." };
+  if (error) return fail(error, "Gagal mengirim laporan");
+  await notifyNewReport(parsed.data.targetType);
+  return { ok: true, message: "Laporan terkirim. Terima kasih." };
 }

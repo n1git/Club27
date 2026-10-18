@@ -8,6 +8,7 @@ import { loadOwner } from "@/lib/auth/owner";
 import { getSwitchableTenants } from "@/lib/data/organization";
 import { LazyTenantSwitcher } from "@/components/organization/lazy-tenant-switcher";
 import { getEnabledModules } from "@/lib/modules";
+import { countPendingJoinRequests } from "@/lib/data/club-join";
 import { getClubTerms } from "@/lib/club-type";
 import { ReadOnlyBanner } from "@/components/subscription/read-only-banner";
 
@@ -72,6 +73,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const owner = session.role === "owner" ? await loadOwner(session.id, session.tenantId) : null;
   const roleLabel = await loadRoleLabel(session.id, session.role);
   const tenants = owner ? await getSwitchableTenants(owner.ownerId) : [];
+  const canSeeJoin = enabled.has("member_portal") && (owner || session.permissions.has("members.create"));
+  const joinPending = canSeeJoin ? await countPendingJoinRequests() : 0;
   const visible = adminGroups(terms.resource)
     .map((group) => ({
       label: group.label,
@@ -102,6 +105,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         icon,
         exact,
         primary: primary || operationsPrimary.has(href),
+        badge: href === "/admin/permintaan-gabung" ? joinPending : undefined,
       })),
     })),
   ];

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { requireValidSession } from "@/lib/auth/guard";
-import { listContexts, listPendingDeletions } from "@/lib/auth/contexts";
+import { listContexts, listInactiveClubs, listPendingDeletions } from "@/lib/auth/contexts";
 import { getWorkoutData } from "@/lib/data/workouts";
 import { getFeed } from "@/lib/data/social";
+import { isSocialBanned } from "@/lib/auth/social-access";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getUpcomingEvents } from "@/lib/data/groups";
 import { formatJakartaDateTime } from "@/lib/format";
 import { getReadyClubTypes } from "@/lib/club-type";
@@ -18,13 +20,15 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
   const { profile } = await requireValidSession();
   const { sebelum } = await searchParams;
   const before = sebelum && !Number.isNaN(Date.parse(sebelum)) ? sebelum : undefined;
-  const [{ entries }, deletions, workouts, feed, clubTypes, upcoming] = await Promise.all([
+  const banned = await isSocialBanned(profile.accountId);
+  const [{ entries }, deletions, workouts, feed, clubTypes, upcoming, inactive] = await Promise.all([
     listContexts(profile.accountId),
     listPendingDeletions(profile.accountId),
     getWorkoutData(),
-    getFeed(profile.accountId, before),
+    banned ? Promise.resolve({ posts: [], hasMore: false }) : getFeed(profile.accountId, before),
     getReadyClubTypes(),
-    getUpcomingEvents(),
+    banned ? Promise.resolve([]) : getUpcomingEvents(),
+    listInactiveClubs(profile.accountId),
   ]);
   const sportLabels = Object.fromEntries(clubTypes.map((t) => [t.code, t.name.replace(/^Klub\s+/, "")]));
   const week = workouts.weeks[workouts.weeks.length - 1];
@@ -33,6 +37,13 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
     <div className="flex flex-col gap-6">
       <PendingDeletions items={deletions} />
       <PageHeader title="Beranda" subtitle={`Halo, ${profile.fullName}`} />
+      {inactive.length ? (
+        <Alert>
+          <AlertDescription>
+            Akses Anda ke {inactive.join(", ")} sedang dinonaktifkan. Data tetap tersimpan. Hubungi admin klub atau admin platform untuk mengaktifkannya kembali.
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -94,6 +105,7 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
           </CardContent>
         </Card>
       ) : null}
+      {banned ? null : (
       <section className="flex max-w-2xl flex-col gap-4">
         <h2 className="text-sm font-semibold text-muted-foreground">Feed teman</h2>
         <Card>
@@ -117,6 +129,7 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
           </Link>
         ) : null}
       </section>
+      )}
     </div>
   );
 }

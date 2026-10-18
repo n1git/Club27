@@ -75,3 +75,12 @@ export async function decideClubJoin(_prevState: ActionState, formData: FormData
   revalidatePath("/admin/members");
   return { ok: true, message: parsed.data.approve === "1" ? "Anggota ditambahkan" : "Permintaan ditolak" };
 }
+
+export async function rotateClubCode(_prevState: ActionState): Promise<ActionState> {
+  await requireActionPermission("club.settings");
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.rpc("rotate_club_code");
+  if (error) return { ok: false, error: "Gagal mengganti kode klub" };
+  revalidatePath("/admin/permintaan-gabung");
+  return { ok: true, message: "Kode klub diganti. Kode lama tidak berlaku lagi untuk permintaan baru." };
+}

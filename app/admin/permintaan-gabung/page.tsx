@@ -4,19 +4,31 @@ import { getPendingClubJoinRequests } from "@/lib/data/club-join";
 import { getActiveCoaches } from "@/lib/data/lookups";
 import { formatJakartaDate } from "@/lib/format";
 import { DecideForm } from "@/components/club-join/decide-form";
+import { ActionButton } from "@/components/shared/action-button";
+import { rotateClubCode } from "@/lib/actions/club-join";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 
 export default async function JoinRequestsPage() {
-  await requirePermission("members.create");
+  const user = await requirePermission("members.create");
   await requireModule("member_portal");
   const [{ slug, requests }, coaches] = await Promise.all([getPendingClubJoinRequests(), getActiveCoaches()]);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Permintaan gabung" subtitle="Calon anggota dewasa yang mendaftar sendiri dengan kode klub. Anak-anak didaftarkan manual di menu Anggota." />
       <Card>
-        <CardContent className="pt-5 text-sm">
-          Kode klub untuk dibagikan: <code className="rounded bg-secondary px-2 py-0.5 font-mono">{slug}</code>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-5 text-sm">
+          <span>
+            Kode klub untuk dibagikan: <code className="rounded bg-secondary px-2 py-0.5 font-mono">{slug}</code>
+          </span>
+          {user.permissions.has("club.settings") ? (
+            <ActionButton
+              action={rotateClubCode}
+              fields={{}}
+              label="Ganti kode"
+              confirmMessage="Ganti kode klub? Kode lama tidak bisa dipakai untuk permintaan baru. Permintaan yang sudah masuk tetap ada."
+            />
+          ) : null}
         </CardContent>
       </Card>
       {requests.length === 0 ? (

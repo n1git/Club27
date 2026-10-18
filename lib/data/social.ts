@@ -121,3 +121,12 @@ export async function getFriendLists(accountId: string): Promise<FriendLists> {
   lists.friends.sort((a, b) => a.person.fullName.localeCompare(b.person.fullName));
   return lists;
 }
+
+export async function getSocialBadges(accountId: string): Promise<{ friends: number; groups: number }> {
+  const supabase = await createServerSupabaseClient();
+  const [friends, groups] = await Promise.all([
+    supabase.from("friendships").select("id", { count: "exact", head: true }).eq("addressee_id", accountId).eq("status", "pending"),
+    supabase.from("group_members").select("group_id", { count: "exact", head: true }).eq("account_id", accountId).eq("status", "invited"),
+  ]);
+  return { friends: friends.count ?? 0, groups: groups.count ?? 0 };
+}

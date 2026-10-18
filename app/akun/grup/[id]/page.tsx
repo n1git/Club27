@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireValidSession } from "@/lib/auth/guard";
+import { isSocialBanned } from "@/lib/auth/social-access";
 import { getFriendLists } from "@/lib/data/social";
 import { getGroupDetail } from "@/lib/data/groups";
 import { cancelEvent, deleteGroup, leaveGroup, removeGroupMember, respondGroupInvite, rsvpEvent } from "@/lib/actions/groups";
@@ -15,6 +16,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const { profile } = await requireValidSession();
+  if (await isSocialBanned(profile.accountId)) notFound();
   const lists = await getFriendLists(profile.accountId);
   const detail = await getGroupDetail(profile.accountId, id, lists.friends.map((f) => f.person));
   if (!detail) notFound();

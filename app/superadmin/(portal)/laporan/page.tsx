@@ -36,20 +36,20 @@ export default async function ReportsPage() {
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Pelapor: {r.reporter}
-                  {r.author ? ` · Penulis: ${r.author.label}${r.author.active ? "" : " (nonaktif)"}` : ""}
+                  {r.author ? ` · Penulis: ${r.author.label}${r.author.active ? "" : " (nonaktif)"}${r.author.banned ? " (sosial dinonaktifkan)" : ""}` : ""}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <ActionButton action={resolveReport} fields={{ reportId: r.id, action: "dismiss" }} label="Abaikan" />
                   {r.targetType !== "account" && !r.targetGone ? (
                     <ActionButton action={resolveReport} fields={{ reportId: r.id, action: "remove" }} label="Hapus konten" variant="destructive" confirmMessage="Hapus konten ini secara permanen?" />
                   ) : null}
-                  {r.author?.active ? (
+                  {r.author?.active && !r.author.banned ? (
                     <ActionButton
                       action={resolveReport}
                       fields={{ reportId: r.id, action: "suspend" }}
-                      label="Nonaktifkan akun"
+                      label="Nonaktifkan akun atau sosial"
                       variant="destructive"
-                      confirmMessage="Nonaktifkan akun penulis? Semua sesinya berakhir dan ia tidak bisa masuk."
+                      confirmMessage="Nonaktifkan penulis? Akun biasa tidak bisa masuk lagi dan semua sesinya berakhir. Jika ia pemilik atau staf klub, hanya fitur sosialnya yang dinonaktifkan."
                     />
                   ) : null}
                 </div>
@@ -68,7 +68,7 @@ export default async function ReportsPage() {
               </span>
               <span className="flex items-center gap-2">
                 <Badge variant="secondary">{STATUS[r.status]}</Badge>
-                {r.status === "suspended" && r.author && !r.author.active ? (
+                {r.status === "suspended" && r.author && (!r.author.active || r.author.banned) ? (
                   <ActionButton action={reactivateAccount} fields={{ accountId: r.author.id }} label="Aktifkan kembali" />
                 ) : null}
               </span>

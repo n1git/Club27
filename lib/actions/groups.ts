@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireActionRole } from "@/lib/auth/guard";
 import { socialLimited } from "@/lib/auth/social-limit";
+import { socialBlocked } from "@/lib/auth/social-access";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { parseJakartaLocalInput } from "@/lib/format";
 import { eventSchema, groupSchema, rsvpSchema } from "@/lib/validations/groups";
@@ -48,7 +49,11 @@ export async function inviteToGroup(_prevState: ActionState, formData: FormData)
 }
 
 export async function respondGroupInvite(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  if (formData.get("accept") === "1") {
+    const blocked = await socialBlocked(session.account_id);
+    if (blocked) return blocked;
+  }
   const group = uuidField.safeParse(formData.get("groupId"));
   if (!group.success) return { ok: false, error: "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
@@ -125,7 +130,9 @@ export async function cancelEvent(_prevState: ActionState, formData: FormData): 
 }
 
 export async function rsvpEvent(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const blocked = await socialBlocked(session.account_id);
+  if (blocked) return blocked;
   const parsed = rsvpSchema.safeParse({ eventId: formData.get("eventId"), status: formData.get("status") });
   if (!parsed.success) return { ok: false, error: "Data tidak valid" };
   const supabase = await createServerSupabaseClient();

@@ -118,6 +118,35 @@ do $$ begin
   assert (select count(*) from events) = 0 and (select count(*) from event_rsvps) = 0 and (select count(*) from group_members) = 0, 'deleting a group cascades';
 end $$;
 
+insert into friendships (requester_id, addressee_id, status) values (pg_temp.uid('ga@t.test'), pg_temp.uid('gd@t.test'), 'accepted') on conflict do nothing;
+set local role authenticated;
+do $$
+declare
+  g uuid; ev uuid;
+  soon timestamptz := now() + interval '3 days';
+begin
+  perform pg_temp.act('ga@t.test');
+  g := create_group('Grup Blokir', null);
+  perform invite_to_group(g, pg_temp.uid('gb@t.test'));
+  perform invite_to_group(g, pg_temp.uid('gd@t.test'));
+  perform pg_temp.act('gb@t.test');
+  perform respond_group_invite(g, true);
+  perform pg_temp.act('gd@t.test');
+  perform respond_group_invite(g, true);
+  ev := create_event(g, 'Event Blokir', null, null, soon, null, null);
+  perform pg_temp.act('gb@t.test');
+  perform rsvp_event(ev, 'going');
+  perform block_account(pg_temp.uid('ga@t.test'));
+  assert (select count(*) from groups) = 0 and (select count(*) from event_rsvps) = 0, 'blocking the owner removes the blocker from the group';
+  perform pg_temp.act('ga@t.test');
+  assert (select count(*) from group_members where group_id = g) = 2, 'the owner keeps the others';
+  assert (select count(*) from event_rsvps where account_id = pg_temp.uid('gb@t.test')) = 0, 'the blocker rsvp is gone';
+  perform block_account(pg_temp.uid('gd@t.test'));
+  assert (select count(*) from group_members where group_id = g) = 1, 'the owner blocking a member removes them';
+  assert (select count(*) from groups where id = g) = 1, 'the group survives';
+end $$;
+reset role;
+
 delete from accounts where email in ('ga@t.test', 'gb@t.test', 'gc@t.test', 'gd@t.test');
 rollback;
 \echo groups_events_phase5 OK

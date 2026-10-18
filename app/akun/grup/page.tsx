@@ -1,5 +1,7 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireValidSession } from "@/lib/auth/guard";
+import { isSocialBanned } from "@/lib/auth/social-access";
 import { getMyGroups } from "@/lib/data/groups";
 import { respondGroupInvite } from "@/lib/actions/groups";
 import { ActionButton } from "@/components/shared/action-button";
@@ -10,6 +12,7 @@ import { PageHeader } from "@/components/ui/page-header";
 
 export default async function GroupsPage() {
   const { profile } = await requireValidSession();
+  if (await isSocialBanned(profile.accountId)) notFound();
   const groups = await getMyGroups(profile.accountId);
   const invites = groups.filter((g) => g.status === "invited");
   const active = groups.filter((g) => g.status === "active");

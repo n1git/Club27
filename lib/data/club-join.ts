@@ -70,3 +70,9 @@ export async function getPendingClubJoinRequests(): Promise<{ slug: string; requ
   );
   return { slug: (club?.slug as string | undefined) ?? "", requests };
 }
+
+export async function countPendingJoinRequests(): Promise<number> {
+  const supabase = await createServerSupabaseClient();
+  const { count } = await supabase.from("club_join_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
+  return count ?? 0;
+}

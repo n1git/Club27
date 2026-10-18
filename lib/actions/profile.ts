@@ -12,6 +12,8 @@ import { nameField, phoneField } from "@/lib/validations/limits";
 import { superadminUsernameSchema, usernameDbError, usernameSchema } from "@/lib/validations/username";
 import type { ActionState } from "./types";
 
+const USERNAME_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
+
 const ownerSchema = z.object({ fullName: nameField("Nama"), username: usernameSchema });
 const staffSchema = ownerSchema.extend({ phone: phoneField.optional() });
 const memberSchema = z.object({ username: usernameSchema });
@@ -59,13 +61,20 @@ export async function updateOwnProfile(_prevState: ActionState, formData: FormDa
 
   const { data: account } = await supabase
     .from("accounts")
-    .select("full_name, username")
+    .select("full_name, username, username_changed_at")
     .eq("id", session.account_id)
     .single();
+  const usernameChanged = Boolean(account) && account!.username !== values.username;
+  if (usernameChanged && account!.username_changed_at && Date.now() - new Date(account!.username_changed_at as string).getTime() < USERNAME_COOLDOWN_MS) {
+    return { ok: false, error: "Username hanya bisa diubah sekali dalam 30 hari", fieldErrors: { username: "Username hanya bisa diubah sekali dalam 30 hari" } };
+  }
   const after: Values = isMember
     ? { username: values.username }
     : { full_name: values.fullName ?? null, username: values.username };
-  const { error } = await supabase.from("accounts").update(after).eq("id", session.account_id);
+  const { error } = await supabase
+    .from("accounts")
+    .update(usernameChanged ? { ...after, username_changed_at: new Date().toISOString() } : after)
+    .eq("id", session.account_id);
   if (error) return failure(error);
   let changes = diff(account ?? {}, after);
   const fullName = isMember ? session.full_name : (values.fullName ?? session.full_name);

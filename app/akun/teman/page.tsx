@@ -1,4 +1,6 @@
+import { notFound } from "next/navigation";
 import { requireValidSession } from "@/lib/auth/guard";
+import { isSocialBanned } from "@/lib/auth/social-access";
 import { getFriendLists, type Person } from "@/lib/data/social";
 import { blockAccount, removeFriend, respondFriend, unblockAccount } from "@/lib/actions/social";
 import { ActionButton } from "@/components/shared/action-button";
@@ -33,6 +35,7 @@ function Section({ title, empty, children, count }: { title: string; empty: stri
 
 export default async function FriendsPage() {
   const { profile } = await requireValidSession();
+  if (await isSocialBanned(profile.accountId)) notFound();
   const lists = await getFriendLists(profile.accountId);
   return (
     <div className="flex flex-col gap-6">

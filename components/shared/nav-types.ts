@@ -33,6 +33,7 @@ export interface NavItem {
   icon: NavIconKey;
   exact?: boolean;
   primary?: boolean;
+  badge?: number;
 }
 
 export interface NavGroup {

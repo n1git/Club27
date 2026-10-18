@@ -12,10 +12,10 @@ export interface ReportRow {
   reporter: string;
   preview: string;
   targetGone: boolean;
-  author: { id: string; label: string; active: boolean } | null;
+  author: { id: string; label: string; active: boolean; banned: boolean } | null;
 }
 
-type AccountRow = { id: string; username: string; full_name: string; is_active: boolean };
+type AccountRow = { id: string; username: string; full_name: string; is_active: boolean; social_banned_at: string | null };
 
 export async function getReports(status: "open" | "resolved"): Promise<ReportRow[]> {
   const supabase = createAdminSupabaseClient();
@@ -41,7 +41,7 @@ export async function getReports(status: "open" | "resolved"): Promise<ReportRow
   };
   const accountIds = [...new Set([...reports.map((r) => r.reporter_id as string), ...reports.map((r) => authorOf(r.target_type as ReportTargetType, r.target_id as string)).filter((v): v is string => Boolean(v))])];
   const accounts = accountIds.length
-    ? (((await supabase.from("accounts").select("id, username, full_name, is_active").in("id", accountIds)).data ?? []) as AccountRow[])
+    ? (((await supabase.from("accounts").select("id, username, full_name, is_active, social_banned_at").in("id", accountIds)).data ?? []) as AccountRow[])
     : [];
   const people = new Map(accounts.map((a) => [a.id, a]));
   const label = (a: AccountRow | undefined) => (a ? `${a.full_name} (@${a.username})` : "akun dihapus");
@@ -67,7 +67,7 @@ export async function getReports(status: "open" | "resolved"): Promise<ReportRow
       reporter: label(people.get(r.reporter_id as string)),
       preview,
       targetGone: type === "account" ? !author : !row,
-      author: author ? { id: author.id, label: label(author), active: author.is_active } : null,
+      author: author ? { id: author.id, label: label(author), active: author.is_active, banned: Boolean(author.social_banned_at) } : null,
     };
   });
 }

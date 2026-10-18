@@ -61,3 +61,7 @@ Daftar hal yang perlu perhatian: `progress/social-free-attention.md`.
 Migrasi 052: `reports.status` (open, dismissed, removed, suspended), `reviewed_at`, `reviewed_by`; pengguna hanya boleh mengisi `target_type`, `target_id`, `reason`. Layar `/superadmin/laporan`: pratinjau konten, abaikan, hapus konten, nonaktifkan akun penulis (sesi dicabut), aktifkan kembali. Batas laju aplikasi untuk aksi sosial (`lib/auth/social-limit.ts`). Pengaturan akun pribadi: ekspor ZIP CSV (`/api/export/akun`, kata sandi ulang, 3 per jam, diaudit) dan hapus akun (kata sandi dan kata HAPUS; ditolak bila masih terhubung ke klub atau organisasi).
 Tes: `supabase/tests/report_review_phase6.sql`, e2e lokal ekspor dan hapus akun; lapisan data laporan diuji dengan data contoh.
 Tinjauan hukum tidak bisa dikerjakan lewat kode; lihat `progress/social-free-attention.md`.
+
+### Paket tindak lanjut (selesai, diterapkan ke hosted)
+
+Migrasi 053: `accounts.social_banned_at` dan `username_changed_at`, blokir ikut mengeluarkan dari grup, `rotate_club_code()`. Penangguhan sosial untuk pemilik atau staf (tidak dikunci total), username sekali per 30 hari, ganti kode klub, angka di menu (permintaan teman, undangan grup, permintaan gabung), pemberitahuan klub nonaktif di Beranda, email laporan baru (`REPORT_NOTIFY_EMAIL`), formulir tidak ter-reset saat gagal. Diuji dengan e2e lokal termasuk login superadmin dengan TOTP dan semua aksi di layar laporan.

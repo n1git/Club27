@@ -36,6 +36,7 @@ export async function resolveReport(_prevState: ActionState, formData: FormData)
   const targetId = report.target_id as string;
 
   let status: "dismissed" | "removed" | "suspended" = "dismissed";
+  let socialOnly = false;
   if (parsed.data.action === "remove") {
     if (type === "account") return { ok: false, error: "Akun tidak bisa dihapus dari sini. Pilih nonaktifkan." };
     const { error } = await supabase.from(TABLES[type]).delete().eq("id", targetId);
@@ -49,9 +50,19 @@ export async function resolveReport(_prevState: ActionState, formData: FormData)
       accountId = row ? ((row as unknown as Record<string, string>)[AUTHOR[type]] ?? null) : null;
     }
     if (!accountId) return { ok: false, error: "Konten sudah dihapus, penulisnya tidak diketahui" };
-    const { error } = await supabase.from("accounts").update({ is_active: false }).eq("id", accountId);
-    if (error) return { ok: false, error: "Gagal menonaktifkan akun" };
-    await revokeAccountSessions(accountId);
+    const [{ count: staff }, { count: owners }] = await Promise.all([
+      supabase.from("club_profiles").select("id", { count: "exact", head: true }).eq("account_id", accountId).in("role", ["owner", "staff"]),
+      supabase.from("organization_users").select("id", { count: "exact", head: true }).eq("account_id", accountId),
+    ]);
+    if (staff || owners) {
+      const { error } = await supabase.from("accounts").update({ social_banned_at: new Date().toISOString() }).eq("id", accountId);
+      if (error) return { ok: false, error: "Gagal menonaktifkan fitur sosial" };
+      socialOnly = true;
+    } else {
+      const { error } = await supabase.from("accounts").update({ is_active: false }).eq("id", accountId);
+      if (error) return { ok: false, error: "Gagal menonaktifkan akun" };
+      await revokeAccountSessions(accountId);
+    }
     status = "suspended";
   }
 
@@ -65,13 +76,13 @@ export async function resolveReport(_prevState: ActionState, formData: FormData)
     action: `report.${status}`,
     targetType: type,
     targetId,
-    details: { report: report.id },
+    details: { report: report.id, socialOnly },
     actorId: superadmin.id,
     actorRole: "superadmin",
     actorLabel: superadmin.email,
   });
   revalidatePath("/superadmin/laporan");
-  return { ok: true, message: { dismissed: "Laporan diabaikan", removed: "Konten dihapus", suspended: "Akun dinonaktifkan" }[status] };
+  return { ok: true, message: { dismissed: "Laporan diabaikan", removed: "Konten dihapus", suspended: socialOnly ? "Fitur sosial akun dinonaktifkan (akses klubnya tetap jalan)" : "Akun dinonaktifkan" }[status] };
 }
 
 export async function reactivateAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -79,7 +90,7 @@ export async function reactivateAccount(_prevState: ActionState, formData: FormD
   if (!superadmin) return SESSION_ENDED;
   const parsed = reactivateSchema.safeParse({ accountId: formData.get("accountId") });
   if (!parsed.success) return { ok: false, error: "Data tidak valid" };
-  const { error } = await createAdminSupabaseClient().from("accounts").update({ is_active: true }).eq("id", parsed.data.accountId);
+  const { error } = await createAdminSupabaseClient().from("accounts").update({ is_active: true, social_banned_at: null }).eq("id", parsed.data.accountId);
   if (error) return { ok: false, error: "Gagal mengaktifkan akun" };
   await logAudit({
     action: "account.reactivate",

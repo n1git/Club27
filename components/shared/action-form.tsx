@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useActionState, useContext, useEffect } from "react";
+import { createContext, useActionState, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import type { ActionState } from "@/lib/actions/types";
 import { useActionToast } from "@/components/shared/use-action-toast";
@@ -20,14 +20,28 @@ export function ActionForm({
   className?: string;
   children: React.ReactNode;
 }) {
-  const [state, formAction] = useActionState(action, {});
+  const keepValues = useRef(false);
+  const [state, formAction] = useActionState(async (prevState: ActionState, formData: FormData) => {
+    const result = await action(prevState, formData);
+    keepValues.current = Boolean(result.error) || result.ok === false;
+    return result;
+  }, {});
   useActionToast(state, "Berhasil disimpan");
   useEffect(() => {
     if (state.error) toast.error(state.error);
   }, [state]);
 
   return (
-    <form action={formAction} className={className}>
+    <form
+      action={formAction}
+      onReset={(event) => {
+        if (keepValues.current) {
+          event.preventDefault();
+          keepValues.current = false;
+        }
+      }}
+      className={className}
+    >
       <ActionFormStateContext value={state}>{children}</ActionFormStateContext>
     </form>
   );

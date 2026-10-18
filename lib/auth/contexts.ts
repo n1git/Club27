@@ -175,3 +175,19 @@ export async function listPendingDeletions(accountId: string): Promise<PendingDe
     return { organizationId: row.organization_id as string, name: one.name, purgeAfter: one.purge_after };
   });
 }
+
+export async function listInactiveClubs(accountId: string): Promise<string[]> {
+  const { data } = await createAdminSupabaseClient()
+    .from("club_profiles")
+    .select("is_active, clubs(name, is_active)")
+    .eq("account_id", accountId)
+    .in("role", ["owner", "staff", "member"]);
+  const names = (data ?? [])
+    .map((row) => {
+      const club = row.clubs as unknown as { name: string; is_active: boolean } | { name: string; is_active: boolean }[] | null;
+      const one = Array.isArray(club) ? club[0] : club;
+      return one && (!row.is_active || !one.is_active) ? one.name : null;
+    })
+    .filter((name): name is string => Boolean(name));
+  return [...new Set(names)];
+}

@@ -7,13 +7,17 @@ import { ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLinkIcon } from "./nav-progress";
 import { useFullPrefetch } from "./use-full-prefetch";
+import { NavBadge } from "./nav-link";
 import { isNavActive, type NavGroup, type NavItem } from "./nav-types";
 
 function TabLink({ item, active, className }: { item: NavItem; active: boolean; className: string }) {
   const prefetch = useFullPrefetch(item.href);
   return (
     <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} className={className}>
-      <NavLinkIcon name={item.icon} />
+      <span className="relative">
+        <NavLinkIcon name={item.icon} />
+        <NavBadge count={item.badge} className="absolute -right-3 -top-1.5" />
+      </span>
       <span className="max-w-full truncate">{item.label}</span>
     </Link>
   );
@@ -130,6 +134,7 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
                             <span className="flex-1 truncate">
                               {item.label}
                             </span>
+                            <NavBadge count={item.badge} />
                             <ChevronRight
                               size={18}
                               aria-hidden="true"
