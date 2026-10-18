@@ -13,7 +13,7 @@ export const commentSchema = z.object({
 });
 
 export const reportSchema = z.object({
-  targetType: z.enum(["post", "comment", "account"]),
+  targetType: z.enum(["post", "comment", "account", "group", "event"]),
   targetId: z.string().uuid("Data tidak valid"),
   reason: z.string().trim().min(5, "Alasan minimal 5 karakter").max(500, "Alasan maksimal 500 karakter"),
 });

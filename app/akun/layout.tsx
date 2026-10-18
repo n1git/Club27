@@ -11,8 +11,9 @@ export default async function PersonalLayout({ children }: { children: React.Rea
       items: [
         { href: PERSONAL_HOME, label: "Beranda", icon: "home", exact: true, primary: true },
         { href: "/akun/teman", label: "Teman", icon: "members", primary: true },
+        { href: "/akun/grup", label: "Grup", icon: "schedule", primary: true },
         { href: "/akun/latihan", label: "Latihan", icon: "visits", primary: true },
-        { href: "/akun/profil", label: "Profil", icon: "profile", primary: true },
+        { href: "/akun/profil", label: "Profil", icon: "profile" },
         { href: "/akun/klub", label: "Gabung klub", icon: "switchClub" },
         { href: "/akun/upgrade", label: "Upgrade", icon: "club" },
         { href: "/akun/pengaturan", label: "Pengaturan", icon: "settings" },

@@ -48,3 +48,10 @@ Untuk publik nanti: perlu migrasi yang melonggarkan `posts.visibility`, kebijaka
 Migrasi 050: `club_join_requests` (nama, tanggal lahir, telepon, pesan, versi privasi), `request_club_join` / `cancel_club_join` (akun pribadi, RPC) dan `decide_club_join` (hanya service role; izin `members.create` diperiksa di aksi server). Calon anggota memakai kode klub (`clubs.slug`) yang dibagikan admin; hanya usia 18+ (anak didaftarkan klub). Syarat klub: modul `member_portal` aktif dan langganan trial atau aktif. Persetujuan membuat `club_members` baru (admin memilih pelatih) atau menghubungkan ke anggota yang belum punya akun (disarankan dari pencarian nama dan tanggal lahir), lalu memakai `activate_member_account`. Permintaan ikut ekspor dan purge organisasi.
 UI: `/akun/klub` (form dan riwayat permintaan), `/admin/permintaan-gabung` (kode klub, antrean, setujui atau tolak). Pelatih tidak melihat antrean (hanya `members.create`).
 Tes: `supabase/tests/club_join_phase4.sql`, e2e lokal (anak ditolak, kode salah, antre, setujui, anggota masuk `/member`). Tes isolasi akun diberi pengecualian untuk `social_people` (hanya baris sendiri).
+
+### Fase 5: grup dan event (selesai, diterapkan ke hosted)
+
+Migrasi 051: `groups`, `group_members` (peran owner atau member, status invited atau active), `events`, `event_rsvps`; semua ditulis lewat RPC (`create_group`, `invite_to_group`, `respond_group_invite`, `leave_group`, `remove_group_member`, `delete_group`, `create_event`, `cancel_event`, `rsvp_event`). Grup privat: hanya pemilik yang mengundang, hanya teman yang bisa diundang; hanya anggota yang melihat anggota dan event; kuota event dijaga dengan kunci baris. `social_people` ikut menampilkan sesama anggota grup. Tipe laporan bertambah `group` dan `event`.
+UI: `/akun/grup` (undangan, daftar, buat), `/akun/grup/[id]` (event dan RSVP, anggota, undang, keluar atau hapus, laporkan), kartu Event mendatang di Beranda.
+Tes: `supabase/tests/groups_events_phase5.sql` dan e2e dua akun (buat, undang, terima, event, kuota, keluar, hapus).
+Daftar hal yang perlu perhatian: `progress/social-free-attention.md`.

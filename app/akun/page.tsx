@@ -3,6 +3,8 @@ import { requireValidSession } from "@/lib/auth/guard";
 import { listContexts, listPendingDeletions } from "@/lib/auth/contexts";
 import { getWorkoutData } from "@/lib/data/workouts";
 import { getFeed } from "@/lib/data/social";
+import { getUpcomingEvents } from "@/lib/data/groups";
+import { formatJakartaDateTime } from "@/lib/format";
 import { getReadyClubTypes } from "@/lib/club-type";
 import { PostCard } from "@/components/social/post-card";
 import { PostComposer } from "@/components/social/post-composer";
@@ -16,12 +18,13 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
   const { profile } = await requireValidSession();
   const { sebelum } = await searchParams;
   const before = sebelum && !Number.isNaN(Date.parse(sebelum)) ? sebelum : undefined;
-  const [{ entries }, deletions, workouts, feed, clubTypes] = await Promise.all([
+  const [{ entries }, deletions, workouts, feed, clubTypes, upcoming] = await Promise.all([
     listContexts(profile.accountId),
     listPendingDeletions(profile.accountId),
     getWorkoutData(),
     getFeed(profile.accountId, before),
     getReadyClubTypes(),
+    getUpcomingEvents(),
   ]);
   const sportLabels = Object.fromEntries(clubTypes.map((t) => [t.code, t.name.replace(/^Klub\s+/, "")]));
   const week = workouts.weeks[workouts.weeks.length - 1];
@@ -69,6 +72,28 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
           </CardContent>
         </Card>
       </div>
+      {upcoming.length ? (
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <CardTitle>Event mendatang</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col gap-2 text-sm">
+              {upcoming.map((e) => (
+                <li key={e.id}>
+                  <Link href={`/akun/grup/${e.groupId}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+                    {e.title}
+                  </Link>
+                  <span className="text-xs text-muted-foreground">
+                    {" "}
+                    · {e.groupName} · {formatJakartaDateTime(e.startsAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
       <section className="flex max-w-2xl flex-col gap-4">
         <h2 className="text-sm font-semibold text-muted-foreground">Feed teman</h2>
         <Card>

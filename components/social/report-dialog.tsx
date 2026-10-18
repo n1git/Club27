@@ -7,7 +7,7 @@ import { TriggerDialog } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export function ReportDialog({ targetType, targetId }: { targetType: "post" | "comment" | "account"; targetId: string }) {
+export function ReportDialog({ targetType, targetId }: { targetType: "post" | "comment" | "account" | "group" | "event"; targetId: string }) {
   return (
     <TriggerDialog trigger={<span className="cursor-pointer text-xs text-muted-foreground underline-offset-4 hover:underline">Laporkan</span>}>
       <h2 className="mb-4 text-lg font-semibold">Laporkan</h2>
