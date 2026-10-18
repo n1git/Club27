@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireActionRole } from "@/lib/auth/guard";
+import { socialLimited } from "@/lib/auth/social-limit";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { weeklyGoalSchema, workoutSchema } from "@/lib/validations/workout";
 import { type ActionState } from "./types";
@@ -9,7 +10,9 @@ import { type ActionState } from "./types";
 const PATH = "/akun/latihan";
 
 export async function addWorkout(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "workout", 60);
+  if (limited) return limited;
   const parsed = workoutSchema.safeParse({
     sport: formData.get("sport"),
     performedOn: formData.get("performedOn"),

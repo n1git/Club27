@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireActionRole } from "@/lib/auth/guard";
+import { socialLimited } from "@/lib/auth/social-limit";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { parseJakartaLocalInput } from "@/lib/format";
 import { eventSchema, groupSchema, rsvpSchema } from "@/lib/validations/groups";
@@ -22,7 +23,9 @@ function done(): ActionState {
 }
 
 export async function createGroup(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "group", 10);
+  if (limited) return limited;
   const parsed = groupSchema.safeParse({ name: formData.get("name"), description: formData.get("description") || undefined });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
@@ -33,7 +36,9 @@ export async function createGroup(_prevState: ActionState, formData: FormData): 
 }
 
 export async function inviteToGroup(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "invite", 60);
+  if (limited) return limited;
   const group = uuidField.safeParse(formData.get("groupId"));
   const account = uuidField.safeParse(formData.get("accountId"));
   if (!group.success || !account.success) return { ok: false, error: "Pilih teman yang akan diundang" };
@@ -84,7 +89,9 @@ export async function deleteGroup(_prevState: ActionState, formData: FormData): 
 }
 
 export async function createEvent(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "event", 20);
+  if (limited) return limited;
   const parsed = eventSchema.safeParse({
     groupId: formData.get("groupId"),
     title: formData.get("title"),

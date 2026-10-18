@@ -55,3 +55,9 @@ Migrasi 051: `groups`, `group_members` (peran owner atau member, status invited 
 UI: `/akun/grup` (undangan, daftar, buat), `/akun/grup/[id]` (event dan RSVP, anggota, undang, keluar atau hapus, laporkan), kartu Event mendatang di Beranda.
 Tes: `supabase/tests/groups_events_phase5.sql` dan e2e dua akun (buat, undang, terima, event, kuota, keluar, hapus).
 Daftar hal yang perlu perhatian: `progress/social-free-attention.md`.
+
+### Fase 6: moderasi, ekspor dan hapus akun (selesai, diterapkan ke hosted)
+
+Migrasi 052: `reports.status` (open, dismissed, removed, suspended), `reviewed_at`, `reviewed_by`; pengguna hanya boleh mengisi `target_type`, `target_id`, `reason`. Layar `/superadmin/laporan`: pratinjau konten, abaikan, hapus konten, nonaktifkan akun penulis (sesi dicabut), aktifkan kembali. Batas laju aplikasi untuk aksi sosial (`lib/auth/social-limit.ts`). Pengaturan akun pribadi: ekspor ZIP CSV (`/api/export/akun`, kata sandi ulang, 3 per jam, diaudit) dan hapus akun (kata sandi dan kata HAPUS; ditolak bila masih terhubung ke klub atau organisasi).
+Tes: `supabase/tests/report_review_phase6.sql`, e2e lokal ekspor dan hapus akun; lapisan data laporan diuji dengan data contoh.
+Tinjauan hukum tidak bisa dikerjakan lewat kode; lihat `progress/social-free-attention.md`.

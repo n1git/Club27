@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireActionRole } from "@/lib/auth/guard";
 import { isKeyRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
+import { socialLimited } from "@/lib/auth/social-limit";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { commentSchema, friendUsernameSchema, postSchema, reportSchema, uuidField } from "@/lib/validations/social";
 import { type ActionState } from "./types";
@@ -67,7 +68,9 @@ export async function unblockAccount(_prevState: ActionState, formData: FormData
 }
 
 export async function createPost(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "post", 30);
+  if (limited) return limited;
   const parsed = postSchema.safeParse({ body: formData.get("body") });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
@@ -76,7 +79,9 @@ export async function createPost(_prevState: ActionState, formData: FormData): P
 }
 
 export async function shareWorkout(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "share", 30);
+  if (limited) return limited;
   const id = uuidField.safeParse(formData.get("workoutId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
   const note = String(formData.get("body") ?? "").trim();
@@ -111,7 +116,9 @@ export async function toggleReaction(_prevState: ActionState, formData: FormData
 }
 
 export async function addComment(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "comment", 60);
+  if (limited) return limited;
   const parsed = commentSchema.safeParse({ postId: formData.get("postId"), body: formData.get("body") });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
@@ -129,7 +136,9 @@ export async function deleteComment(_prevState: ActionState, formData: FormData)
 }
 
 export async function reportContent(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "report", 20);
+  if (limited) return limited;
   const parsed = reportSchema.safeParse({
     targetType: formData.get("targetType"),
     targetId: formData.get("targetId"),
