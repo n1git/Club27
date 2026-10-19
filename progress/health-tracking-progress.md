@@ -3,7 +3,7 @@
 Pelacakan kesehatan pribadi di akun personal: tinggi dan berat badan per tanggal, riwayat, dan IMT.
 
 ## Status
-Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Semua fase selesai. Migrasi 058 belum diterapkan ke hosted; commit Fase 3 belum di-push karena ekspor akun di production akan gagal sampai tabelnya ada (lihat Fase 3).
+Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Semua fase selesai. Migrasi 058 diterapkan ke hosted 2026-10-19 atas OK owner ("terapkan"), lalu Fase 3 di-push.
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 058, tes SQL, uji begin/rollback di hosted
@@ -150,3 +150,7 @@ Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ga
   - Catatan lingkungan uji: `service_role` lokal perlu `bypassrls` dan grant penuh (meniru Supabase), dan `auth_rate_limits` dikosongkan di antara putaran; keduanya bukan bug produk.
 - Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
 - Blocker untuk push: `buildAccountExport` melempar galat bila satu tabel gagal dibaca, jadi tanpa migrasi 058 di hosted seluruh ekspor akun di production gagal. Halaman `/home/health` dari Fase 2 sudah ter-deploy; tanpa tabel, halaman tampil kosong dan simpan menampilkan "Gagal menyimpan catatan kesehatan". Urutan aman: terapkan 058 ke hosted, ganti versinya ke 20250101000058, lalu push.
+
+### Penerapan hosted (2026-10-19)
+- `apply_migration` lalu versi diganti ke `20250101000058`. Tiga versi teratas: 058 `body_measurements`, 057, 056.
+- Dicek setelahnya: tabel ada, RLS aktif, 1 policy, `anon` tanpa select, `authenticated` punya select, `authenticated` tidak bisa memanggil fungsi trigger, trigger terpasang.
