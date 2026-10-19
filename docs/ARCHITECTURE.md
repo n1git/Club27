@@ -440,21 +440,24 @@ that belong in the phone tab bar. A group with no visible item is not shown.
 
 ## Landing page and public SEO
 
-`/` is built from `components/landing/` in this order: header (skip link,
-section links, theme toggle, mobile menu), dark hero, supported sports,
-features grouped by job, how it works (stepper), multi club, pricing, FAQ
-(ruled list), final call to action, footer. Only the hero is dark; the other
-bands are light. A signed-in session is redirected to its home.
+`/` is built from `components/landing/` and leads with the free personal
+account: header (skip link, section links, theme toggle, mobile menu), hero with
+three phone screens, free features (workout log, friends and feed, groups and
+events), join a club by code, "Punya klub?" business features with links to the
+ready sports, pricing, FAQ in two open columns, a dark closing call to action
+with two paths (free account, register a club), footer. The page follows the
+theme toggle through the brand tokens; phone screens keep fixed light colors
+(`.phone-screen` in `app/globals.css`) and the closing band is always dark. A
+signed-in session is redirected to its home.
 
-- Live data only: sports come from `club_types` and `club_type_modules`
-  (`getPublicClubTypes`), so a status change in the table changes the page;
-  prices, club limits, trial and yearly discount come from
-  `subscription_plans` (`getActivePlans`) and the module list from
-  `platform_modules`. The pricing picker hands plan, period and users to
-  `/signup?plan=&period=&users=`.
-- Product visuals are the app's own components with sample data and carry a
-  "Contoh data" label (`sample-label.tsx`). No testimonials, client names,
-  logos or invented figures.
+- Live data only: sports come from `club_types` (`getPublicClubTypes`), so a
+  status change in the table changes the page; prices, club limits, trial and
+  yearly discount come from `subscription_plans` (`getActivePlans`). The
+  pricing section shows the plans and does not take plan, period or seats; the
+  picker lives on `/signup`.
+- Product visuals are hand-built phone screens and sample cards with invented
+  names and figures, each labelled "Contoh data". No testimonials, client
+  names, logos or invented statistics.
 - Keeping claims true: every statement on the page has a row in the claims
   table in `progress/landing-rework-progress.md` that points to the code or
   migration proving it. When a feature changes, update the sentence and its

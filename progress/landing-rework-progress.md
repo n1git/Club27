@@ -146,3 +146,24 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
 
 ## 2026-10-15
 - Owner removed the hero product preview ("Dasbor Admin" sample card): `hero-preview.tsx` and `sample-label.tsx` deleted, hero is now a single text column.
+
+## Social-first redesign (2026-10-21)
+
+The landing leads with the free personal account and moves business features lower. Sections: hero (three phone screens), free features (`free-section.tsx`), join a club by code (`join-section.tsx`), business features (`business-section.tsx`), pricing from live plans (`pricing-section.tsx`), FAQ in two open columns (`faq.tsx`), closing call to action (`final-cta.tsx`). Phone screens and sample cards carry a "Contoh data" label; names, codes and figures in them are invented.
+
+| Claim on the page | Proof |
+|---|---|
+| Free account without organization or card | `/signup/account` (`app/api/accounts/register/route.ts`), `docs/ARCHITECTURE.md` personal accounts |
+| Weekly goal and 4-week summary; workout log is private | `workout_goals`, `summarizeWeeks` (`lib/data/workouts.ts`), RLS by `current_account_id()` (048) |
+| Find friends by exact username; friends-only feed with posts, likes, comments, shared workouts | `request_friend`, `create_post`, `share_workout`, `posts.visibility = 'friends'` (049); `social_people` |
+| Private groups with events and RSVP with seat quota | `groups`, `events`, `rsvp_event` with row lock (051) |
+| Join a club with a code, 18+, admin approves, request can be cancelled | `request_club_join`, `cancel_club_join`, `decide_club_join` (050); `lib/validations/club-join.ts` |
+| Member portal lets members see their data and book | `app/member`, module `member_portal`; join-requests need the module (050) |
+| Block and report content; export and delete own account | `block_account`, `reports` (049, 052); `app/api/export/account`, `lib/actions/account-delete.ts` |
+| Not yet: public feed, chat, like/comment notifications, mobile app | `posts.visibility` only `friends`; no chat or notification tables; no native app |
+| Upgrade from the same account to run a club | `/home/upgrade`, `createOrganizationFromAccount` (`lib/actions/organization.ts`) |
+| Ready sports link to their page; "Segera hadir" names | `club_types.status` via `getPublicClubTypes` |
+| Prices, club limits, trial days and yearly discount | `subscription_plans` via `getActivePlans` |
+| Seat holders: owner, admin, receptionist, finance; coach, kasir, members free | `organization_internal_users`, `enforce_seat_limit` (042) |
+| Plan is activated after payment; no online payment in the app; member invoices recorded by staff | `docs/ARCHITECTURE.md` renewals and payment; `mark_invoice_paid` (016) |
+| Business feature list (clubs, packages, schedule, booking, QR check-in, kasir, cash book, payroll, portal, roles, reports, staff invites, modules per club, export) | rows above for the same features; `app/admin/*` pages; `app/api/export/organization` |
