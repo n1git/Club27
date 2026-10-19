@@ -104,6 +104,9 @@ select set_config('t.plain', (select id::text from accounts where email = 'plain
        set_config('t.owner_tenant', (select club_id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false),
        set_config('t.owner_account', (select account_id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false);
 
+insert into body_measurements (account_id, measured_on, height_cm, weight_kg)
+select id, (now() at time zone 'Asia/Jakarta')::date, 170, 65 from accounts where email in ('owner@t.test', 'member@t.test');
+
 create temp table iso_objects as
 select c.relname::text as name
 from pg_class c join pg_namespace n on n.oid = c.relnamespace
@@ -143,6 +146,8 @@ begin
   perform pg_temp.claims(p, t::text, 'owner', a);
   select count(*) into n from clubs;
   assert n = 1, 'owner sees only its own club';
+  assert (select count(*) from body_measurements) = 1, 'club owner sees only its own health rows';
+  assert not exists (select 1 from body_measurements where account_id <> a), 'club owner cannot read a member''s health rows';
   begin
     update club_profiles set account_id = current_setting('t.plain')::uuid where id = p;
     assert false, 'a club user cannot relink a profile to another account';

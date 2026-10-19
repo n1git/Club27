@@ -3,10 +3,10 @@
 Pelacakan kesehatan pribadi di akun personal: tinggi dan berat badan per tanggal, riwayat, dan IMT.
 
 ## Status
-Fase 0 selesai (rencana). Menunggu OK owner sebelum Fase 1.
+Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Fase 1 selesai; migrasi 058 belum diterapkan ke hosted.
 
 - [x] Fase 0: rencana
-- [ ] Fase 1: migrasi 058, tes SQL, uji begin/rollback di hosted
+- [x] Fase 1: migrasi 058, tes SQL, uji begin/rollback di hosted
 - [ ] Fase 2: data, aksi, validasi, halaman, komponen, menu
 - [ ] Fase 3: ekspor akun, kebijakan privasi, `LEGAL_UPDATED`
 
@@ -91,3 +91,19 @@ Fase 0 selesai (rencana). Menunggu OK owner sebelum Fase 1.
 - Halaman versi kebijakan privasi (`PRIVACY_VERSION`) tidak saya ubah kecuali Anda minta, karena perubahan ini menambah jenis data.
 
 ## Log fase
+
+### Fase 1 (selesai)
+- Berkas:
+  - `supabase/migrations/20250101000058_body_measurements.sql`;
+  - `supabase/tests/health_phase1.sql` (baru);
+  - `supabase/tests/accounts_phase1.sql`: satu baris kesehatan untuk pemilik dan anggota di klub yang sama sebelum loop isolasi, ditambah asersi bahwa sesi pemilik klub hanya membaca barisnya sendiri.
+- Lokal:
+  - database baru dari migrasi 001-057 (Postgres 17, shim `auth`/`storage`/`extensions`); rangkaian tes 12 berkas lulus sebelum 058;
+  - setelah 058, 13 berkas dijalankan masing-masing di salinan baru dengan `-v ON_ERROR_STOP=1` dan semua keluar dengan kode 0: `accounts_phase1`, `club_join_phase4`, `deletion_phase6`, `friends_feed_phase3`, `groups_events_phase5`, `health_phase1` (mencetak `health_phase1 OK`), `invitations_phase5`, `leaderboards_phase7`, `organization_members_phase2`, `permissions_phase3`, `report_review_phase6`, `seats_phase4`, `workout_logs_phase2`.
+- Hosted (`gmldacyjdbsdofqqaqry`):
+  - `list_migrations` berakhir di 057;
+  - isi 058 dijalankan dalam `begin; ... rollback;` lewat `execute_sql`, hasilnya tabel terbentuk, 1 policy, `anon` tanpa select, `authenticated` tidak bisa memanggil fungsi trigger;
+  - setelah rollback, `to_regclass('public.body_measurements')` null dan fungsi tidak ada.
+- Penerapan ke hosted menunggu permintaan owner.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` (lihat commit fase).
+- Blocker: tidak ada.
