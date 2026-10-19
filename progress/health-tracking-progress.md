@@ -154,3 +154,8 @@ Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ga
 ### Penerapan hosted (2026-10-19)
 - `apply_migration` lalu versi diganti ke `20250101000058`. Tiga versi teratas: 058 `body_measurements`, 057, 056.
 - Dicek setelahnya: tabel ada, RLS aktif, 1 policy, `anon` tanpa select, `authenticated` punya select, `authenticated` tidak bisa memanggil fungsi trigger, trigger terpasang.
+
+### Versi kebijakan privasi (2026-10-19)
+- `PRIVACY_VERSION` dinaikkan ke `2026-10-19.2` atas permintaan owner.
+- Tanggal "Berlaku sejak" dikembalikan ke 12 Oktober 2026 sesuai permintaan owner (sebelumnya diubah ke 21 Oktober 2026).
+- Versi sebelumnya `2026-10-21` memakai tanggal yang belum terjadi; tabel `consents` di hosted masih kosong, jadi tidak ada persetujuan tercatat dengan versi itu.

@@ -15,7 +15,7 @@ const link = "font-medium text-accent-foreground underline-offset-4 hover:underl
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Kebijakan Privasi" updated="21 Oktober 2026">
+    <LegalPage title="Kebijakan Privasi" updated="12 Oktober 2026">
       <p>
         Kebijakan ini menjelaskan data pribadi yang diproses di {APP_NAME}, tujuannya, dan hak Anda sesuai
         Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi. Versi {PRIVACY_VERSION}.
