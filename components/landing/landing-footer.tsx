@@ -51,13 +51,12 @@ export function LandingFooter() {
   const contact = getContact();
 
   const services: FooterLink[] = [
-    { href: "/#olahraga", label: "Olahraga" },
-    { href: "/#fitur", label: "Fitur" },
-    { href: "/#multi-klub", label: "Multi klub" },
+    { href: "/#gratis", label: "Gratis untuk anggota" },
+    { href: "/#gabung", label: "Gabung klub" },
+    { href: "/#klub", label: "Untuk klub" },
     { href: "/#harga", label: "Harga" },
   ];
   const community: FooterLink[] = [
-    { href: "/#cara-kerja", label: "Cara kerja" },
     { href: "/#faq", label: "FAQ" },
     ...(contact.whatsappUrl ? [{ href: contact.whatsappUrl, label: "WhatsApp", external: true }] : []),
   ];

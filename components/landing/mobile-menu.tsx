@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { ctaClass } from "./cta";
 import { LANDING_LINKS } from "./nav-links";
 
 export function MobileMenu() {
@@ -55,11 +55,11 @@ export function MobileMenu() {
             ))}
           </ul>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <Link href="/login" className={buttonVariants({ variant: "outline", size: "lg" })}>
+            <Link href="/login" className={ctaClass("line")}>
               Masuk
             </Link>
-            <Link href="/signup" className={buttonVariants({ size: "lg" })}>
-              Daftarkan klub
+            <Link href="/signup/account" className={ctaClass("solid")}>
+              Buat akun gratis
             </Link>
           </div>
         </nav>

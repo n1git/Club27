@@ -140,6 +140,20 @@ html {
       var(--frame);
   }
 
+  .phone-screen {
+    --ph-ink: #0e0e0e;
+    --ph-cream: #f2f2ee;
+    --ph-card: #fbfbf8;
+    --ph-paper: #ffffff;
+    --ph-frame: #e6e6e0;
+    --ph-line: #d6d6ce;
+    --ph-muted: #57574f;
+    --ph-volt: #c8f31d;
+    --ph-deep: #4d6400;
+    --ph-tint: color-mix(in oklab, #c8f31d 30%, #f2f2ee);
+    color: var(--ph-ink);
+  }
+
   .ui-transition {
     transition-property: color, background-color, border-color, box-shadow, opacity, transform, filter;
     transition-duration: var(--dur-2);
@@ -202,6 +216,16 @@ body {
 
   .menu-sheet[open]::backdrop {
     opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -9px;
   }
 }
 

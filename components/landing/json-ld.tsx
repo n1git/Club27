@@ -55,7 +55,7 @@ export async function JsonLd({ plans }: { plans: PricingPlan[] }) {
     inLanguage: "id",
     publisher: { "@id": organizationId },
     description:
-      "Satu aplikasi untuk mengelola klub olahraga: anggota, jadwal dan booking fasilitas, tagihan, kasir, dan buku kas.",
+      "Akun gratis untuk mencatat latihan, berteman, dan bergabung ke klub; untuk pemilik klub, aplikasi pengelola anggota, jadwal dan booking fasilitas, tagihan, kasir, dan buku kas.",
     offers: plans.map((p) => ({
       "@type": "Offer",
       name: p.name,
