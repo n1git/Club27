@@ -2,6 +2,7 @@
 
 ## 2026-10-21
 
+- Yearly billing on 27 Club Plus now gives 2 months free (pay 10 for 12): 2 seats for a year cost Rp1.500.000. Migration 056.
 - One plan, "27 Club Plus", replaces Standard and Advanced: Rp75.000 per seat per month, at least 2 seats on every purchase or renewal, up to 5 clubs, 30-day trial with 1 seat. Existing organizations moved to the new plan; those with more than 5 clubs keep their count through a club-limit override. The plan card on the landing page, sport pages, sign-up and renewal shows the same text and footnotes, and the plan editor in the platform portal has a minimum-seats field. Migration 055.
 - New page loading animation: a stopwatch ring with a sweeping volt arc and the 27 mark, shown after 120 ms (`PageSpinner`); with reduced motion the arc stays still and pulses.
 - Landing page redesigned around the free personal account: hero with phone screens, free features, joining a club by code, business features, pricing, two-column FAQ and a closing page with two paths. The pricing calculator, the grouped feature list and the multi-club band were removed from `/`; plans and the calculator remain on `/signup`.

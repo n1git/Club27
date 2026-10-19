@@ -179,4 +179,5 @@ The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan c
 | Member Unlimited**; "FUP 1.000 member/club" | no member limit in SQL; the FUP is text only |
 | Trial 1 bulan*** | `trial_days` = 30, `trial_seats` = 1 |
 | "Get your coupon code here" | link to `NEXT_PUBLIC_CONTACT_WHATSAPP` or `NEXT_PUBLIC_CONTACT_EMAIL`; hidden (with the `***`) when neither is set; there is no coupon system |
+| Yearly: gratis 2 bulan (bayar 10 bulan untuk 12) | `subscription_plans.yearly_free_months` = 2 (056); 2 seats yearly = Rp1.500.000 |
 | Estimate "N seat x months = total" | `computeQuote` in `lib/pricing.ts`, same formula as `platform_quote`; the server recomputes at registration and renewal |

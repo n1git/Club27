@@ -7,7 +7,7 @@ Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah 
 - Langganan per **organisasi** (pemilik), bukan per klub. Satu organisasi punya satu paket, satu periode, dan satu status.
 - Harga per **seat** yang dibeli (lihat bagian 4). Seat dipakai pemilik dan staf berperan berbayar; pelatih, kasir, peran gratis, dan anggota tidak memakai seat. Anggota tidak dibatasi. Minimal pembelian mengikuti `subscription_plans.min_seats` (2).
 - Rumus: seat x harga per seat per bulan x bulan (bulanan 1, tahunan 12 - bulan gratis). Dihitung ulang di server lewat `platform_quote` (perpanjangan) dan `seat_quote` (tambah seat prorata); harga dari klien tidak dipakai.
-- Komitmen bulanan atau tahunan. Tahunan = 12 dikurangi bulan gratis (awal: 0,5, jadi 11,5 bulan).
+- Komitmen bulanan atau tahunan. Tahunan = 12 dikurangi bulan gratis (untuk paket Plus: 2, jadi 10 bulan).
 
 ## 2. Satu paket: 27 Club Plus
 
@@ -18,9 +18,9 @@ Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah 
 | Anggota dan lokasi | tak terbatas (FUP 1.000 anggota per klub, hanya teks, tidak ditegakkan di database) |
 | Modul | semua modul `ready` |
 | Trial | 30 hari (ditulis "1 bulan"), 1 seat, otomatis; tidak ada sistem kupon, tautan kupon hanya mengarah ke kontak |
-| Tahunan | 11,5 bulan |
+| Tahunan | 10 bulan (gratis 2 bulan) |
 
-Contoh: bulanan 2 seat = Rp 150.000; bulanan 4 seat = Rp 300.000; tahunan 2 seat = 2 x 75.000 x 11,5 = Rp 1.725.000 (setara Rp 143.750/bulan). Pembelian atau perpanjangan dengan 1 seat ditolak (`min_seats`); perkiraan harga (`platform_quote`) selalu dihitung dari minimal 2 seat.
+Contoh: bulanan 2 seat = Rp 150.000; bulanan 4 seat = Rp 300.000; tahunan 2 seat = 2 x 75.000 x 10 = Rp 1.500.000 (setara Rp 125.000/bulan). Pembelian atau perpanjangan dengan 1 seat ditolak (`min_seats`); perkiraan harga (`platform_quote`) selalu dihitung dari minimal 2 seat.
 
 ## 3. Modul (`platform_modules`)
 
@@ -47,6 +47,6 @@ Registri tanpa harga; semua modul `ready` termasuk di paket ini. Saat ini semuan
 ## 6. Pertanyaan terbuka
 
 1. Apa yang terjadi pada data setelah masa tenggang berakhir (kebijakan retensi)? Belum diputuskan; penghapusan belum dijalankan.
-2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
+2. Apakah diskon tahunan tetap 2 bulan, atau berubah setelah ada data pelanggan?
 3. Apakah batas 5 klub perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
 4. Invoice/kwitansi belum dirancang.

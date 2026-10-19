@@ -663,7 +663,7 @@ status from `/superadmin`.
   trigger `organization_members_enforce_seats` rejects a new or reactivated
   member beyond `least(seats, pending_seats)` with `SW005` (the subscription
   row is locked, so parallel inserts cannot exceed it). Monthly = 1 month;
-  yearly = 12 − `yearly_free_months` (11.5). The effective monthly price is
+  yearly = 12 − `yearly_free_months` (2 for Plus, so 10 months). The effective monthly price is
   the total ÷ 1 or ÷ 12.
 - Seeded values: one plan, "27 Club Plus" (`plus`): Rp 75.000/seat/month, at
   least 2 seats per purchase (`min_seats`), up to 5 clubs, a 30-day trial of
