@@ -4,11 +4,11 @@ Leaderboards (group and club), kudos on posts, and a consent-based link between 
 
 ## Status
 
-- [x] Phase 0: plan (this file), waiting for approval
-- [ ] Phase 1: migration 057 and SQL tests
-- [ ] Phase 2: group leaderboard UI and kudos relabel
-- [ ] Phase 3: club leaderboard UI (member, admin) and the opt-in toggle
-- [ ] Phase 4: docs, privacy text, export
+- [x] Phase 0: plan, approved
+- [x] Phase 1: migration 057 and SQL tests (dry run on hosted in a rolled-back transaction, then applied)
+- [x] Phase 2: group leaderboard UI and kudos relabel
+- [x] Phase 3: club leaderboard UI (member, admin) and the opt-in toggle
+- [x] Phase 4: docs, privacy text (version bumped), export
 
 Migration number: the brief says 055, but 055 (single plan) and 056 (yearly discount) are taken, so this is **057** (`20250101000057_leaderboards.sql`).
 
@@ -70,3 +70,9 @@ Group: member sees ranked week and month boards, non-member and invited-only get
 4. Kudos names are shown only for people related to the viewer (friends, group peers); other givers count as "dan N lainnya". Showing every giver's name would expose friends-of-friends. OK?
 5. Privacy: adding the paragraph is a legal text change; do you want `PRIVACY_VERSION` bumped (new consents record the new version) or the paragraph added without a bump until legal review?
 6. Group boards list members with zero sessions at the bottom; club boards list opted-in members the same way. OK?
+
+## Decisions (answers) and deviations
+
+1. to 3. approved as written. 4. `PRIVACY_VERSION` bumped to 2026-10-21 with a paragraph on boards, kudos and the opt-in. 5. Changed: members with no session in the period are hidden; the board shows the top 10 and always renders ten rows, filling empty ranks with "Ayo mulai sesimu dan rebut posisi ini." The caller's own row is added under the list with its real rank when they are outside the top 10 (my addition).
+- Deviation from "add `a00_org_writable`": the trigger is on insert and update only. A delete (withdrawing the opt-in) must work even when the club's subscription has lapsed, and the guard's purpose is to stop club writes, not a person withdrawing consent.
+- Tests: `supabase/tests/leaderboards_phase7.sql` (all 12 SQL suites pass on a freshly built database); browser run covered group board, placeholders, non-member, kudos, club opt-in on both pages, admin view, opt-out, and a non-staff account.

@@ -1,6 +1,6 @@
 import { getJakartaDateString } from "@/lib/format";
 
-export const PRIVACY_VERSION = "2026-10-12";
+export const PRIVACY_VERSION = "2026-10-21";
 
 export function isMinor(dateOfBirth: string, today: string = getJakartaDateString()): boolean {
   const [by, bm, bd] = dateOfBirth.split("-").map(Number);

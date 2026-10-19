@@ -20,6 +20,7 @@ import {
   Settings,
   ShoppingCart,
   Tags,
+  Trophy,
   UserCog,
   UserRound,
   Users,
@@ -56,6 +57,7 @@ const ICONS: Record<NavIconKey, LucideIcon> = {
   visits: History,
   switchClub: ArrowLeftRight,
   profile: UserRound,
+  trophy: Trophy,
 };
 
 export function NavIcon({ name, className }: { name: NavIconKey; className?: string }) {

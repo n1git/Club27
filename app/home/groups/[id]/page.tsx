@@ -3,6 +3,10 @@ import { requireValidSession } from "@/lib/auth/guard";
 import { isSocialBanned } from "@/lib/auth/social-access";
 import { getFriendLists } from "@/lib/data/social";
 import { getGroupDetail } from "@/lib/data/groups";
+import { getReadyClubTypes } from "@/lib/club-type";
+import { getGroupBoard, parseBoardParams } from "@/lib/data/leaderboards";
+import { Leaderboard } from "@/components/social/leaderboard";
+import Link from "next/link";
 import { cancelEvent, deleteGroup, leaveGroup, removeGroupMember, respondGroupInvite, rsvpEvent } from "@/lib/actions/groups";
 import { formatJakartaDateTime } from "@/lib/format";
 import { ActionButton } from "@/components/shared/action-button";
@@ -12,8 +16,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 
-export default async function GroupPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function GroupPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string; metrik?: string; periode?: string; olahraga?: string }>;
+}) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const { profile } = await requireValidSession();
   if (await isSocialBanned(profile.accountId)) notFound();
@@ -35,11 +45,36 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
     );
   }
 
+  if (query.tab === "peringkat") {
+    const board = parseBoardParams(query);
+    const [rows, clubTypes] = await Promise.all([getGroupBoard(group.id, board), getReadyClubTypes()]);
+    const sports = clubTypes.map((t) => ({ code: t.code, label: t.name.replace(/^Klub\s+/, "") }));
+    const hrefFor = (patch: { metrik?: string; periode?: string; olahraga?: string | null }) => {
+      const next = new URLSearchParams({ tab: "peringkat" });
+      const metrik = patch.metrik ?? query.metrik;
+      const periode = patch.periode ?? query.periode;
+      const olahraga = patch.olahraga === undefined ? query.olahraga : patch.olahraga;
+      if (metrik) next.set("metrik", metrik);
+      if (periode) next.set("periode", periode);
+      if (olahraga) next.set("olahraga", olahraga);
+      return `/home/groups/${group.id}?${next.toString()}`;
+    };
+    return (
+      <div className="flex flex-col gap-6">
+        <PageHeader title={group.name} subtitle="Peringkat anggota grup" />
+        <GroupTabs groupId={group.id} active="peringkat" />
+        <Leaderboard rows={rows} params={board} sports={sports} hrefFor={hrefFor} />
+        <p className="text-xs text-muted-foreground">Hanya total per anggota yang tampil, bukan catatan latihannya. Anggota yang memblokir atau diblokir olehmu tidak ikut tampil.</p>
+      </div>
+    );
+  }
+
   const upcoming = events.filter((e) => !e.cancelled && !e.finished);
   const past = events.filter((e) => e.cancelled || e.finished).slice(-5);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title={group.name} subtitle={group.description ?? undefined} />
+      <GroupTabs groupId={group.id} active="ringkasan" />
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -148,5 +183,23 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
         )}
       </div>
     </div>
+  );
+}
+
+function GroupTabs({ groupId, active }: { groupId: string; active: "ringkasan" | "peringkat" }) {
+  const tab = (key: "ringkasan" | "peringkat", label: string, href: string) => (
+    <Link
+      href={href}
+      aria-current={active === key ? "page" : undefined}
+      className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${active === key ? "bg-foreground text-background" : "bg-secondary text-foreground hover:bg-accent"}`}
+    >
+      {label}
+    </Link>
+  );
+  return (
+    <nav aria-label="Bagian grup" className="flex gap-2">
+      {tab("ringkasan", "Ringkasan", `/home/groups/${groupId}`)}
+      {tab("peringkat", "Peringkat", `/home/groups/${groupId}?tab=peringkat`)}
+    </nav>
   );
 }

@@ -181,3 +181,11 @@ The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan c
 | "Get your coupon code here" | link to `NEXT_PUBLIC_CONTACT_WHATSAPP` or `NEXT_PUBLIC_CONTACT_EMAIL`; hidden (with the `***`) when neither is set; there is no coupon system |
 | Yearly: gratis 2 bulan (bayar 10 bulan untuk 12) | `subscription_plans.yearly_free_months` = 2 (056); 2 seats yearly = Rp1.500.000 |
 | Estimate "N seat x months = total" | `computeQuote` in `lib/pricing.ts`, same formula as `platform_quote`; the server recomputes at registration and renewal |
+
+## Leaderboards and kudos (2026-10-21)
+
+| Claim on the page | Proof |
+|---|---|
+| Peringkat grup dan klub; total latihan tampil di peringkat grup bagi anggota grup | `group_leaderboard` (057), `supabase/tests/leaderboards_phase7.sql` |
+| Peringkat klub hanya jika anggota mengaktifkannya sendiri | `club_leaderboard_optins`, `set_leaderboard_optin`, `club_leaderboard` (057); default off, removed on leaving the club |
+| Beri kudos; nama pemberi tampil untuk teman dan sesama grup | `kudos_for_posts` (057), `components/social/post-card.tsx` |

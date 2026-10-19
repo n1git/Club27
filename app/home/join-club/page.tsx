@@ -1,5 +1,7 @@
 import { requireValidSession } from "@/lib/auth/guard";
 import { getMyJoinRequests } from "@/lib/data/club-join";
+import { getMyBoardClubs } from "@/lib/data/leaderboards";
+import { LeaderboardOptin } from "@/components/social/leaderboard-optin";
 import { cancelClubJoin } from "@/lib/actions/club-join";
 import { formatJakartaDate, getJakartaDateString } from "@/lib/format";
 import { ActionButton } from "@/components/shared/action-button";
@@ -17,7 +19,7 @@ const STATUS = {
 
 export default async function JoinClubPage() {
   const { profile } = await requireValidSession();
-  const requests = await getMyJoinRequests(profile.accountId);
+  const [requests, boardClubs] = await Promise.all([getMyJoinRequests(profile.accountId), getMyBoardClubs()]);
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Gabung klub" subtitle="Minta kode klub ke admin klub, lalu kirim permintaan. Anak-anak didaftarkan oleh klub." />
@@ -46,6 +48,21 @@ export default async function JoinClubPage() {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+      ) : null}
+      {boardClubs.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Peringkat klub</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">
+              Secara bawaan total latihan Anda tidak tampil di klub. Aktifkan jika Anda ingin ikut peringkat klub; anggota dan admin klub akan melihat nama dan totalnya. Bisa dimatikan kapan saja.
+            </p>
+            {boardClubs.map((club) => (
+              <LeaderboardOptin key={club.clubId} club={club} />
+            ))}
           </CardContent>
         </Card>
       ) : null}

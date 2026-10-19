@@ -133,10 +133,10 @@ export async function toggleReaction(_prevState: ActionState, formData: FormData
   }
   if (formData.get("liked") === "1") {
     const { error } = await supabase.from("post_reactions").delete().eq("post_id", id.data).eq("account_id", session.account_id);
-    return error ? { ok: false, error: "Gagal membatalkan suka" } : done();
+    return error ? { ok: false, error: "Gagal membatalkan kudos" } : done();
   }
   const { error } = await supabase.from("post_reactions").insert({ post_id: id.data });
-  return error && error.code !== "23505" ? { ok: false, error: "Gagal menyukai postingan" } : done();
+  return error && error.code !== "23505" ? { ok: false, error: "Gagal memberi kudos" } : done();
 }
 
 export async function addComment(_prevState: ActionState, formData: FormData): Promise<ActionState> {

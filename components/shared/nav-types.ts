@@ -1,6 +1,7 @@
 export type NavIconKey =
   | "dashboard"
   | "members"
+  | "trophy"
   | "coaches"
   | "staff"
   | "schedule"

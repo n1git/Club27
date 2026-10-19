@@ -56,6 +56,7 @@ export async function buildAccountExport(accountId: string): Promise<{ filename:
   add("komentar", await fetchAll("post_comments", "id, post_id, body, created_at", "account_id", accountId));
   add("reaksi", await fetchAll("post_reactions", "post_id, created_at", "account_id", accountId));
   add("grup_diikuti", flat(await fetchAll("group_members", "group_id, role, status, created_at, g:groups(name)", "account_id", accountId), "g", "name", "nama_grup"));
+  add("papan_peringkat_klub", flat(await fetchAll("club_leaderboard_optins", "club_id, created_at, c:clubs(name)", "account_id", accountId), "c", "name", "nama_klub"));
   add("grup_dimiliki", await fetchAll("groups", "id, name, description, created_at", "owner_id", accountId));
   add("event_dibuat", await fetchAll("events", "id, group_id, title, description, location, starts_at, ends_at, capacity, cancelled_at, created_at", "created_by", accountId));
   add("rsvp_event", flat(await fetchAll("event_rsvps", "event_id, status, updated_at, e:events(title)", "account_id", accountId).catch(() => []), "e", "title", "judul_event"));

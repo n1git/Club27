@@ -52,7 +52,10 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
         </>
       ),
     },
-    { q: "Siapa yang bisa melihat latihan saya?", a: "Catatan latihan bersifat pribadi. Latihan baru tampil di feed teman jika Anda membagikannya." },
+    {
+      q: "Siapa yang bisa melihat latihan saya?",
+      a: "Catatan latihan bersifat pribadi. Latihan baru tampil di feed teman jika Anda membagikannya. Total latihan Anda tampil di peringkat grup bagi sesama anggota grup, dan di peringkat klub hanya jika Anda mengaktifkannya sendiri.",
+    },
     { q: "Bagaimana menemukan teman?", a: "Cari dengan username yang persis sama. Tidak ada daftar pengguna yang bisa dijelajahi." },
     {
       q: "Bagaimana jika ada konten yang mengganggu?",
@@ -88,7 +91,7 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
           {trialPlans.length > 0
             ? `${trialPlans.map((p) => `Paket ${p.name} bisa dicoba gratis ${trialLabel(p.trialDays)}`).join("; ")}. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan dan bisa dibaca, tetapi perubahan ditolak sampai pemilik memperpanjang.`
             : "Saat ini tidak ada masa trial. Paket aktif setelah pembayaran diterima."}{" "}
-          Belum ada: feed publik, chat, notifikasi suka dan komentar, aplikasi mobile, dan pembayaran online untuk tagihan anggota.
+          Belum ada: feed publik, chat, notifikasi kudos dan komentar, aplikasi mobile, dan pembayaran online untuk tagihan anggota.
           <ContactLine />
         </>
       ),

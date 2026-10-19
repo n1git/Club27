@@ -25,8 +25,7 @@ export interface FeedPost {
   durationMin: number | null;
   distanceM: number | null;
   createdAt: string;
-  likes: number;
-  liked: boolean;
+  kudos: { count: number; given: boolean; names: string[]; others: number };
   comments: FeedComment[];
 }
 
@@ -56,14 +55,16 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   if (!page.length) return { posts: [], hasMore: false };
   const ids = page.map((p) => p.id as string);
   const [reactions, comments] = await Promise.all([
-    supabase.from("post_reactions").select("post_id, account_id").in("post_id", ids).limit(5000),
+    supabase.rpc("kudos_for_posts", { p_posts: ids }),
     supabase.from("post_comments").select("id, post_id, account_id, body, created_at").in("post_id", ids).order("created_at").limit(2000),
   ]);
   const people = await peopleMap([...page.map((p) => p.account_id as string), ...(comments.data ?? []).map((c) => c.account_id as string)]);
   return {
     hasMore,
     posts: page.map((p) => {
-      const likes = (reactions.data ?? []).filter((r) => r.post_id === p.id);
+      const givers = ((reactions.data ?? []) as { post_id: string; username: string | null; full_name: string | null; is_me: boolean }[]).filter((r) => r.post_id === p.id);
+      const names = givers.filter((r) => !r.is_me && r.full_name).map((r) => r.full_name as string);
+      const given = givers.some((r) => r.is_me);
       return {
         id: p.id as string,
         author: people.get(p.account_id as string) ?? null,
@@ -75,8 +76,7 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
         durationMin: p.duration_min as number | null,
         distanceM: p.distance_m as number | null,
         createdAt: p.created_at as string,
-        likes: likes.length,
-        liked: likes.some((r) => r.account_id === accountId),
+        kudos: { count: givers.length, given, names: names.slice(0, 3), others: givers.length - (given ? 1 : 0) - Math.min(names.length, 3) },
         comments: (comments.data ?? [])
           .filter((c) => c.post_id === p.id)
           .map((c) => ({

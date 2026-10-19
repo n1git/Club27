@@ -1,4 +1,4 @@
-import { Activity, BadgeCheck, Ban, CalendarCheck, Download, Lock, TicketCheck, UserPlus, UserRound } from "lucide-react";
+import { Activity, BadgeCheck, Ban, CalendarCheck, Download, Lock, TicketCheck, Trophy, UserPlus, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Wrap } from "./wrap";
 
@@ -11,6 +11,7 @@ const WEEKS = [
 
 const ALSO = [
   { icon: BadgeCheck, label: "Profil dan username unik" },
+  { icon: Trophy, label: "Peringkat grup dan klub" },
   { icon: Ban, label: "Blokir dan laporkan konten" },
   { icon: Download, label: "Ekspor data akun" },
   { icon: UserRound, label: "Hapus akun sendiri" },
@@ -69,7 +70,7 @@ export function FreeSection() {
           </article>
           <article className="rounded-[28px] bg-primary/30 p-6 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl motion-reduce:transition-none sm:p-8">
             <TileHead icon={UserPlus} title="Teman dan feed khusus teman">
-              Cari teman dengan username persis. Posting, beri suka, komentari, atau bagikan latihan ke feed.
+              Cari teman dengan username persis. Posting, beri kudos, komentari, atau bagikan latihan ke feed.
             </TileHead>
             <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-2 rounded-full bg-card py-2 pl-2 pr-4 text-[15px] font-bold">
@@ -99,7 +100,7 @@ export function FreeSection() {
           ))}
         </ul>
         <p className="mt-4 text-[15.5px] text-muted-foreground">
-          <b className="text-foreground">Belum ada:</b> feed publik, chat, notifikasi suka dan komentar, aplikasi mobile.
+          <b className="text-foreground">Belum ada:</b> feed publik, chat, notifikasi kudos dan komentar, aplikasi mobile.
         </p>
       </Wrap>
     </section>

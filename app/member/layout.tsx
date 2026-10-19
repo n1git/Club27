@@ -23,6 +23,7 @@ export default async function MemberLayout({ children }: { children: React.React
     ? [{ href: "/member/clubs", label: "Pilih Klub", icon: "switchClub", primary: true } satisfies NavItem]
     : [
         { href: "/member", label: "Beranda", icon: "home", exact: true, primary: true } satisfies NavItem,
+        { href: "/member/leaderboard", label: "Peringkat", icon: "trophy" } satisfies NavItem,
         ...(bookingOn ? [{ href: "/member/booking", label: "Booking", icon: "booking", primary: true } satisfies NavItem] : []),
         ...(posOn ? [{ href: "/member/orders", label: "Pesanan", icon: "orders", primary: true } satisfies NavItem] : []),
         ...(checkinOn ? [{ href: "/member/visits", label: "Kunjungan", icon: "visits", primary: true } satisfies NavItem] : []),

@@ -69,6 +69,7 @@ export function hasAny(permissions: PermissionSet, codes: PermissionCode | reado
 
 const ADMIN_PATH_RULES: { prefix: string; any: readonly PermissionCode[] }[] = [
   { prefix: "/admin/join-requests", any: ["members.create"] },
+  { prefix: "/admin/leaderboard", any: ["members.view_all"] },
   { prefix: "/admin/members", any: ["members.view_all"] },
   { prefix: "/admin/pos", any: ["pos.sell"] },
   { prefix: "/admin/orders", any: ["pos.orders_view"] },

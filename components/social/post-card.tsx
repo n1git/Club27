@@ -14,6 +14,14 @@ function distance(m: number) {
   return m >= 1000 ? `${(m / 1000).toLocaleString("id-ID", { maximumFractionDigits: 2 })} km` : `${m} m`;
 }
 
+function kudosLine({ given, names, others }: FeedPost["kudos"]): string | null {
+  const parts = [...(given ? ["Kamu"] : []), ...names];
+  if (parts.length === 0 && others === 0) return null;
+  const list = parts.join(", ");
+  if (others > 0) return `Kudos dari ${list ? `${list} dan ` : ""}${others} lainnya`;
+  return `Kudos dari ${list}`;
+}
+
 function name(author: { fullName: string; username: string } | null) {
   return author ? author.fullName : "Pengguna";
 }
@@ -44,12 +52,13 @@ export function PostCard({ post, sportLabels }: { post: FeedPost; sportLabels: R
         <div className="flex flex-wrap items-center gap-3">
           <ActionButton
             action={toggleReaction}
-            fields={{ postId: post.id, liked: post.liked ? "1" : "0" }}
-            label={`${post.liked ? "Batal suka" : "Suka"} · ${post.likes}`}
-            variant={post.liked ? "secondary" : "outline"}
+            fields={{ postId: post.id, liked: post.kudos.given ? "1" : "0" }}
+            label={`${post.kudos.given ? "Batal kudos" : "Beri kudos"} · ${post.kudos.count}`}
+            variant={post.kudos.given ? "secondary" : "outline"}
           />
           {post.mine || !post.author ? null : <ReportDialog targetType="post" targetId={post.id} />}
         </div>
+        {kudosLine(post.kudos) ? <p className="text-xs text-muted-foreground">{kudosLine(post.kudos)}</p> : null}
         {post.comments.length ? (
           <ul className="flex flex-col gap-2 border-t border-dashed border-border pt-3 text-sm">
             {post.comments.map((c) => (

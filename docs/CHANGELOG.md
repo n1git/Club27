@@ -2,6 +2,9 @@
 
 ## 2026-10-21
 
+- Leaderboards: each group has a "Peringkat" tab, and clubs have a board for members (`/member/leaderboard`) and for admins (`/admin/leaderboard`). Rank by distance, duration or sessions, for this week or this month, optionally for one sport. The board shows the top 10 (members with no sessions are hidden, empty ranks show a prompt to start a session) and your own rank if you are outside it. Only totals are shown, never individual workouts. A club board lists only members who switched it on for that club (off by default, in `/home/join-club` or on the board page); switching off or leaving the club removes you at once.
+- "Suka" on posts is now "Kudos", with the names of the people who gave it (friends and group peers; others count as "dan N lainnya").
+- Privacy policy updated for boards and kudos (new version); the account export includes your club board choices. Migration 057.
 - Yearly billing on 27 Club Plus now gives 2 months free (pay 10 for 12): 2 seats for a year cost Rp1.500.000. Migration 056.
 - One plan, "27 Club Plus", replaces Standard and Advanced: Rp75.000 per seat per month, at least 2 seats on every purchase or renewal, up to 5 clubs, 30-day trial with 1 seat. Existing organizations moved to the new plan; those with more than 5 clubs keep their count through a club-limit override. The plan card on the landing page, sport pages, sign-up and renewal shows the same text and footnotes, and the plan editor in the platform portal has a minimum-seats field. Migration 055.
 - New page loading animation: a stopwatch ring with a sweeping volt arc and the 27 mark, shown after 120 ms (`PageSpinner`); with reduced motion the arc stays still and pulses.

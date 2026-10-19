@@ -15,7 +15,7 @@ const link = "font-medium text-accent-foreground underline-offset-4 hover:underl
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Kebijakan Privasi" updated="12 Oktober 2026">
+    <LegalPage title="Kebijakan Privasi" updated="21 Oktober 2026">
       <p>
         Kebijakan ini menjelaskan data pribadi yang diproses di {APP_NAME}, tujuannya, dan hak Anda sesuai
         Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi. Versi {PRIVACY_VERSION}.
@@ -42,6 +42,11 @@ export default function PrivacyPage() {
         <li>Data akun pemilik, staf, dan anggota: nama, email, nama pengguna, nomor telepon, dan kata sandi.</li>
         <li>Data anggota yang diisi klub: tanggal lahir, alamat, kontak orang tua atau wali, dan catatan. Anggota dapat berupa anak.</li>
         <li>Data kegiatan klub: jadwal, booking, kehadiran, check-in, paket, tagihan, transaksi kasir, buku kas, dan gaji pelatih.</li>
+        <li>
+          Data akun pribadi (tanpa organisasi): profil dan username, catatan latihan, teman, postingan, komentar, kudos, grup, dan event.
+          Catatan latihan bersifat pribadi. Total latihan (jarak, durasi, jumlah sesi) tampil di peringkat grup bagi sesama anggota
+          grup. Di peringkat klub, nama, username, dan total latihan tampil bagi anggota dan admin klub hanya jika Anda mengaktifkannya sendiri, per klub, dan dapat dimatikan kapan saja.
+        </li>
         <li>Catatan persetujuan dan riwayat tindakan penting di aplikasi.</li>
       </ul>
       <p>Data kartu atau rekening pembayaran diproses langsung oleh penyedia pembayaran dan tidak kami simpan.</p>
@@ -50,6 +55,7 @@ export default function PrivacyPage() {
       <ul>
         <li>Menyediakan akun, langganan, dan fitur aplikasi.</li>
         <li>Membantu klub mengelola anggota, kegiatan, dan keuangannya.</li>
+        <li>Menampilkan peringkat, kudos, dan kabar latihan kepada teman, sesama anggota grup, atau klub sesuai pengaturan Anda.</li>
         <li>Menjaga keamanan akun dan mencegah penyalahgunaan.</li>
         <li>Memenuhi kewajiban hukum, termasuk pencatatan keuangan.</li>
       </ul>

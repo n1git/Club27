@@ -219,6 +219,7 @@ co-members of a group, by username, never a user list.
 | Join a club | `club_join_requests`; `request_club_join`, `cancel_club_join`, `decide_club_join`, `rotate_club_code` | `/home/join-club`, `/admin/join-requests` |
 | Groups, events | `groups`, `group_members`, `events`, `event_rsvps`; create, invite, respond, leave, remove, delete group; create, cancel event; `rsvp_event` | `/home/groups`, `/home/groups/[id]` |
 | Moderation | `reports` (status open, dismissed, removed, suspended); `accounts.social_banned_at` | `/superadmin/reports` |
+| Leaderboards, kudos | `club_leaderboard_optins`; `group_leaderboard`, `club_leaderboard`, `set_leaderboard_optin`, `my_leaderboard_clubs`, `kudos_for_posts` (kudos reuse `post_reactions`) | `/home/groups/[id]?tab=peringkat`, `/member/leaderboard`, `/admin/leaderboard`, `/home/join-club` |
 
 Profile (`/profile`, `lib/data/profile.ts`) is read by account, never by the current context, and has four sections: personal info (`accounts`: name, username, phone, address; email read-only because there is no email verification), organizations (every active `organization_users` row; counts are limited to the clubs a staff member can access; only `p_owner` and `owner` may rename, checked in `updateOrganizationName`), coaching (`club_profiles` rows of the account that hold `classes.instruct`; only the specialization is editable, checked in `updateCoachProfile`; rate and certifications belong to the club admin) and other (member clubs, password). Staff phone numbers are kept in sync from the account phone.
 
@@ -251,6 +252,27 @@ Rules worth knowing:
   audited) and account deletion (password plus the word HAPUS). Deletion is
   refused while the account is still linked to a club or organization; a purely
   personal account is removed permanently with its social data.
+- Leaderboards read `workout_logs` only inside security definer functions that
+  return totals (distance, duration, sessions) for this week (Monday to Sunday,
+  WIB) or this month, optionally for one sport; no policy lets another account
+  read someone's logs. The board shows the top 10 with at least one session (a
+  member with none is hidden) and always renders ten rows, filling the rest with
+  a "start your session" placeholder; the caller's own row is added below with
+  its real rank when outside the top 10. A group board needs an `active`
+  membership and ranks active members. A club board is shown to linked active
+  members of that club and to staff or owners with `members.view_all`, and ranks
+  only accounts that opted in for that club (`set_leaderboard_optin`, default
+  off, per club). The link to the club is `club_members.profile_id ->
+  club_profiles.account_id` (set by `activate_member_account` when a join request
+  is approved). Leaving or being deactivated removes the opt-in (trigger on
+  `club_members`), so rejoining starts off. Blocked pairs and banned accounts are
+  left out of each other's boards. `club_leaderboard_optins` has the
+  `a00_org_writable` guard on insert and update but not on delete, so a person
+  can always withdraw even when the organization's subscription has lapsed. Kudos
+  are the reactions on posts, now counted through `kudos_for_posts`, which skips
+  blocked and banned givers and returns names only for people related to the
+  viewer (friends, group peers); the rest show as "dan N lainnya". The privacy
+  policy version was bumped for this (`PRIVACY_VERSION`).
 - Menu badges count incoming friend requests, group invitations and, for
   admins, pending join requests. There are no notifications for likes,
   comments, join decisions or events, and no email or push.
