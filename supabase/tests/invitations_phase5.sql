@@ -18,7 +18,7 @@ begin
   select id into aco from accounts where email = 'co@t.test';
   select id into aother from accounts where email = 'other@t.test';
 
-  select * into r from register_organization('Org I', 'Club I', aown, 'standard', 'monthly', 'swimming');
+  select * into r from register_organization('Org I', 'Club I', aown, 'plus', 'monthly', 'swimming');
   update organization_subscriptions set seats = 10;
   v_org := r.organization_id; v_club := r.club_id;
   select id into role_rec from organization_roles where organization_id = v_org and preset_key = 'resepsionis';

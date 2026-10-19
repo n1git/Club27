@@ -7,20 +7,22 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPendingRenewal, preparePayment, requestRenewal, requestSeatPurchase } from "@/lib/billing/renewals";
 import { isMidtransConfigured } from "@/lib/payments/midtrans";
 import { BILLING_PERIODS, PLAN_CODES } from "@/lib/pricing";
-import { seatUsage, type SeatUsage } from "@/lib/data/platform-pricing";
+import { planMinSeats, seatUsage, type SeatUsage } from "@/lib/data/platform-pricing";
 import { organizationIdForTenant } from "@/lib/data/roles";
 import { logAudit } from "@/lib/audit";
 import { PLAN_LIMIT_CODES, type ActionState } from "./types";
 
-const seatsField = z.coerce.number({ message: "Jumlah seat tidak valid" }).int("Jumlah seat tidak valid").min(1, "Jumlah seat minimal 1").max(1000, "Jumlah seat terlalu besar");
+const seatsField = (min: number) =>
+  z.coerce.number({ message: "Jumlah seat tidak valid" }).int("Jumlah seat tidak valid").min(min, `Minimal pembelian ${min} seat`).max(1000, "Jumlah seat terlalu besar");
 
-const renewalSchema = z.object({
-  planCode: z.enum(PLAN_CODES, { message: "Pilih paket" }),
-  billingPeriod: z.enum(BILLING_PERIODS, { message: "Pilih periode" }),
-  seats: seatsField,
-});
+const renewalSchema = (minSeats: number) =>
+  z.object({
+    planCode: z.enum(PLAN_CODES, { message: "Pilih paket" }),
+    billingPeriod: z.enum(BILLING_PERIODS, { message: "Pilih periode" }),
+    seats: seatsField(minSeats),
+  });
 
-const seatPurchaseSchema = z.object({ seats: seatsField });
+const seatPurchaseSchema = z.object({ seats: seatsField(1) });
 
 async function billingContext(codes: "billing.manage" | readonly ["billing.view", "billing.manage"] = "billing.manage") {
   const session = await requireActionPermission(codes, { allowBillingLocked: true });
@@ -51,7 +53,8 @@ async function preparePaymentFor(organizationId: string, accountId: string) {
 
 export async function submitRenewal(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const { session, organizationId, requestedBy } = await billingContext();
-  const parsed = renewalSchema.safeParse({
+  const minSeats = (await planMinSeats(String(formData.get("planCode")))) ?? 1;
+  const parsed = renewalSchema(minSeats).safeParse({
     planCode: formData.get("planCode"),
     billingPeriod: formData.get("billingPeriod"),
     seats: formData.get("seats"),
@@ -118,7 +121,7 @@ export interface SeatPurchasePreview {
 
 export async function previewSeatPurchase(add: number): Promise<SeatPurchasePreview | { error: string }> {
   const { organizationId } = await billingContext(["billing.view", "billing.manage"]);
-  const parsed = seatsField.safeParse(add);
+  const parsed = seatsField(1).safeParse(add);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Jumlah seat tidak valid" };
   const { data, error } = await createAdminSupabaseClient().rpc("seat_quote", { p_org: organizationId, p_add: parsed.data });
   const row = (data as Record<string, number | string>[] | null)?.[0];

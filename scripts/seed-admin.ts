@@ -59,7 +59,7 @@ async function main() {
     p_organization_name: organizationName,
     p_club_name: tenantName,
     p_account_id: account.id,
-    p_plan: process.env.SEED_PLAN ?? "standard",
+    p_plan: process.env.SEED_PLAN ?? "plus",
     p_period: process.env.SEED_PERIOD ?? "monthly",
   });
 

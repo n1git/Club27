@@ -30,8 +30,8 @@ begin
   select id into aq from accounts where email = 'q@t.test';
   select id into amem from accounts where email = 'mem@t.test';
 
-  select * into r1 from register_organization('Org P', 'Club P', ap, 'standard', 'monthly', 'swimming');
-  select * into r2 from register_organization('Org Q', 'Club Q', aq, 'standard', 'monthly', 'swimming');
+  select * into r1 from register_organization('Org P', 'Club P', ap, 'plus', 'monthly', 'swimming');
+  select * into r2 from register_organization('Org Q', 'Club Q', aq, 'plus', 'monthly', 'swimming');
   update organization_subscriptions set seats = 50;
   p_owner := r1.profile_id;
 

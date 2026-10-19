@@ -27,6 +27,7 @@ export function RenewalForm({
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>(planCode);
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>(period);
   const [selectedSeats, setSelectedSeats] = useState(seats);
+  const floor = Math.max(minSeats, plans.find((p) => p.code === selectedPlan)?.minSeats ?? 1, 1);
 
   return (
     <ActionForm action={submitRenewal} className="flex flex-col gap-4">
@@ -39,14 +40,14 @@ export function RenewalForm({
           name="seats"
           type="number"
           inputMode="numeric"
-          min={Math.max(minSeats, 1)}
+          min={floor}
           max={maxSeats ?? 1000}
           value={selectedSeats}
-          onChange={(event) => setSelectedSeats(Math.max(Number(event.target.value) || 1, 1))}
+          onChange={(event) => setSelectedSeats(Math.max(Number(event.target.value) || floor, 1))}
           required
         />
         <p className="text-xs text-muted-foreground">
-          Minimal {Math.max(minSeats, 1)} (pengguna aktif saat ini).
+          Minimal {floor} (pengguna aktif saat ini dan minimal paket).
           {maxSeats !== null ? ` Menambah seat saat langganan berjalan lewat Tambah seat di bawah.` : ""}
         </p>
       </div>

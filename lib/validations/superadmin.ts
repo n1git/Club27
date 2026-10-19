@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PLAN_CODES, type PlanCode } from "@/lib/pricing";
 
 import { PLATFORM_SUBSCRIPTION_STATUSES, STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 
@@ -43,7 +44,8 @@ export const clubLimitOverrideSchema = z.object({
 });
 
 export const planEditSchema = z.object({
-  code: z.enum(["standard", "advanced"]),
+  code: z.enum(PLAN_CODES as [PlanCode, ...PlanCode[]]),
+  minSeats: z.coerce.number().int("Minimal seat tidak valid").min(1, "Minimal seat tidak valid").max(1000, "Minimal seat terlalu besar"),
   pricePerUserMonth: z.coerce.number().nonnegative("Harga tidak valid"),
   clubLimit: optionalLimit,
   trialDays: z.coerce.number().int("Hari trial tidak valid").min(0, "Hari trial tidak valid").max(365, "Hari trial terlalu besar"),

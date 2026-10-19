@@ -21,6 +21,10 @@ export function PlanEditor({ plan, isActive }: { plan: PricingPlan; isActive: bo
         <Input name="clubLimit" type="number" min={1} defaultValue={plan.clubLimit ?? ""} className="w-28" />
       </label>
       <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+        Minimal seat
+        <Input name="minSeats" type="number" min={1} max={1000} defaultValue={plan.minSeats} className="w-24" />
+      </label>
+      <label className="flex flex-col gap-1 text-xs text-muted-foreground">
         Hari trial
         <Input name="trialDays" type="number" min={0} defaultValue={plan.trialDays} className="w-24" />
       </label>

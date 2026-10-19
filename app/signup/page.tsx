@@ -9,7 +9,7 @@ import { APP_NAME } from "@/lib/config";
 import { pageMetadata } from "@/lib/seo";
 import { getActivePlans } from "@/lib/data/platform-pricing";
 import { getReadyClubTypes } from "@/lib/club-type";
-import { BILLING_PERIODS, PLAN_CODES, type BillingPeriod, type PlanCode } from "@/lib/pricing";
+import { BILLING_PERIODS, PLAN_CODES, trialLabel, type BillingPeriod, type PlanCode } from "@/lib/pricing";
 
 export const metadata: Metadata = pageMetadata({
   title: "Daftarkan klub",
@@ -28,18 +28,19 @@ export default async function RegisterClubPage({
     getReadyClubTypes(),
     headers(),
   ]);
-  const plan = PLAN_CODES.find((code) => code === params.plan) ?? plans[0]?.code ?? "standard";
+  const plan = PLAN_CODES.find((code) => code === params.plan) ?? plans[0]?.code ?? "plus";
   const period: BillingPeriod = BILLING_PERIODS.find((value) => value === params.period) ?? "monthly";
-  const users = Math.min(Math.max(Math.floor(Number(params.users)) || 3, 1), 1000);
-  const trialDays = Math.max(0, ...plans.map((p) => p.trialDays));
+  const minSeats = plans.find((p) => p.code === plan)?.minSeats ?? 1;
+  const users = Math.min(Math.max(Math.floor(Number(params.users)) || minSeats, minSeats), 1000);
+  const trial = plans.find((p) => p.trialDays > 0);
 
   return (
     <AuthPageShell
       wide
       title="Daftarkan klub Anda"
       description={
-        trialDays > 0
-          ? `Pilih paket, lalu buat akun pemilik. Paket dengan trial gratis ${trialDays} hari tidak perlu kartu kredit.`
+        trial
+          ? `Pilih paket, lalu buat akun pemilik. Trial gratis ${trialLabel(trial.trialDays)} tidak perlu kartu kredit.`
           : "Pilih paket, lalu buat akun pemilik."
       }
       footer={

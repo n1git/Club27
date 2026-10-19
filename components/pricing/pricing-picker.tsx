@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { computeQuote, formatRupiah, PERIOD_LABEL, type BillingPeriod, type PlanCode, type PricingPlan } from "@/lib/pricing";
 import type { PlatformModule } from "@/lib/data/platform-pricing";
+import { PlanFootnotes, PlanLines } from "./plan-terms";
 
 export function PeriodToggle({
   period,
@@ -56,9 +57,9 @@ export function PeriodToggle({
   );
 }
 
-const clampUsers = (value: number) => Math.min(Math.max(Math.floor(value) || 1, 1), 1000);
+const clampUsers = (value: number, min = 1) => Math.min(Math.max(Math.floor(value) || min, min), 1000);
 
-export function UsersStepper({ id, users, onChange }: { id: string; users: number; onChange: (users: number) => void }) {
+export function UsersStepper({ id, users, onChange, min = 1 }: { id: string; users: number; onChange: (users: number) => void; min?: number }) {
   const step = "h-11 w-11 shrink-0 sm:h-9 sm:w-9";
   return (
     <div className="flex flex-col gap-1.5">
@@ -70,8 +71,8 @@ export function UsersStepper({ id, users, onChange }: { id: string; users: numbe
           size="icon"
           className={step}
           aria-label="Kurangi pengguna"
-          disabled={users <= 1}
-          onClick={() => onChange(clampUsers(users - 1))}
+          disabled={users <= min}
+          onClick={() => onChange(clampUsers(users - 1, min))}
         >
           <Minus className="size-4" aria-hidden />
         </Button>
@@ -79,10 +80,10 @@ export function UsersStepper({ id, users, onChange }: { id: string; users: numbe
           id={id}
           type="number"
           inputMode="numeric"
-          min={1}
+          min={min}
           max={1000}
           value={users}
-          onChange={(e) => onChange(clampUsers(Number(e.target.value)))}
+          onChange={(e) => onChange(clampUsers(Number(e.target.value), min))}
           className="h-11 w-16 text-center tabular-nums sm:h-9"
           aria-describedby={`${id}-hint`}
         />
@@ -93,13 +94,13 @@ export function UsersStepper({ id, users, onChange }: { id: string; users: numbe
           className={step}
           aria-label="Tambah pengguna"
           disabled={users >= 1000}
-          onClick={() => onChange(clampUsers(users + 1))}
+          onClick={() => onChange(clampUsers(users + 1, min))}
         >
           <Plus className="size-4" aria-hidden />
         </Button>
       </div>
       <p id={`${id}-hint`} className="text-xs text-muted-foreground">
-        Pemilik, admin, resepsionis, dan keuangan. Pelatih, kasir, dan anggota tidak memakai seat.
+        Pemilik, admin, resepsionis, dan keuangan. Pelatih, kasir, dan anggota tidak memakai seat.{min > 1 ? ` Minimal ${min} seat.` : ""}
       </p>
     </div>
   );
@@ -123,13 +124,6 @@ export function PlanCard({
   action?: React.ReactNode;
 }) {
   const quote = computeQuote(plan, period, users);
-  const features = [
-    "Semua modul",
-    plan.clubLimit ? `Maks ${plan.clubLimit} klub` : "Klub tak terbatas",
-    "Anggota tak terbatas",
-    plan.trialDays > 0 ? `Gratis ${plan.trialDays} hari` : "Aktif setelah pembayaran",
-  ];
-
   return (
     <div
       className={cn(
@@ -138,15 +132,10 @@ export function PlanCard({
       )}
     >
       <h3 className="font-heading text-lg font-semibold text-foreground">{plan.name}</h3>
-      <p className="mt-4">
-        <span className="whitespace-nowrap font-heading text-2xl font-semibold text-foreground">
-          {formatRupiah(plan.pricePerUserMonth)}
-        </span>
-        <span className="text-sm text-muted-foreground"> /pengguna/bulan</span>
-      </p>
+      <PlanLines plan={plan} className="mt-4 flex flex-col gap-1.5 text-sm font-medium text-foreground" />
       {onUsersChange ? (
         <div className="mt-4">
-          <UsersStepper id={`${plan.code}-users`} users={users} onChange={onUsersChange} />
+          <UsersStepper id={`${plan.code}-users`} users={users} min={plan.minSeats} onChange={onUsersChange} />
         </div>
       ) : null}
       <p className="mt-2 text-sm text-foreground" aria-live="polite">
@@ -157,14 +146,7 @@ export function PlanCard({
       {period === "yearly" ? (
         <p className="text-sm text-muted-foreground">Setara {formatRupiah(quote.perMonth)}/bulan</p>
       ) : null}
-      <ul className="mt-4 flex flex-col gap-2 text-sm text-muted-foreground">
-        {features.map((feature) => (
-          <li key={feature} className="flex items-start gap-2">
-            <Check className="mt-0.5 size-4 shrink-0 text-accent-foreground" aria-hidden />
-            {feature}
-          </li>
-        ))}
-      </ul>
+      <PlanFootnotes plan={plan} className="mt-4 flex flex-col gap-0.5 text-xs text-muted-foreground" />
       <div className="mt-auto pt-6">
         {onSelect ? (
           <Button

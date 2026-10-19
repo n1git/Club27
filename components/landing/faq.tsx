@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { PricingPlan } from "@/lib/pricing";
+import { trialLabel, type PricingPlan } from "@/lib/pricing";
 import { getContact } from "@/lib/site";
 import { Wrap } from "./wrap";
 
@@ -37,6 +37,7 @@ function ContactLine() {
 export function Faq({ plans }: { plans: PricingPlan[] }) {
   const limits = plans.map((p) => `${p.name} ${p.clubLimit ? `sampai ${p.clubLimit} klub` : "tanpa batas klub"}`).join(", ");
   const trialPlans = plans.filter((p) => p.trialDays > 0);
+  const minSeats = Math.max(1, ...plans.map((p) => p.minSeats));
 
   const left: { q: string; a: React.ReactNode }[] = [
     {
@@ -78,14 +79,14 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
     },
     {
       q: "Siapa yang memakai seat?",
-      a: "Pemilik, admin, resepsionis, dan keuangan yang aktif, satu seat per orang di seluruh klub organisasi. Pelatih, kasir, dan anggota tidak memakai seat, dan jumlah anggota tidak dibatasi.",
+      a: `Pemilik, admin, resepsionis, dan keuangan yang aktif, satu seat per orang di seluruh klub organisasi. Pelatih, kasir, dan anggota tidak memakai seat, dan jumlah anggota tidak dibatasi.${minSeats > 1 ? ` Pembelian minimal ${minSeats} seat.` : ""}`,
     },
     {
       q: "Bagaimana trial dan pembayaran?",
       a: (
         <>
           {trialPlans.length > 0
-            ? `${trialPlans.map((p) => `Paket ${p.name} bisa dicoba gratis ${p.trialDays} hari`).join("; ")}. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan dan bisa dibaca, tetapi perubahan ditolak sampai pemilik memperpanjang.`
+            ? `${trialPlans.map((p) => `Paket ${p.name} bisa dicoba gratis ${trialLabel(p.trialDays)}`).join("; ")}. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan dan bisa dibaca, tetapi perubahan ditolak sampai pemilik memperpanjang.`
             : "Saat ini tidak ada masa trial. Paket aktif setelah pembayaran diterima."}{" "}
           Belum ada: feed publik, chat, notifikasi suka dan komentar, aplikasi mobile, dan pembayaran online untuk tagihan anggota.
           <ContactLine />

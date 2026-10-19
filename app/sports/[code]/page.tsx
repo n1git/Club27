@@ -31,7 +31,6 @@ export default async function SportRoute({ params }: { params: Promise<{ code: s
   const { code } = await params;
   const { type, others, modules, plans } = await load(code);
   if (!type) notFound();
-  const trialDays = Math.max(0, ...plans.map((p) => p.trialDays));
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -43,7 +42,7 @@ export default async function SportRoute({ params }: { params: Promise<{ code: s
   };
   return (
     <>
-      <SportPage type={type} others={others} modules={modules} trialDays={trialDays} />
+      <SportPage type={type} others={others} modules={modules} plans={plans} />
       <JsonLdScript data={breadcrumb} />
     </>
   );

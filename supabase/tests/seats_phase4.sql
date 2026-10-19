@@ -28,16 +28,16 @@ begin
   select id into a4 from accounts where email = 's4@t.test';
   select id into aadv from accounts where email = 'adv@t.test';
 
-  assert (select count(*) from subscription_plans where trial_days = 14) = (select count(*) from subscription_plans), 'every plan has a 14 day trial';
+  assert (select count(*) from subscription_plans where trial_days = 30) = (select count(*) from subscription_plans), 'every plan has a 30 day trial';
   assert (select count(*) from subscription_plans where grace_days = 365) = (select count(*) from subscription_plans), 'grace period is one year';
 
-  select * into r from register_organization('Org Seat', 'Club Seat', aown, 'standard', 'monthly', 'swimming');
-  select * into radv from register_organization('Org Adv', 'Club Adv', aadv, 'advanced', 'monthly', 'swimming');
+  select * into r from register_organization('Org Seat', 'Club Seat', aown, 'plus', 'monthly', 'swimming');
+  select * into radv from register_organization('Org Adv', 'Club Adv', aadv, 'plus', 'monthly', 'swimming');
   v_org := r.organization_id;
   p_owner := r.profile_id;
 
   assert (select status from organization_subscriptions where organization_id = radv.organization_id) = 'trial', 'every plan starts in trial';
-  assert (select trial_ends_at from organization_subscriptions where organization_id = v_org) = v_today + 14, 'trial lasts 14 days';
+  assert (select trial_ends_at from organization_subscriptions where organization_id = v_org) = v_today + 30, 'trial lasts 30 days';
   assert (select seats from organization_subscriptions where organization_id = v_org) = 1, 'trial has one seat';
   assert subscription_phase(v_org) = 'trial', 'phase trial';
   assert organization_seats_used(v_org) = 1, 'the first owner takes the seat';
@@ -53,13 +53,21 @@ begin
   exception when sqlstate '22023' then null; end;
 
   begin
-    perform request_renewal(v_org, null, 'standard', 'monthly', 0);
+    perform request_renewal(v_org, null, 'plus', 'monthly', 0);
     assert false, 'seat count must be positive';
   exception when sqlstate '22023' then null; end;
 
-  v_id := request_renewal(v_org, null, 'standard', 'monthly', 3);
+  begin
+    perform request_renewal(v_org, null, 'plus', 'monthly', 1);
+    assert false, 'one seat is below the plan minimum';
+  exception when sqlstate '22023' then null; end;
+  assert (select min_seats from subscription_plans where code = 'plus') = 2, 'plus needs two seats';
+  assert (select club_limit from subscription_plans where code = 'plus') = 5, 'plus allows five clubs';
+  assert (select users from platform_quote('plus', 'monthly', 1)) = 2 and (select total from platform_quote('plus', 'monthly', 1)) = 2 * 75000, 'a quote never goes below the minimum';
+
+  v_id := request_renewal(v_org, null, 'plus', 'monthly', 3);
   select * into q from subscription_renewals where id = v_id;
-  assert q.amount = 3 * 150000 and q.users = 3 and q.kind = 'renewal', 'renewal quote uses the chosen seats';
+  assert q.amount = 3 * 75000 and q.users = 3 and q.kind = 'renewal', 'renewal quote uses the chosen seats';
   perform confirm_renewal(v_id, 'test');
   assert (select seats from organization_subscriptions where organization_id = v_org) = 3, 'paid renewal sets the seats';
   assert subscription_phase(v_org) = 'active', 'phase active';
@@ -85,21 +93,21 @@ begin
   update organization_users set is_active = false where organization_id = v_org and account_id = a3;
 
   select * into q from seat_quote(v_org, 2);
-  assert q.amount = 2 * 150000 and q.remaining_days = q.period_days, 'a fresh period is not prorated';
+  assert q.amount = 2 * 75000 and q.remaining_days = q.period_days, 'a fresh period is not prorated';
   update organization_subscriptions set current_period_start = v_today - 15, current_period_end = v_today + 15 where organization_id = v_org;
   select * into q from seat_quote(v_org, 2);
   assert q.period_days = 31 and q.remaining_days = 16, 'remaining days count today';
-  assert q.amount = round(2 * 150000 * 16 / 31.0, 0), 'monthly proration';
+  assert q.amount = round(2 * 75000 * 16 / 31.0, 0), 'monthly proration';
   update organization_subscriptions set billing_period = 'yearly', current_period_start = v_today - 100, current_period_end = v_today + 264 where organization_id = v_org;
   select * into q from seat_quote(v_org, 1);
-  assert q.period_days = 365 and q.unit_price = 150000 * (12 - (select yearly_free_months from subscription_plans where code = 'standard')), 'yearly unit price';
+  assert q.period_days = 365 and q.unit_price = 75000 * (12 - (select yearly_free_months from subscription_plans where code = 'plus')), 'yearly unit price';
   assert q.amount = round(q.unit_price * 265 / 365.0, 0), 'yearly proration';
   update organization_subscriptions set billing_period = 'monthly', current_period_start = v_today - 15, current_period_end = v_today + 15 where organization_id = v_org;
 
   v_id := request_seat_purchase(v_org, null, 2);
   select * into q from subscription_renewals where id = v_id;
   assert q.kind = 'seats' and q.seats_added = 2 and q.users = 5 and q.status = 'pending', 'seat purchase recorded';
-  assert q.amount = round(2 * 150000 * 16 / 31.0, 0), 'recorded amount is the prorated one';
+  assert q.amount = round(2 * 75000 * 16 / 31.0, 0), 'recorded amount is the prorated one';
   perform confirm_renewal(v_id, 'test');
   perform confirm_renewal(v_id, 'test');
   assert (select seats from organization_subscriptions where organization_id = v_org) = 5, 'seats added once, idempotent';
@@ -110,18 +118,18 @@ begin
   assert organization_seats_used(v_org) = 5, 'five seats used';
 
   begin
-    perform request_renewal(v_org, null, 'standard', 'monthly', 4);
+    perform request_renewal(v_org, null, 'plus', 'monthly', 4);
     assert false, 'cannot go below the active users';
   exception when sqlstate '22023' then null; end;
   begin
-    perform request_renewal(v_org, null, 'standard', 'monthly', 6);
+    perform request_renewal(v_org, null, 'plus', 'monthly', 6);
     assert false, 'mid period increases go through seat purchase';
   exception when sqlstate '22023' then null; end;
 
   update organization_users set is_active = false where organization_id = v_org and account_id in (a3, a4);
-  v_id := request_renewal(v_org, null, 'standard', 'monthly', 3);
+  v_id := request_renewal(v_org, null, 'plus', 'monthly', 3);
   select * into q from subscription_renewals where id = v_id;
-  assert q.amount = 3 * 150000, 'renewal quote at reduced seats';
+  assert q.amount = 3 * 75000, 'renewal quote at reduced seats';
   perform confirm_renewal(v_id, 'test');
   select * into q from organization_subscriptions where organization_id = v_org;
   assert q.seats = 5 and q.pending_seats = 3 and q.pending_seats_from = v_today + 16, 'reduction waits for the next period';
@@ -181,7 +189,7 @@ begin
   assert subscription_phase(v_org) = 'unverified', 'unverified';
 
   update organization_subscriptions set status = 'expired', current_period_end = v_today - 5 where organization_id = v_org;
-  v_id := request_renewal(v_org, null, 'standard', 'monthly', 4);
+  v_id := request_renewal(v_org, null, 'plus', 'monthly', 4);
   perform confirm_renewal(v_id, 'test');
   select * into q from organization_subscriptions where organization_id = v_org;
   assert q.status = 'active' and q.seats = 4 and q.pending_seats is null and q.current_period_start = v_today, 'renewing after a lapse restarts today with the chosen seats';

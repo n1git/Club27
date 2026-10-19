@@ -174,6 +174,7 @@ export async function updatePlan(_prevState: ActionState, formData: FormData): P
     code: formData.get("code"),
     pricePerUserMonth: formData.get("pricePerUserMonth"),
     clubLimit: formData.get("clubLimit") ?? undefined,
+    minSeats: formData.get("minSeats"),
     trialDays: formData.get("trialDays"),
     yearlyFreeMonths: formData.get("yearlyFreeMonths"),
     isActive: formData.get("isActive"),
@@ -185,6 +186,7 @@ export async function updatePlan(_prevState: ActionState, formData: FormData): P
     .update({
       price_per_seat_month: parsed.data.pricePerUserMonth,
       club_limit: parsed.data.clubLimit ?? null,
+      min_seats: parsed.data.minSeats,
       trial_days: parsed.data.trialDays,
       yearly_free_months: parsed.data.yearlyFreeMonths,
       is_active: parsed.data.isActive === "true",
@@ -195,6 +197,7 @@ export async function updatePlan(_prevState: ActionState, formData: FormData): P
     code: parsed.data.code,
     pricePerUserMonth: parsed.data.pricePerUserMonth,
     clubLimit: parsed.data.clubLimit ?? null,
+    minSeats: parsed.data.minSeats,
     trialDays: parsed.data.trialDays,
     yearlyFreeMonths: parsed.data.yearlyFreeMonths,
     isActive: parsed.data.isActive === "true",

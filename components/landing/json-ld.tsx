@@ -67,6 +67,7 @@ export async function JsonLd({ plans }: { plans: PricingPlan[] }) {
         priceCurrency: "IDR",
         unitText: "seat per bulan",
       },
+      eligibleQuantity: { "@type": "QuantitativeValue", minValue: p.minSeats, unitText: "seat" },
       url: `${SITE_URL}/signup?plan=${p.code}`,
     })),
   };

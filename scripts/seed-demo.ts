@@ -69,7 +69,7 @@ interface ClubDef {
 interface OrgDef {
   key: string;
   name: string;
-  plan: "standard" | "advanced";
+  plan: "plus";
   period: "monthly" | "yearly";
   status: "active" | "trial" | "pending";
   finalize?: "trial-expired" | "suspended";
@@ -82,14 +82,14 @@ function definitions(scale: Args["scale"]): OrgDef[] {
   if (scale === "demo") {
     return [
       {
-        key: "aqua", name: "Grup Akuatik Nusantara", plan: "standard", period: "monthly", status: "active",
+        key: "aqua", name: "Grup Akuatik Nusantara", plan: "plus", period: "monthly", status: "active",
         clubs: [
           { key: "tirta", name: "Tirta Jaya Swim Club", type: "swimming", members: m, crossAccount: true },
           { key: "primafit", name: "Prima Fit Gym", type: "gym", members: m },
         ],
       },
       {
-        key: "nusa", name: "Nusantara Sports", plan: "advanced", period: "yearly", status: "active",
+        key: "nusa", name: "Nusantara Sports", plan: "plus", period: "yearly", status: "active",
         clubs: [
           { key: "ace", name: "Ace Tennis Club", type: "tennis", members: m, crossAccount: true },
           { key: "yogasari", name: "Yoga Sari Studio", type: "yoga", members: m },
@@ -99,7 +99,7 @@ function definitions(scale: Args["scale"]): OrgDef[] {
   }
   return [
     {
-      key: "aqua", name: "Grup Akuatik Nusantara", plan: "standard", period: "monthly", status: "active",
+      key: "aqua", name: "Grup Akuatik Nusantara", plan: "plus", period: "monthly", status: "active",
       clubs: [
         { key: "tirta", name: "Tirta Jaya Swim Club", type: "swimming", members: m, crossAccount: true },
         { key: "primafit", name: "Prima Fit Gym", type: "gym", members: m },
@@ -107,7 +107,7 @@ function definitions(scale: Args["scale"]): OrgDef[] {
       ],
     },
     {
-      key: "nusa", name: "Nusantara Sports", plan: "advanced", period: "yearly", status: "active",
+      key: "nusa", name: "Nusantara Sports", plan: "plus", period: "yearly", status: "active",
       clubs: [
         { key: "ace", name: "Ace Tennis Club", type: "tennis", members: m, crossAccount: true },
         { key: "lentur", name: "Studio Lentur Pilates", type: "pilates", members: m },
@@ -116,9 +116,9 @@ function definitions(scale: Args["scale"]): OrgDef[] {
         { key: "load", name: "Load Club Gym", type: "gym", members: 5000, coaches: 10, load: true },
       ],
     },
-    { key: "pending", name: "Org Menunggu Aktivasi", plan: "advanced", period: "monthly", status: "pending", staffless: true, clubs: [{ key: "pendingclub", name: "Klub Menunggu", type: "swimming", members: 0 }] },
-    { key: "expired", name: "Org Trial Habis", plan: "standard", period: "monthly", status: "trial", finalize: "trial-expired", clubs: [{ key: "trialhabis", name: "Klub Trial Habis", type: "swimming", members: m }] },
-    { key: "suspended", name: "Org Ditangguhkan", plan: "standard", period: "monthly", status: "trial", finalize: "suspended", clubs: [{ key: "ditangguhkan", name: "Klub Ditangguhkan", type: "tennis", members: m }] },
+    { key: "pending", name: "Org Menunggu Aktivasi", plan: "plus", period: "monthly", status: "pending", staffless: true, clubs: [{ key: "pendingclub", name: "Klub Menunggu", type: "swimming", members: 0 }] },
+    { key: "expired", name: "Org Trial Habis", plan: "plus", period: "monthly", status: "trial", finalize: "trial-expired", clubs: [{ key: "trialhabis", name: "Klub Trial Habis", type: "swimming", members: m }] },
+    { key: "suspended", name: "Org Ditangguhkan", plan: "plus", period: "monthly", status: "trial", finalize: "suspended", clubs: [{ key: "ditangguhkan", name: "Klub Ditangguhkan", type: "tennis", members: m }] },
   ];
 }
 

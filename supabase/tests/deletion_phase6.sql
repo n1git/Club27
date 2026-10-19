@@ -14,8 +14,8 @@ begin
   select id into akeep from accounts where email = 'keep@t.test';
   select id into aco from accounts where email = 'co@t.test';
 
-  select * into r from register_organization('Org Hapus', 'Club Hapus', aown, 'standard', 'monthly', 'swimming');
-  select * into k from register_organization('Org Tetap', 'Club Tetap', akeep, 'standard', 'monthly', 'swimming');
+  select * into r from register_organization('Org Hapus', 'Club Hapus', aown, 'plus', 'monthly', 'swimming');
+  select * into k from register_organization('Org Tetap', 'Club Tetap', akeep, 'plus', 'monthly', 'swimming');
   v_org := r.organization_id; v_club := r.club_id;
   update organization_subscriptions set seats = 5;
 

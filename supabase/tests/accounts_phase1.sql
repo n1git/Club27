@@ -41,13 +41,13 @@ begin
   exception when unique_violation then null; end;
 
   select id into a from accounts where email = 'owner@t.test';
-  select * into r from register_organization('Org A', 'Club A', a, 'standard', 'monthly', 'swimming');
+  select * into r from register_organization('Org A', 'Club A', a, 'plus', 'monthly', 'swimming');
   assert (select account_id from organization_users where id = r.owner_id) = a, 'owner linked to account';
   assert not exists (select 1 from information_schema.columns where table_schema = 'public' and column_name = 'password_hash' and table_name <> all (array['accounts', 'superadmins'])), 'passwords live only in accounts and superadmins';
   assert (select account_id from club_profiles where id = r.profile_id) = a, 'owner profile linked to account';
 
   select id into a from accounts where email = 'owner2@t.test';
-  select * into r2 from register_organization('Org C', 'Club C', a, 'standard', 'monthly', 'gym');
+  select * into r2 from register_organization('Org C', 'Club C', a, 'plus', 'monthly', 'gym');
 
   begin
     insert into club_profiles (club_id, role, org_role_id, full_name, email, account_id)
@@ -166,13 +166,13 @@ declare
   a uuid; token text := 'tok-' || gen_random_uuid()::text; r record; c int;
 begin
   insert into accounts (email, full_name, password_hash) values ('unv@t.test', 'Unverified', 'h') returning id into a;
-  select * into r from register_organization_unverified('Org U', 'Club U', a, 'standard', 'monthly', 'swimming', token);
+  select * into r from register_organization_unverified('Org U', 'Club U', a, 'plus', 'monthly', 'swimming', token);
   assert (select email_verified_at from accounts where id = a) is null, 'unverified until the link is used';
   assert discard_unverified_registration('unv@t.test'), 'unverified registration discarded';
   assert not exists (select 1 from accounts where id = a), 'unverified account removed with the registration';
 
   insert into accounts (email, full_name, password_hash) values ('unv2@t.test', 'Unverified Two', 'h') returning id into a;
-  perform register_organization_unverified('Org V', 'Club V', a, 'standard', 'monthly', 'swimming', 'tok2-' || gen_random_uuid()::text);
+  perform register_organization_unverified('Org V', 'Club V', a, 'plus', 'monthly', 'swimming', 'tok2-' || gen_random_uuid()::text);
   select * into r from verify_registration((select token_hash from email_verifications order by created_at desc limit 1));
   assert r.account_id = a, 'verification returns the account';
   assert (select email_verified_at from accounts where id = a) is not null, 'verification stamps the account';

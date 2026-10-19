@@ -3,7 +3,9 @@ import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import type { PublicClubType } from "@/lib/club-type";
 import type { PlatformModule } from "@/lib/data/platform-pricing";
+import { trialLabel, type PricingPlan } from "@/lib/pricing";
 import { FEATURES } from "./features-section";
+import { PlanCard } from "./plan-card";
 import { LandingFooter } from "./landing-footer";
 import { LandingHeader, SkipLink } from "./landing-header";
 import { describe } from "./sport-copy";
@@ -12,12 +14,12 @@ export function SportPage({
   type,
   others,
   modules,
-  trialDays,
+  plans,
 }: {
   type: PublicClubType;
   others: PublicClubType[];
   modules: PlatformModule[];
-  trialDays: number;
+  plans: PricingPlan[];
 }) {
   const ready = new Set(modules.filter((m) => m.status === "ready").map((m) => m.code));
   const features = FEATURES.filter((f) => type.modules.includes(f.module) && ready.has(f.module));
@@ -29,7 +31,8 @@ export function SportPage({
     ["Sesi", type.terms.session],
     ["Lokasi", type.terms.location],
   ];
-  const cta = trialDays > 0 ? `Coba gratis ${trialDays} hari` : `Daftarkan ${type.name}`;
+  const trial = plans.find((p) => p.trialDays > 0);
+  const cta = trial ? `Coba gratis ${trialLabel(trial.trialDays)}` : `Daftarkan ${type.name}`;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -67,7 +70,7 @@ export function SportPage({
               <Link href={`/signup?jenis=${type.code}`} className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
                 {cta}
               </Link>
-              <Link href="/#harga" className={buttonVariants({ variant: "outline", size: "lg", className: "h-12 px-6 text-base" })}>
+              <Link href="#harga" className={buttonVariants({ variant: "outline", size: "lg", className: "h-12 px-6 text-base" })}>
                 Lihat harga
               </Link>
             </div>
@@ -113,6 +116,21 @@ export function SportPage({
             </dl>
           </div>
         </section>
+
+        {plans.length > 0 ? (
+          <section id="harga" aria-labelledby="harga-sport-judul" className="py-16 sm:py-24">
+            <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+              <h2 id="harga-sport-judul" className="max-w-2xl text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
+                Harga untuk {type.name}
+              </h2>
+              <div className="mt-10 max-w-xl">
+                {plans.map((plan) => (
+                  <PlanCard key={plan.code} plan={plan} />
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         {others.length > 0 ? (
           <section aria-labelledby="lainnya-judul" className="py-16 sm:py-20">

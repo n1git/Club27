@@ -69,6 +69,7 @@ export default async function SuperadminDashboardPage() {
   const rows = (usage ?? []) as UsageRow[];
   const usageById = new Map(rows.map((r) => [r.organization_id, r]));
   const plans = (planRows ?? []) as unknown as (Parameters<typeof toPlan>[0] & { is_active: boolean })[];
+  const planNames = new Map(plans.map((plan) => [plan.code as string, plan.name]));
   const isTrialExpired = (r: UsageRow) => r.status === "trial" && !!r.trial_ends_at && r.trial_ends_at < today;
   const isOverdue = (r: UsageRow) => r.status === "active" && !!r.current_period_end && r.current_period_end < today;
   const monthlyRevenue = rows.filter((r) => r.status === "active").reduce((sum, r) => sum + Number(r.per_month ?? 0), 0);
@@ -161,7 +162,7 @@ export default async function SuperadminDashboardPage() {
             <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <div className="text-xs text-muted-foreground">Paket</div>
-                {row.plan_code ? `${row.plan_code === "advanced" ? "Advanced" : "Standard"} · ${PERIOD_LABEL[row.billing_period ?? "monthly"]}` : "-"}
+                {row.plan_code ? `${planNames.get(row.plan_code) ?? row.plan_code} · ${PERIOD_LABEL[row.billing_period ?? "monthly"]}` : "-"}
               </div>
               <div>
                 <div className="text-xs text-muted-foreground">Seat terpakai</div>

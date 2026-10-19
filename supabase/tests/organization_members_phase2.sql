@@ -12,10 +12,10 @@ begin
   select id into a2 from accounts where email = 'o2@t.test';
   select id into a3 from accounts where email = 's1@t.test';
 
-  select * into r1 from register_organization('Org One', 'Club One', a1, 'standard', 'monthly', 'swimming');
+  select * into r1 from register_organization('Org One', 'Club One', a1, 'plus', 'monthly', 'swimming');
   assert (select base_role from organization_users where id = r1.owner_id) = 'p_owner', 'registrant is the p_owner';
 
-  select * into r2 from register_organization('Org Two', 'Club Two', a1, 'standard', 'monthly', 'gym');
+  select * into r2 from register_organization('Org Two', 'Club Two', a1, 'plus', 'monthly', 'gym');
   update organization_subscriptions set seats = 50;
   assert (select count(*) from organization_users where account_id = a1 and base_role = 'p_owner') = 2, 'one account can be p_owner of two organizations';
 

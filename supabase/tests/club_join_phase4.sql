@@ -45,7 +45,7 @@ do $$
 declare
   r record; v_club uuid; v_org uuid; role_coach uuid; acc record; v_slug text;
 begin
-  select * into r from register_organization('Org J', 'Club J', pg_temp.uid('jo@t.test'), 'standard', 'monthly', 'swimming');
+  select * into r from register_organization('Org J', 'Club J', pg_temp.uid('jo@t.test'), 'plus', 'monthly', 'swimming');
   v_club := r.club_id; v_org := r.organization_id;
   update organization_subscriptions set seats = 20 where organization_id = v_org;
   select slug into v_slug from clubs where id = v_club;

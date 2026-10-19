@@ -6,7 +6,7 @@ import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { formatRupiah, PERIOD_LABEL, type PricingPlan } from "@/lib/pricing";
+import { formatRupiah, PERIOD_LABEL, trialLabel, type PricingPlan } from "@/lib/pricing";
 
 export function CreateOrganizationForm({
   plans,
@@ -38,7 +38,7 @@ export function CreateOrganizationForm({
         <Select id="org-plan" name="planCode" defaultValue={plans[0]?.code}>
           {plans.map((p) => (
             <option key={p.code} value={p.code}>
-              {p.name} · {formatRupiah(p.pricePerUserMonth)}/seat/bulan{p.trialDays > 0 ? ` · gratis ${p.trialDays} hari` : ""}
+              {p.name} · {formatRupiah(p.pricePerUserMonth)}/seat/bulan · minimal {p.minSeats} seat{p.trialDays > 0 ? ` · trial ${trialLabel(p.trialDays)}` : ""}
             </option>
           ))}
         </Select>

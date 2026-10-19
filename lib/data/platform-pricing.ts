@@ -39,6 +39,7 @@ interface PlanRow {
   name: string;
   price_per_seat_month: number | string;
   club_limit: number | null;
+  min_seats: number;
   trial_days: number;
   yearly_free_months: number | string;
   grace_days: number;
@@ -58,7 +59,7 @@ interface SubscriptionRow {
   pending_seats_from: string | null;
 }
 
-export const PLAN_COLUMNS = "code, name, price_per_seat_month, club_limit, trial_days, yearly_free_months, grace_days";
+export const PLAN_COLUMNS = "code, name, price_per_seat_month, club_limit, min_seats, trial_days, yearly_free_months, grace_days";
 export const SUBSCRIPTION_COLUMNS =
   "organization_id, plan_code, billing_period, status, trial_ends_at, current_period_start, current_period_end, club_limit_override, seats, pending_seats, pending_seats_from";
 
@@ -68,6 +69,7 @@ export function toPlan(row: PlanRow): PricingPlan {
     name: row.name,
     pricePerUserMonth: Number(row.price_per_seat_month),
     clubLimit: row.club_limit,
+    minSeats: row.min_seats,
     trialDays: row.trial_days,
     yearlyFreeMonths: Number(row.yearly_free_months),
     graceDays: row.grace_days,
@@ -256,4 +258,9 @@ export async function listInternalUsers(organizationId: string): Promise<Interna
       clubName: m.base_role === "staff" ? clubs.join(", ") || null : null,
     };
   });
+}
+
+export async function planMinSeats(code: string): Promise<number | null> {
+  const { data } = await createAdminSupabaseClient().from("subscription_plans").select("min_seats").eq("code", code).eq("is_active", true).maybeSingle();
+  return data ? Number(data.min_seats) : null;
 }
