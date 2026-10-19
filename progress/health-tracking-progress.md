@@ -3,12 +3,12 @@
 Pelacakan kesehatan pribadi di akun personal: tinggi dan berat badan per tanggal, riwayat, dan IMT.
 
 ## Status
-Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Fase 1 dan 2 selesai; migrasi 058 belum diterapkan ke hosted.
+Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Semua fase selesai. Migrasi 058 belum diterapkan ke hosted; commit Fase 3 belum di-push karena ekspor akun di production akan gagal sampai tabelnya ada (lihat Fase 3).
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 058, tes SQL, uji begin/rollback di hosted
 - [x] Fase 2: data, aksi, validasi, halaman, komponen, menu
-- [ ] Fase 3: ekspor akun, kebijakan privasi, `LEGAL_UPDATED`
+- [x] Fase 3: ekspor akun, kebijakan privasi, `LEGAL_UPDATED`
 
 ## Cara tiap peran sampai ke `/home/health`
 
@@ -124,3 +124,29 @@ Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ga
 - Nilai ukur tidak ditulis ke log atau `audit_log`.
 - Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
 - Blocker: tidak ada.
+
+### Fase 3 (selesai)
+- Berkas:
+  - `lib/export/account.ts`: berkas `kesehatan.csv`;
+  - `app/privacy/page.tsx`: catatan kesehatan masuk daftar data akun pribadi, ditambah kalimat bahwa hanya pemilik yang melihatnya;
+  - `app/sitemap.ts`: `LEGAL_UPDATED` 2026-10-19;
+  - `app/home/settings/page.tsx`: deskripsi hapus akun menyebut catatan kesehatan.
+- Perbaikan dari e2e:
+  - `components/health/measurement-form.tsx`: input jadi teks `inputMode="decimal"`. `type="number"` di browser berlokal Inggris mengosongkan "70,5" tanpa pesan.
+  - `components/health/measurement-table.tsx`: baris `whitespace-nowrap`. Di HP "168 cm" terpotong dua baris; tabel digulir horizontal seperti tabel Latihan.
+- E2E lokal (Next dev + PostgREST + Postgres 17, database `h_e2e` dari migrasi 001-058, Playwright `timezoneId` Asia/Jakarta):
+  - skrip `/tmp/hb/e2e/health.cjs`, kode keluar 0, 26 pemeriksaan lulus;
+  - yang dicek:
+    - menu tampil dan keadaan kosong;
+    - simpan berat saja dengan koma desimal, tanpa IMT;
+    - IMT 22,5 untuk 170 cm/65 kg;
+    - tolak tanggal besok, berat 301, tinggi 49, "abc", "65,25", isian kosong, dan tanggal ganda, semuanya dengan pesan Indonesia;
+    - ubah (form terisi, tersimpan, IMT dihitung ulang) dan hapus;
+    - akun B membaca 0 baris lewat PostgREST dengan token sesinya, `anon` 401;
+    - ekspor ZIP memuat `kesehatan.csv` berisi barisnya;
+    - hapus akun mengosongkan baris;
+    - nilai tidak muncul di log Next/PostgREST/proxy maupun `audit_log`.
+  - Tangkapan layar HP 390 px dicek.
+  - Catatan lingkungan uji: `service_role` lokal perlu `bypassrls` dan grant penuh (meniru Supabase), dan `auth_rate_limits` dikosongkan di antara putaran; keduanya bukan bug produk.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
+- Blocker untuk push: `buildAccountExport` melempar galat bila satu tabel gagal dibaca, jadi tanpa migrasi 058 di hosted seluruh ekspor akun di production gagal. Halaman `/home/health` dari Fase 2 sudah ter-deploy; tanpa tabel, halaman tampil kosong dan simpan menampilkan "Gagal menyimpan catatan kesehatan". Urutan aman: terapkan 058 ke hosted, ganti versinya ke 20250101000058, lalu push.

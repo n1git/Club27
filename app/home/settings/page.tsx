@@ -50,7 +50,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <CardHeader>
           <CardTitle>Hapus akun</CardTitle>
           <CardDescription>
-            Menghapus akun, profil, catatan latihan, teman, postingan, komentar, grup yang Anda buat, dan event. Tidak bisa dibatalkan. Akun yang masih
+            Menghapus akun, profil, catatan latihan, catatan kesehatan, teman, postingan, komentar, grup yang Anda buat, dan event. Tidak bisa dibatalkan. Akun yang masih
             terhubung ke klub atau organisasi tidak bisa dihapus dari sini.
           </CardDescription>
         </CardHeader>

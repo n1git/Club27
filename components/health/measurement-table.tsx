@@ -26,7 +26,7 @@ export function MeasurementTable({ rows }: { rows: Measurement[] }) {
       </TableHeader>
       <TableBody>
         {rows.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow key={row.id} className="whitespace-nowrap">
             <TableCell>{formatJakartaDate(`${row.measuredOn}T00:00:00+07:00`, { dateStyle: "medium" })}</TableCell>
             <TableCell>{formatMeasure(row.heightCm, " cm")}</TableCell>
             <TableCell>{formatMeasure(row.weightKg, " kg")}</TableCell>

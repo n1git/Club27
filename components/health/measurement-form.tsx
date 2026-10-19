@@ -19,11 +19,11 @@ export function MeasurementForm({ today, entry }: { today: string; entry?: Measu
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="h-height">Tinggi badan (cm)</Label>
-        <Input id="h-height" name="heightCm" type="number" inputMode="decimal" step="0.1" min={50} max={250} defaultValue={entry?.heightCm ?? undefined} />
+        <Input id="h-height" name="heightCm" inputMode="decimal" autoComplete="off" maxLength={6} placeholder="Contoh: 170,5" defaultValue={entry?.heightCm == null ? undefined : String(entry.heightCm).replace(".", ",")} />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="h-weight">Berat badan (kg)</Label>
-        <Input id="h-weight" name="weightKg" type="number" inputMode="decimal" step="0.1" min={20} max={300} defaultValue={entry?.weightKg ?? undefined} />
+        <Input id="h-weight" name="weightKg" inputMode="decimal" autoComplete="off" maxLength={6} placeholder="Contoh: 65,2" defaultValue={entry?.weightKg == null ? undefined : String(entry.weightKg).replace(".", ",")} />
       </div>
       <p className="text-sm text-muted-foreground sm:col-span-3">Isi tinggi, berat, atau keduanya. Satu catatan per tanggal.</p>
       <div className="flex flex-wrap gap-2 sm:col-span-3">
