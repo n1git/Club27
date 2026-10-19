@@ -3,11 +3,11 @@
 Pelacakan kesehatan pribadi di akun personal: tinggi dan berat badan per tanggal, riwayat, dan IMT.
 
 ## Status
-Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Fase 1 selesai; migrasi 058 belum diterapkan ke hosted.
+Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ganda ditolak, `health` dikecualikan dari blokir sosial, ikon `visits`, `PRIVACY_VERSION` tidak diubah). Fase 1 dan 2 selesai; migrasi 058 belum diterapkan ke hosted.
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 058, tes SQL, uji begin/rollback di hosted
-- [ ] Fase 2: data, aksi, validasi, halaman, komponen, menu
+- [x] Fase 2: data, aksi, validasi, halaman, komponen, menu
 - [ ] Fase 3: ekspor akun, kebijakan privasi, `LEGAL_UPDATED`
 
 ## Cara tiap peran sampai ke `/home/health`
@@ -106,4 +106,21 @@ Fase 0 disetujui owner (2026-10-19, "okeee gas"; usulan saya dipakai: tanggal ga
   - setelah rollback, `to_regclass('public.body_measurements')` null dan fungsi tidak ada.
 - Penerapan ke hosted menunggu permintaan owner.
 - Pemeriksaan: `npx next typegen && npx tsc --noEmit` (lihat commit fase).
+- Blocker: tidak ada.
+
+### Fase 2 (selesai)
+- Berkas baru:
+  - `lib/validations/health.ts`;
+  - `lib/data/health.ts` (`bmi`, `healthSummary`, `getHealthData`, maksimal 500 baris);
+  - `lib/actions/health.ts` (`addMeasurement`, `updateMeasurement` lalu redirect ke `/home/health`, `deleteMeasurement`);
+  - `app/home/health/page.tsx` (`unstable_dynamicStaleTime = 0`, mode ubah lewat `?ubah=<id>`);
+  - `components/health/measurement-form.tsx`, `components/health/measurement-table.tsx`.
+- Berkas diubah:
+  - `lib/validations/limits.ts`: `HEIGHT_*_CM`, `WEIGHT_*_KG`, sama dengan CHECK;
+  - `lib/auth/social-limit.ts`: scope `health` tidak diblokir sanksi sosial;
+  - `components/shared/personal-shell.tsx`: menu "Kesehatan".
+- Ikon menu: `reports`, bukan `visits` seperti rencana, karena `visits` sudah dipakai menu Latihan.
+- Validasi: koma diterima sebagai pemisah desimal; lebih dari satu desimal ditolak (kolom `numeric(4,1)` akan membulatkan diam-diam). Semua pesan berbahasa Indonesia.
+- Nilai ukur tidak ditulis ke log atau `audit_log`.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
 - Blocker: tidak ada.

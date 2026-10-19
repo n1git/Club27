@@ -3,7 +3,7 @@ import { socialBlocked } from "@/lib/auth/social-access";
 import type { ActionState } from "@/lib/actions/types";
 
 export async function socialLimited(accountId: string, scope: string, limit: number, windowSeconds = 3600): Promise<ActionState | null> {
-  if (scope !== "workout") {
+  if (scope !== "workout" && scope !== "health") {
     const blocked = await socialBlocked(accountId);
     if (blocked) return blocked;
   }

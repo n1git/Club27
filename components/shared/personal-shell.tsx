@@ -15,6 +15,7 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
         { href: "/home/friends", label: "Teman", icon: "members", primary: true, badge: badges.friends },
         { href: "/home/groups", label: "Grup", icon: "schedule", primary: true, badge: badges.groups },
         { href: "/home/workouts", label: "Latihan", icon: "visits", primary: true },
+        { href: "/home/health", label: "Kesehatan", icon: "reports" },
         { href: "/profile", label: "Profil", icon: "profile" },
         { href: "/home/join-club", label: "Gabung klub", icon: "switchClub" },
         { href: "/home/upgrade", label: "Upgrade", icon: "club" },

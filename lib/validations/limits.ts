@@ -22,3 +22,8 @@ export const birthDateField = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal lahir wajib diisi")
   .refine((v) => v >= "1900-01-01" && v <= getJakartaDateString(), "Tanggal lahir harus antara tahun 1900 dan hari ini");
+
+export const HEIGHT_MIN_CM = 50;
+export const HEIGHT_MAX_CM = 250;
+export const WEIGHT_MIN_KG = 20;
+export const WEIGHT_MAX_KG = 300;
