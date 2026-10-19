@@ -153,6 +153,7 @@ The landing leads with the free personal account and moves business features low
 
 | Claim on the page | Proof |
 |---|---|
+| FAQ: create a personal account at `/signup/account` with name, email, username (suggested from email), password and terms consent; lands on Beranda; later sign in with email or username | `components/shared/register-account-form.tsx`, `app/api/accounts/register/route.ts` (`PERSONAL_HOME`), `/login` accepts identifier |
 | Free account without organization or card | `/signup/account` (`app/api/accounts/register/route.ts`), `docs/ARCHITECTURE.md` personal accounts |
 | Weekly goal and 4-week summary; workout log is private | `workout_goals`, `summarizeWeeks` (`lib/data/workouts.ts`), RLS by `current_account_id()` (048) |
 | Find friends by exact username; friends-only feed with posts, likes, comments, shared workouts | `request_friend`, `create_post`, `share_workout`, `posts.visibility = 'friends'` (049); `social_people` |

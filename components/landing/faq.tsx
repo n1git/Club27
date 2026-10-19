@@ -41,6 +41,19 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
 
   const left: { q: string; a: React.ReactNode }[] = [
     {
+      q: "Bagaimana cara membuat akun personal?",
+      a: (
+        <>
+          Buka{" "}
+          <Link href="/signup/account" className={link}>
+            Buat akun
+          </Link>
+          , isi nama, email, username (terisi otomatis dari email dan bisa diubah), dan kata sandi, lalu setujui syarat dan kebijakan privasi. Setelah itu Anda langsung masuk ke
+          Beranda untuk mencatat latihan, menambah teman, dan gabung klub. Berikutnya masuk dengan email atau username.
+        </>
+      ),
+    },
+    {
       q: "Apakah akun gratis benar-benar gratis?",
       a: (
         <>
