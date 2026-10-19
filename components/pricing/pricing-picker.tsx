@@ -50,7 +50,7 @@ export function PeriodToggle({
       </button>
       {freeMonths > 0 ? (
         <Badge variant="secondary" className="whitespace-nowrap">
-          gratis {freeMonths.toLocaleString("id-ID")} bulan
+          hemat {freeMonths.toLocaleString("id-ID")} bulan
         </Badge>
       ) : null}
     </div>
