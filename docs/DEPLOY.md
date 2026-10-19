@@ -78,7 +78,7 @@ Pages send a Content-Security-Policy with a per-request nonce (`script-src 'nonc
 
 ## 3. Smoke test
 
-1. Open `/` and confirm the pricing section lists Standard and Advanced (needs migration 014).
+1. Open `/` and confirm the pricing section shows "27 Club Plus" with Rp75.000, minimal 2 seat (needs migrations 014 and 055).
 2. Register a club at `/signup`, land on `/admin/onboarding`.
 3. Log out, log in at `/login`, open `/admin`.
 4. Log in at `/superadmin/login` with the seeded superadmin and activate the organization.

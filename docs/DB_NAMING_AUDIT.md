@@ -18,7 +18,7 @@ Kolom "Usulan" = saran saya. Kosong = nama sudah cukup jelas.
 | `accounts` | Akun login universal | Jelas | tetap |
 | `subscriptions` | Langganan paket murid (membership) | Bentrok dengan `organization_subscriptions` (langganan platform) dan `subscription_*` lain | `member_memberships` |
 | `membership_packages` | Paket yang dijual klub ke murid | Pasangan dari `subscriptions` | tetap, atau `membership_plans` |
-| `subscription_plans` | Paket harga platform (Standard/Advanced) | Mirip `membership_packages` dan `platform_plans` | `platform_plans` (nama itu dipakai tabel lama, drop dulu) |
+| `subscription_plans` | Paket harga platform (27 Club Plus) | Mirip `membership_packages` dan `platform_plans` | `platform_plans` (nama itu dipakai tabel lama, drop dulu) |
 | `organization_subscriptions` | Langganan platform milik organisasi | Panjang tapi benar | tetap |
 | `bookings` | Booking murid ke kelas | Bentrok dengan `resource_bookings` | `class_bookings` |
 | `classes.instructor_id` vs `members.coach_id` vs `payroll_runs.coach_id` | Orang yang sama (pelatih) | Dua istilah: instructor dan coach | pilih satu: `coach_id` |

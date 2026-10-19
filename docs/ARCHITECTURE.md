@@ -42,9 +42,8 @@ loading and caching" below.
 
 Hierarchy: **organization (owner account) → clubs (clubs) → coaches →
 members**. An organization (`organizations`) has one or more owners
-(`organization_users`) and as many clubs as its plan allows (Standard 3 unless a
-superadmin sets `club_limit_override`, Advanced unlimited; trigger error
-`SW004`).
+(`organization_users`) and as many clubs as its plan allows (27 Club Plus: 5,
+unless a superadmin sets `club_limit_override`; trigger error `SW004`).
 
 Every club is a row in `clubs` with a mandatory `organization_id`. All
 club-owned data (profiles, locations, class types, members, classes, bookings, packages, subscriptions, invoices,
@@ -285,9 +284,8 @@ no new Supabase project or Vercel deployment needed. Two ways in:
   "Invitations and password reset" below.
 
 Organizations that existed before the billing migration were backfilled
-(see migration `20250101000014_org_billing.sql`): Advanced if any old plan was
-unlimited, otherwise Standard, with the highest old status; organizations
-without any old subscription became Advanced + active. The owner then sets club name/logo/color from Admin -> Pengaturan.
+(see migration `20250101000014_org_billing.sql`); they have since moved to the
+single plan (migration 055). The owner then sets club name/logo/color from Admin -> Pengaturan.
 
 ## Club types, modules and gym check-in
 
@@ -542,7 +540,7 @@ status from `/superadmin`.
   and every write to `organization_subscriptions` and
   `subscription_plans` are unreachable from `anon`/`authenticated`.
 - Billing is per **organization**, not per club. `subscription_plans`
-  (Standard, Advanced) holds the only copy of prices and limits;
+  (one plan, `plus`) holds the only copy of prices and limits;
   `organization_subscriptions` holds the organization's plan, period
   (monthly or yearly), status (`pending`, `trial`, `active`, `suspended`,
   `cancelled`), trial end, period dates, an optional club-limit override and
@@ -667,12 +665,18 @@ status from `/superadmin`.
   row is locked, so parallel inserts cannot exceed it). Monthly = 1 month;
   yearly = 12 − `yearly_free_months` (11.5). The effective monthly price is
   the total ÷ 1 or ÷ 12.
-- Seeded values: Standard Rp 150.000/seat/month, up to 3 clubs; Advanced
-  Rp 250.000/seat/month, unlimited clubs; both with a 14-day trial of 1 seat
-  (`trial_days`, `trial_seats`). Members and locations are unlimited on both;
-  every `ready` module is included.
+- Seeded values: one plan, "27 Club Plus" (`plus`): Rp 75.000/seat/month, at
+  least 2 seats per purchase (`min_seats`), up to 5 clubs, a 30-day trial of
+  1 seat (`trial_days`, `trial_seats`). Members and locations are unlimited
+  (the "FUP 1.000 member/club" line is text only, nothing enforces it);
+  every `ready` module is included. The plan card text and its footnotes live
+  in `components/pricing/plan-terms.tsx`; the coupon link only appears when a
+  contact env var is set and only leads to the contact (there is no coupon
+  system).
 - `platform_quote(plan, period, users)` is the server-side calculation
-  (execute revoked from clients). The landing page and wizard show a live
+  (execute revoked from clients); it never quotes fewer than `min_seats`,
+  and `request_renewal` rejects a purchase below it (errcode `22023`; the
+  zod schema for the renewal form is built per request from the same value). The landing page and wizard show a live
   estimate with the same formula over the plan rows; every authoritative
   figure (registration, renewal, seat purchase and its preview, the
   superadmin portal) is recomputed on the server
@@ -684,8 +688,8 @@ status from `/superadmin`.
   a new club beyond `coalesce(club_limit_override, plan club limit)` is
   rejected (the subscription row is locked, so parallel creations cannot
   exceed it), and a plan or override change that leaves the organization
-  over the limit is rejected, which blocks Advanced → Standard with more
-  than 3 clubs.
+  over the limit is rejected. Migration 055 sets `club_limit_override` to the
+  club count for organizations that already had more than 5 clubs.
 - Infrastructure floor for reference: Vercel Pro ≈ $24/mo + Supabase Pro ≈
   $25/mo + usage buffer ≈ $20–30 → ≈ Rp 1.300.000/month at ≈ Rp 17.900/USD
   (verify before relying on it); marginal cost per extra organization ≈ 0

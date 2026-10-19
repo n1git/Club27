@@ -137,7 +137,7 @@ Public landing page (`/`) for Swimma as one app for all sports clubs; every clai
   - Keyboard: first Tab is the visible skip link and Enter moves to `#konten`; tab order follows the visual order (skip link, brand, section links, theme, Masuk, Daftarkan klub, hero CTAs, ...); focus ring visible; mobile menu opens with Enter, focus moves into it, Escape closes it and returns focus to the button; FAQ items open and close with Enter and Space. Reduced motion: hero preview animation is `none`.
   - Links: all 15 distinct hrefs on `/` resolve (anchors exist, routes return 200); no external link and no contact element when the contact env vars are unset.
   - `grep` for "1.240", "Kolam Renang Melati", "Aquatic Center Nusantara", "Sekolah Renang Ombak" finds them only in this progress file (where they are recorded as removed), not in code.
-  - A signed-in owner visiting `/` is redirected (to `/admin`, as before). Picking Advanced, yearly and 5 users on the landing leads to `/daftar?plan=advanced&period=yearly&users=5`, and the form shows Advanced selected, yearly pressed and 5 users. Setting `club_types.futsal` to `ready` adds a futsal card on the next request; setting it back removes it.
+  - A signed-in owner visiting `/` is redirected (to `/admin`, as before). Picking the plan, yearly and 5 users on the landing leads to `/signup?plan=plus&period=yearly&users=5`, and the form shows the plan selected, yearly pressed and 5 users. Setting `club_types.futsal` to `ready` adds a futsal card on the next request; setting it back removes it.
   - `/robots.txt`, `/sitemap.xml`, `/opengraph-image` (PNG), `/privasi`, `/syarat` return 200; legal pages carry `noindex, follow` and the "Draf" notice; `/` has a canonical link, `og:image` and JSON-LD with one offer per live plan.
 - Lighthouse on `/` (production build, local server):
   - Desktop: performance 100, accessibility 100, best practices 100, SEO 100; LCP 0.6 s, CLS 0.
@@ -167,3 +167,16 @@ The landing leads with the free personal account and moves business features low
 | Seat holders: owner, admin, receptionist, finance; coach, kasir, members free | `organization_internal_users`, `enforce_seat_limit` (042) |
 | Plan is activated after payment; no online payment in the app; member invoices recorded by staff | `docs/ARCHITECTURE.md` renewals and payment; `mark_invoice_paid` (016) |
 | Business feature list (clubs, packages, schedule, booking, QR check-in, kasir, cash book, payroll, portal, roles, reports, staff invites, modules per club, export) | rows above for the same features; `app/admin/*` pages; `app/api/export/organization` |
+
+## Single plan "27 Club Plus" (2026-10-21)
+
+The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan card (`components/pricing/plan-terms.tsx`, `components/landing/plan-card.tsx`). Numbers come from `subscription_plans`; the English lines are fixed wording.
+
+| Claim on the page | Proof |
+|---|---|
+| Rp75.000 / seat / bulan, minimal 2 seat | `subscription_plans.price_per_seat_month`, `min_seats` (055); `platform_quote` clamps to the minimum, `request_renewal` rejects below it (`supabase/tests/seats_phase4.sql`) |
+| Add up to 5 Club*; "Need more club? contact admin" | `subscription_plans.club_limit`; `enforce_subscription_limits` and `club_limit_override` (`SW004`) |
+| Member Unlimited**; "FUP 1.000 member/club" | no member limit in SQL; the FUP is text only |
+| Trial 1 bulan*** | `trial_days` = 30, `trial_seats` = 1 |
+| "Get your coupon code here" | link to `NEXT_PUBLIC_CONTACT_WHATSAPP` or `NEXT_PUBLIC_CONTACT_EMAIL`; hidden (with the `***`) when neither is set; there is no coupon system |
+| Estimate "N seat x months = total" | `computeQuote` in `lib/pricing.ts`, same formula as `platform_quote`; the server recomputes at registration and renewal |

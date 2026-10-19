@@ -4,11 +4,11 @@ Replace Standard and Advanced with one plan, "27 Club Plus": code `plus`, Rp75.0
 
 ## Status
 
-- [x] Phase 0: plan (this file), waiting for approval
-- [ ] Phase 1: migration 055
-- [ ] Phase 2: TypeScript
-- [ ] Phase 3: landing and sport pages
-- [ ] Phase 4: docs
+- [x] Phase 0: plan, approved
+- [x] Phase 1: migration 055 (dry run on hosted in a rolled-back transaction, then applied)
+- [x] Phase 2: TypeScript
+- [x] Phase 3: landing and sport pages
+- [x] Phase 4: docs
 
 ## Migration 055 (`20250101000055_single_plan_plus.sql`)
 
@@ -57,3 +57,12 @@ Replace Standard and Advanced with one plan, "27 Club Plus": code `plus`, Rp75.0
 3. During the 30-day trial the organization has 1 seat, so a second paid-role user is blocked until the first purchase of at least 2 seats. That is the current behavior with `trial_seats = 1`; say if you want 2 trial seats.
 4. "Search finds no remaining Advanced or standard plan references except CHANGELOG history": migrations, `progress/*` history files and `progress/rbac-seat/rollback/042.sql` are immutable history and keep the old names. I will clean live code, tests, scripts and docs. Tell me if the progress files must be rewritten too.
 5. JSON-LD offer: add `eligibleQuantity.minValue = 2` to the single offer. OK?
+
+## Decisions (answers)
+
+1. Dry run: `supabase` CLI needs credentials this environment does not have, so the dry run is the migration inside a rolled-back transaction on hosted via `execute_sql` (procedure in `CLAUDE.md`). It caught the old `subscription_plans_code_check` constraint before anything was applied.
+2. Organizations over 5 clubs keep their club count as `club_limit_override` (checked with a local test: 7 clubs stay, an 8th is rejected with `SW004`).
+3. Active organizations with 1 seat keep it until their next renewal request.
+4. The trial keeps 1 seat.
+5. Progress history files were reworded; migrations and `progress/rbac-seat/rollback/042.sql` keep the old names.
+6. JSON-LD offer has `eligibleQuantity.minValue`.

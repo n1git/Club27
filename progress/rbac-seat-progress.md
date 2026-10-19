@@ -84,7 +84,7 @@ Label: **F** = fakta terverifikasi (file/query), **R** = rekomendasi desain, **A
 ## 7. Migrasi data production (F + R)
 
 - F (query 2026-10-16): 3 `organizations`, 3 `org_owners`, 3 `tenants` (semua `swimming`), 5 `profiles` (3 admin pemilik, 1 coach, 1 member), 1 `member_accounts`, 1 `members`, 1 `auth_credentials`, 1 superadmin, 4 `audit_log`.
-- F: langganan: 2 trial Standard bulanan (berakhir 2026-11-11 dan 2026-11-15, trial 30 hari), 1 Advanced tahunan `active` sampai 2027-10-14. `subscription_renewals`: 1 `paid` via Midtrans Rp2.875.000 (1 user), 2 `pending` manual (Rp2.875.000 dan Rp250.000).
+- F: langganan: 2 trial paket lama bulanan (berakhir 2026-11-11 dan 2026-11-15, trial 30 hari), 1 paket lama tahunan `active` sampai 2027-10-14. `subscription_renewals`: 1 `paid` via Midtrans Rp2.875.000 (1 user), 2 `pending` manual (Rp2.875.000 dan Rp250.000).
 - F: `supabase_migrations.schema_migrations` hosted berisi 18 versi bertimestamp 20261002-20261014, tidak sama dengan nama file repo (`20250101000001`-`038`). `supabase db push` biasa akan salah membaca riwayat.
 - A: belum diketahui apakah 3 org ini pelanggan nyata atau uji coba (D1).
 - Keputusan (D1): data uji dikosongkan saat cutover, tanpa backfill; `subscription_plans` dan `superadmins` dipertahankan. Ambil `pg_dump` sebelum setiap migrasi hosted. Terapkan dulu ke Supabase branch atau staging.
@@ -131,7 +131,7 @@ Kasus yang diuji:
 - D1 Dijawab owner 2026-10-16: tiga org di production adalah data uji coba (termasuk pembayaran Midtrans Rp2.875.000). Tidak ada pelanggan nyata. Owner mengizinkan data uji di production dikosongkan saat cutover, jadi backfill tidak wajib; skema baru boleh dimulai dari data kosong (tetap `pg_dump` dulu, `subscription_plans` dan `superadmins` dipertahankan).
 - D2 Staff berlaku di semua klub org atau per klub yang ditugaskan? Default penugasan kosong = semua klub atau tidak ada?
 - D3 Satu akun boleh jadi p_owner beberapa org dengan langganan terpisah per org (model sekarang per org)?
-- D4 Trial 14 hari bertentangan dengan `trial_days` 30 (Standard) / 0 (Advanced) dan larangan mengubah paket. Ubah `trial_days`, atau trial 14 hari diatur di luar tabel paket? Trial 30 hari yang sedang berjalan tetap?
+- D4 Trial 14 hari bertentangan dengan `trial_days` 30 (paket lama pertama) / 0 (paket lama kedua) dan larangan mengubah paket. Ubah `trial_days`, atau trial 14 hari diatur di luar tabel paket? Trial 30 hari yang sedang berjalan tetap?
 - D5 Hitungan seat (tanpa coach) menurunkan nominal perpanjangan pelanggan yang punya pelatih aktif. Setuju diterapkan ke pelanggan lama?
 - D6 Masa tenggang read-only: siapa yang boleh login (backend, coach/kasir, member)? Ini menggantikan kunci langsung (`isBillingLocked`).
 - D7 Kebijakan retensi dan purge: opsi a/b/c di atas, revisi `/privasi`/`/syarat`, dan latihan restore (`docs/RESTORE.md` belum pernah dijalankan).

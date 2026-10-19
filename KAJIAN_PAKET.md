@@ -5,26 +5,26 @@ Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah 
 ## 1. Model
 
 - Langganan per **organisasi** (pemilik), bukan per klub. Satu organisasi punya satu paket, satu periode, dan satu status.
-- Harga per **seat** yang dibeli (lihat bagian 4). Seat dipakai pemilik dan staf berperan berbayar; pelatih, kasir, peran gratis, dan anggota tidak memakai seat. Anggota tidak dibatasi. Minimal 1 seat.
+- Harga per **seat** yang dibeli (lihat bagian 4). Seat dipakai pemilik dan staf berperan berbayar; pelatih, kasir, peran gratis, dan anggota tidak memakai seat. Anggota tidak dibatasi. Minimal pembelian mengikuti `subscription_plans.min_seats` (2).
 - Rumus: seat x harga per seat per bulan x bulan (bulanan 1, tahunan 12 - bulan gratis). Dihitung ulang di server lewat `platform_quote` (perpanjangan) dan `seat_quote` (tambah seat prorata); harga dari klien tidak dipakai.
 - Komitmen bulanan atau tahunan. Tahunan = 12 dikurangi bulan gratis (awal: 0,5, jadi 11,5 bulan).
 
-## 2. Dua paket
+## 2. Satu paket: 27 Club Plus
 
-| | Standard | Advanced |
-|---|---|---|
-| Harga | Rp 150.000 / seat / bulan | Rp 250.000 / seat / bulan |
-| Klub | maks 3 (bisa dinaikkan per organisasi oleh superadmin) | tak terbatas |
-| Anggota dan lokasi | tak terbatas | tak terbatas |
-| Modul | semua modul `ready` | semua modul `ready` |
-| Trial | 14 hari, 1 seat | 14 hari, 1 seat |
-| Tahunan | 11,5 bulan | 11,5 bulan |
+| | 27 Club Plus |
+|---|---|
+| Harga | Rp 75.000 / seat / bulan, minimal 2 seat |
+| Klub | maks 5 (bisa dinaikkan per organisasi oleh superadmin lewat `club_limit_override`) |
+| Anggota dan lokasi | tak terbatas (FUP 1.000 anggota per klub, hanya teks, tidak ditegakkan di database) |
+| Modul | semua modul `ready` |
+| Trial | 30 hari (ditulis "1 bulan"), 1 seat, otomatis; tidak ada sistem kupon, tautan kupon hanya mengarah ke kontak |
+| Tahunan | 11,5 bulan |
 
-Contoh: Standard bulanan 4 seat = Rp 600.000; Standard tahunan 4 seat = 4 x 150.000 x 11,5 = Rp 6.900.000 (setara Rp 575.000/bulan); Advanced bulanan 2 seat = Rp 500.000.
+Contoh: bulanan 2 seat = Rp 150.000; bulanan 4 seat = Rp 300.000; tahunan 2 seat = 2 x 75.000 x 11,5 = Rp 1.725.000 (setara Rp 143.750/bulan). Pembelian atau perpanjangan dengan 1 seat ditolak (`min_seats`); perkiraan harga (`platform_quote`) selalu dihitung dari minimal 2 seat.
 
 ## 3. Modul (`platform_modules`)
 
-Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semuanya `ready`: Anggota, Paket Keanggotaan, Tagihan, Buku Kas, Jadwal & Presensi, Gaji Pelatih, Promo, Portal Anggota, Check-in, Fasilitas & Booking, Produk & Kasir. Modul yang aktif di sebuah klub tetap mengikuti jenis klubnya (`club_type_modules`) dan pengaturan per klub.
+Registri tanpa harga; semua modul `ready` termasuk di paket ini. Saat ini semuanya `ready`: Anggota, Paket Keanggotaan, Tagihan, Buku Kas, Jadwal & Presensi, Gaji Pelatih, Promo, Portal Anggota, Check-in, Fasilitas & Booking, Produk & Kasir. Modul yang aktif di sebuah klub tetap mengikuti jenis klubnya (`club_type_modules`) dan pengaturan per klub.
 
 ## 4. Aturan akses
 
@@ -41,12 +41,12 @@ Registri tanpa harga; semua modul `ready` termasuk di kedua paket. Saat ini semu
 
 | Komponen | Asumsi | Dampak |
 |---|---|---|
-| Infrastruktur tetap | Vercel Pro ~$24 + Supabase Pro ~$25 + buffer ~$20-30 = Rp1,3 juta/bulan | Break-even ~9 seat Standard atau ~6 seat Advanced |
+| Infrastruktur tetap | Vercel Pro ~$24 + Supabase Pro ~$25 + buffer ~$20-30 = Rp1,3 juta/bulan | Break-even ~18 seat Plus (Rp 75.000 per seat) |
 | Biaya organisasi tambahan | ~Rp0 sampai pemakaian naik tier | Margin tinggi |
 
 ## 6. Pertanyaan terbuka
 
 1. Apa yang terjadi pada data setelah masa tenggang berakhir (kebijakan retensi)? Belum diputuskan; penghapusan belum dijalankan.
 2. Apakah diskon tahunan tetap 0,5 bulan, atau naik setelah ada data pelanggan?
-3. Apakah batas klub Standard (3) perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
+3. Apakah batas 5 klub perlu berbeda per organisasi lewat penjualan, atau cukup override superadmin?
 4. Invoice/kwitansi belum dirancang.
