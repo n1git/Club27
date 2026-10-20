@@ -75,7 +75,7 @@ export async function submitRenewal(_prevState: ActionState, formData: FormData)
     actorRole: session.app_role,
   });
   const paymentUrl = await preparePaymentFor(organizationId, session.account_id);
-  revalidatePath("/admin/club/subscription");
+  revalidatePath("/admin/plan");
   if (paymentUrl) return { ok: true, message: "Pengajuan tercatat. Lanjutkan pembayaran lewat tombol Bayar sekarang." };
   return { ok: true, message: "Pengajuan tercatat. Langganan aktif setelah pembayaran dikonfirmasi." };
 }
@@ -99,7 +99,7 @@ export async function submitSeatPurchase(_prevState: ActionState, formData: Form
     actorRole: session.app_role,
   });
   const paymentUrl = await preparePaymentFor(organizationId, session.account_id);
-  revalidatePath("/admin/club/subscription");
+  revalidatePath("/admin/plan");
   if (paymentUrl) return { ok: true, message: "Pengajuan tercatat. Lanjutkan pembayaran lewat tombol Bayar sekarang." };
   return { ok: true, message: "Pengajuan tercatat. Seat bertambah setelah pembayaran dikonfirmasi." };
 }
@@ -107,7 +107,7 @@ export async function submitSeatPurchase(_prevState: ActionState, formData: Form
 export async function retryRenewalPayment(_prevState: ActionState): Promise<ActionState> {
   const { organizationId, session } = await billingContext();
   const url = await preparePaymentFor(organizationId, session.account_id);
-  revalidatePath("/admin/club/subscription");
+  revalidatePath("/admin/plan");
   return url ? { ok: true, message: "Tautan pembayaran siap." } : { ok: false, error: "Tautan pembayaran belum bisa dibuat. Coba lagi beberapa saat lagi." };
 }
 

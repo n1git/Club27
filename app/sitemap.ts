@@ -9,8 +9,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const types = (await getPublicClubTypes()).filter((t) => t.status === "ready");
   return [
     { url: `${SITE_URL}/`, lastModified: LANDING_UPDATED },
-    { url: `${SITE_URL}/sports`, lastModified: LANDING_UPDATED },
-    ...types.map((t) => ({ url: `${SITE_URL}/sports/${t.code}`, lastModified: LANDING_UPDATED })),
+    { url: `${SITE_URL}/s`, lastModified: LANDING_UPDATED },
+    ...types.map((t) => ({ url: `${SITE_URL}/s/${t.code}`, lastModified: LANDING_UPDATED })),
     { url: `${SITE_URL}/signup`, lastModified: LANDING_UPDATED },
     { url: `${SITE_URL}/privacy`, lastModified: LEGAL_UPDATED },
     { url: `${SITE_URL}/terms`, lastModified: LEGAL_UPDATED },

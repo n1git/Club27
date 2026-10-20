@@ -17,7 +17,7 @@ function addDays(date: string, days: number) {
 }
 
 function reminderEmail(dueDate: string, trial: boolean) {
-  const link = `${SITE_URL}/admin/club/subscription`;
+  const link = `${SITE_URL}/admin/plan`;
   const what = trial ? "Masa trial" : "Langganan";
   const date = formatJakartaDate(dueDate, { day: "numeric", month: "long", year: "numeric" });
   return {

@@ -6,6 +6,8 @@ import { getSession } from "@/lib/auth/session";
 import { roleHome } from "@/lib/auth/roles";
 import { getPublicClubTypes } from "@/lib/club-type";
 import { getActivePlans } from "@/lib/data/platform-pricing";
+import { PersonalHomePage } from "@/components/personal/home-page";
+import { PersonalLayout } from "@/components/personal/personal-layout";
 import { LandingHeader, SkipLink } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { Hero } from "@/components/landing/hero";
@@ -25,8 +27,15 @@ export const metadata: Metadata = pageMetadata({
   path: "/",
 });
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ sebelum?: string }> }) {
   const session = await getSession();
+  if (session && session.app_role === "personal") {
+    return (
+      <PersonalLayout>
+        <PersonalHomePage searchParams={searchParams} />
+      </PersonalLayout>
+    );
+  }
   if (session) redirect(roleHome(session.app_role));
   const [plans, clubTypes] = await Promise.all([getActivePlans(), getPublicClubTypes()]);
 

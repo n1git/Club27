@@ -31,7 +31,7 @@ export default async function ChallengesPage() {
         {active.length ? (
           <ul className="grid gap-3 md:grid-cols-2">
             {active.map(({ c, p }) => (
-              <ChallengeCard key={c.id} challenge={c} progress={p} joined={state.joined.has(c.id)} today={today} sportLabel={c.sport ? labels.get(c.sport) : undefined} href={`/home/challenges/${c.id}`} />
+              <ChallengeCard key={c.id} challenge={c} progress={p} joined={state.joined.has(c.id)} today={today} sportLabel={c.sport ? labels.get(c.sport) : undefined} href={`/c/${c.id}`} />
             ))}
           </ul>
         ) : (
@@ -55,7 +55,7 @@ export default async function ChallengesPage() {
           <h2 className="text-sm font-semibold text-muted-foreground">Sudah selesai</h2>
           <ul className="grid gap-3 md:grid-cols-2">
             {past.map(({ c, p }) => (
-              <ChallengeCard key={c.id} challenge={c} progress={p} joined={state.joined.has(c.id)} today={today} sportLabel={c.sport ? labels.get(c.sport) : undefined} href={`/home/challenges/${c.id}`} />
+              <ChallengeCard key={c.id} challenge={c} progress={p} joined={state.joined.has(c.id)} today={today} sportLabel={c.sport ? labels.get(c.sport) : undefined} href={`/c/${c.id}`} />
             ))}
           </ul>
         </section>

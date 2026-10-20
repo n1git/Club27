@@ -19,7 +19,7 @@ function fail(error: { code?: string; message: string } | null, fallback: string
 }
 
 function done(): ActionState {
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 
@@ -32,8 +32,8 @@ export async function createGroup(_prevState: ActionState, formData: FormData): 
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("create_group", { p_name: parsed.data.name, p_description: parsed.data.description ?? null });
   if (error || !data) return fail(error, "Gagal membuat grup");
-  revalidatePath("/home", "layout");
-  redirect(`/home/groups/${data}`);
+  revalidatePath("/", "layout");
+  redirect(`/g/${data}`);
 }
 
 export async function inviteToGroup(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -68,8 +68,8 @@ export async function leaveGroup(_prevState: ActionState, formData: FormData): P
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("leave_group", { p_group: group.data });
   if (error) return fail(error, "Gagal keluar dari grup");
-  revalidatePath("/home", "layout");
-  redirect("/home/groups");
+  revalidatePath("/", "layout");
+  redirect("/groups");
 }
 
 export async function removeGroupMember(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -89,8 +89,8 @@ export async function deleteGroup(_prevState: ActionState, formData: FormData): 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("delete_group", { p_group: group.data });
   if (error) return fail(error, "Gagal menghapus grup");
-  revalidatePath("/home", "layout");
-  redirect("/home/groups");
+  revalidatePath("/", "layout");
+  redirect("/groups");
 }
 
 export async function createEvent(_prevState: ActionState, formData: FormData): Promise<ActionState> {

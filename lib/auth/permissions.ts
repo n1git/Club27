@@ -69,7 +69,7 @@ export function hasAny(permissions: PermissionSet, codes: PermissionCode | reado
 }
 
 const ADMIN_PATH_RULES: { prefix: string; any: readonly PermissionCode[] }[] = [
-  { prefix: "/admin/join-requests", any: ["members.create"] },
+  { prefix: "/admin/requests", any: ["members.create"] },
   { prefix: "/admin/leaderboard", any: ["members.view_all"] },
   { prefix: "/admin/challenges", any: ["challenges.manage"] },
   { prefix: "/admin/members", any: ["members.view_all"] },
@@ -78,26 +78,29 @@ const ADMIN_PATH_RULES: { prefix: string; any: readonly PermissionCode[] }[] = [
   { prefix: "/admin/booking", any: ["resource_bookings.view"] },
   { prefix: "/admin/schedule/new", any: ["schedule.manage"] },
   { prefix: "/admin/schedule", any: ["schedule.view"] },
-  { prefix: "/admin/billing/invoices", any: ["invoices.view"] },
-  { prefix: "/admin/billing", any: ["packages.manage", "subscriptions.view", "invoices.manage"] },
-  { prefix: "/admin/cash-ledger", any: ["cash_ledger.view"] },
+  { prefix: "/admin/invoices", any: ["invoices.view"] },
+  { prefix: "/admin/packages", any: ["packages.manage", "subscriptions.view", "invoices.manage"] },
+  { prefix: "/admin/subscriptions", any: ["packages.manage", "subscriptions.view", "invoices.manage"] },
+  { prefix: "/admin/cash", any: ["cash_ledger.view"] },
   { prefix: "/admin/payroll", any: ["payroll.view"] },
   { prefix: "/admin/reports", any: ["reports.view"] },
   { prefix: "/admin/coaches", any: ["coaches.manage"] },
   { prefix: "/admin/staff", any: ["staff.manage"] },
   { prefix: "/admin/checkin", any: ["checkin.manage"] },
+  { prefix: "/admin/screen", any: ["checkin.manage"] },
   { prefix: "/admin/audit", any: ["audit.view"] },
   { prefix: "/admin/products", any: ["pos.products_manage"] },
   { prefix: "/admin/facilities", any: ["resources.manage"] },
   { prefix: "/admin/onboarding", any: ["club.settings"] },
   { prefix: "/admin/promo", any: ["promo.manage"] },
   { prefix: "/admin/settings", any: ["club.settings"] },
+  { prefix: "/admin/modules", any: ["club.settings"] },
   { prefix: "/admin/roles", any: ["roles.manage"] },
 ];
 
 const OWNER_ONLY_PREFIXES = ["/admin/club"];
 
-const BILLING_PREFIX = "/admin/club/subscription";
+const BILLING_PREFIX = "/admin/plan";
 
 const FREE_PREFIXES = ["/profile"];
 

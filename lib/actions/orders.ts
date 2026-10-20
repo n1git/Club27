@@ -13,7 +13,7 @@ function refresh() {
   revalidatePath("/admin/orders");
   revalidatePath("/admin/products");
   revalidatePath("/admin/booking");
-  revalidatePath("/admin/cash-ledger");
+  revalidatePath("/admin/cash");
   revalidatePath("/member/orders");
 }
 

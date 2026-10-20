@@ -37,6 +37,6 @@ export async function addManualAdjustment(
     return { ok: false, error: "Gagal menyimpan penyesuaian" };
   }
 
-  revalidatePath("/admin/cash-ledger");
+  revalidatePath("/admin/cash");
   return { ok: true };
 }

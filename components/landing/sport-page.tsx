@@ -53,7 +53,7 @@ export function SportPage({
                 </li>
                 <li aria-hidden>/</li>
                 <li>
-                  <Link href="/sports" className="hover:text-foreground hover:underline">
+                  <Link href="/s" className="hover:text-foreground hover:underline">
                     Olahraga
                   </Link>
                 </li>
@@ -178,7 +178,7 @@ export function SportPage({
               <ul className="mt-6 flex flex-wrap gap-3">
                 {others.map((o) => (
                   <li key={o.code}>
-                    <Link href={`/sports/${o.code}`} className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+                    <Link href={`/s/${o.code}`} className={buttonVariants({ variant: "outline", className: "gap-2" })}>
                       {o.name}
                       <ArrowRight className="size-4" aria-hidden />
                     </Link>
@@ -186,7 +186,7 @@ export function SportPage({
                 ))}
               </ul>
               <p className="mt-6">
-                <Link href="/sports" className="font-semibold underline underline-offset-4 hover:text-accent-foreground">
+                <Link href="/s" className="font-semibold underline underline-offset-4 hover:text-accent-foreground">
                   Lihat semua olahraga
                 </Link>
               </p>

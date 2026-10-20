@@ -23,7 +23,7 @@ const adminGroups = (resourceLabel: string): AdminNavGroup[] => [
     label: "Orang",
     items: [
       { href: "/admin/members", label: "Anggota", icon: "members", primary: true },
-      { href: "/admin/join-requests", label: "Permintaan gabung", icon: "switchClub", module: "member_portal" },
+      { href: "/admin/requests", label: "Permintaan gabung", icon: "switchClub", module: "member_portal" },
       { href: "/admin/leaderboard", label: "Peringkat", icon: "trophy", module: "member_portal" },
       { href: "/admin/challenges", label: "Tantangan", icon: "trophy", module: "member_portal" },
       { href: "/admin/coaches", label: "Pelatih", icon: "coaches" },
@@ -50,10 +50,10 @@ const adminGroups = (resourceLabel: string): AdminNavGroup[] => [
   {
     label: "Keuangan",
     items: [
-      { href: "/admin/billing/packages", label: "Paket", icon: "packages", module: "plans" },
-      { href: "/admin/billing/subscriptions", label: "Langganan", icon: "subscriptions", module: "billing" },
-      { href: "/admin/billing/invoices", label: "Tagihan", icon: "invoices", module: "billing" },
-      { href: "/admin/cash-ledger", label: "Buku Kas", icon: "ledger", module: "cash_ledger" },
+      { href: "/admin/packages", label: "Paket", icon: "packages", module: "plans" },
+      { href: "/admin/subscriptions", label: "Langganan", icon: "subscriptions", module: "billing" },
+      { href: "/admin/invoices", label: "Tagihan", icon: "invoices", module: "billing" },
+      { href: "/admin/cash", label: "Buku Kas", icon: "ledger", module: "cash_ledger" },
       { href: "/admin/payroll", label: "Gaji Pelatih", icon: "payroll", module: "payroll" },
     ],
   },
@@ -91,7 +91,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const orgItems: NavItem[] = [
     ...(owner ? [{ href: "/admin/club", label: "Klub", icon: "club", exact: true } satisfies NavItem] : []),
     ...(owner || session.permissions.has("billing.view")
-      ? [{ href: "/admin/club/subscription", label: "Langganan", icon: "orgBilling" } satisfies NavItem]
+      ? [{ href: "/admin/plan", label: "Langganan", icon: "orgBilling" } satisfies NavItem]
       : []),
     ...(owner ? [{ href: "/admin/roles", label: "Peran", icon: "roles" } satisfies NavItem] : []),
     ...(owner ? [{ href: "/admin/club/owners", label: "Pemilik", icon: "staff" } satisfies NavItem] : []),
@@ -107,7 +107,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         icon,
         exact,
         primary: primary || operationsPrimary.has(href),
-        badge: href === "/admin/join-requests" ? joinPending : undefined,
+        badge: href === "/admin/requests" ? joinPending : undefined,
       })),
     })),
   ];

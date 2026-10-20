@@ -34,7 +34,7 @@ export async function requestClubJoin(_prevState: ActionState, formData: FormDat
     p_privacy_version: PRIVACY_VERSION,
   });
   if (error) return { ok: false, error: KNOWN.has(error.code) ? error.message : "Gagal mengirim permintaan" };
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true, message: "Permintaan dikirim. Klub akan meninjaunya." };
 }
 
@@ -45,7 +45,7 @@ export async function cancelClubJoin(_prevState: ActionState, formData: FormData
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("cancel_club_join", { p_id: id.data });
   if (error) return { ok: false, error: KNOWN.has(error.code) ? error.message : "Gagal membatalkan permintaan" };
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 
@@ -71,7 +71,7 @@ export async function decideClubJoin(_prevState: ActionState, formData: FormData
     if (error.code === "23505") return { ok: false, error: "Email pemohon sudah dipakai sebagai pemilik atau staf" };
     return { ok: false, error: KNOWN.has(error.code) ? error.message : "Gagal memproses permintaan" };
   }
-  revalidatePath("/admin/join-requests");
+  revalidatePath("/admin/requests");
   revalidatePath("/admin/members");
   return { ok: true, message: parsed.data.approve === "1" ? "Anggota ditambahkan" : "Permintaan ditolak" };
 }
@@ -81,6 +81,6 @@ export async function rotateClubCode(_prevState: ActionState): Promise<ActionSta
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("rotate_club_code");
   if (error) return { ok: false, error: "Gagal mengganti kode klub" };
-  revalidatePath("/admin/join-requests");
+  revalidatePath("/admin/requests");
   return { ok: true, message: "Kode klub diganti. Kode lama tidak berlaku lagi untuk permintaan baru." };
 }

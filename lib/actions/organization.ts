@@ -158,7 +158,7 @@ export async function requestOrganizationDeletion(_prevState: ActionState, formD
     tenantId: "",
     orgId: "",
   });
-  redirect("/home");
+  redirect("/");
 }
 
 export async function cancelOrganizationDeletion(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -183,6 +183,6 @@ export async function cancelOrganizationDeletion(_prevState: ActionState, formDa
     actorId: session.sub,
     actorRole: "account",
   });
-  revalidatePath("/home");
+  revalidatePath("/");
   return { ok: true, message: "Organisasi dipulihkan. Masuk lagi untuk membukanya." };
 }

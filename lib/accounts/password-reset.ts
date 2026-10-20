@@ -12,7 +12,7 @@ export async function createPasswordReset(
 ): Promise<{ link: string; emailSent: boolean } | null> {
   const supabase = createAdminSupabaseClient();
   const { token, hash } = newToken();
-  const link = `${SITE_URL}/reset-password/${token}`;
+  const link = `${SITE_URL}/r/${token}`;
   const { data, error } = await supabase
     .from("password_resets")
     .insert({

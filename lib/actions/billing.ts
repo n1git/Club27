@@ -57,7 +57,7 @@ export async function createPackage(
   );
   if (error) return { ok: false, error: "Gagal menyimpan paket" };
 
-  revalidatePath("/admin/billing/packages");
+  revalidatePath("/admin/packages");
   revalidatePath("/admin/onboarding");
   return { ok: true };
 }
@@ -90,7 +90,7 @@ export async function createSubscription(
     return { ok: false, error: "Gagal menyimpan langganan" };
   }
 
-  revalidatePath("/admin/billing/subscriptions");
+  revalidatePath("/admin/subscriptions");
   return { ok: true };
 }
 
@@ -104,7 +104,7 @@ export async function cancelSubscription(_prevState: ActionState, formData: Form
     .eq("id", subscriptionId)
     .select("id");
   if (error || !data?.length) return { ok: false, error: "Gagal membatalkan langganan" };
-  revalidatePath("/admin/billing/subscriptions");
+  revalidatePath("/admin/subscriptions");
   return { ok: true, message: "Langganan dibatalkan" };
 }
 
@@ -132,7 +132,7 @@ export async function generateInvoices(
 
   if (error) return { ok: false, error: error.code === "SW003" ? error.message : "Gagal membuat tagihan" };
 
-  revalidatePath("/admin/billing/invoices");
+  revalidatePath("/admin/invoices");
   return { ok: true, message: `${(data as unknown[])?.length ?? 0} tagihan baru dibuat` };
 }
 
@@ -142,8 +142,8 @@ export async function markInvoicePaid(_prevState: ActionState, formData: FormDat
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("mark_invoice_paid", { p_invoice_id: invoiceId });
   if (error) return { ok: false, error: "Gagal menandai lunas. Tagihan mungkin sudah lunas atau dibatalkan." };
-  revalidatePath("/admin/billing/invoices");
-  revalidatePath("/admin/cash-ledger");
+  revalidatePath("/admin/invoices");
+  revalidatePath("/admin/cash");
   return { ok: true, message: "Tagihan ditandai lunas" };
 }
 
@@ -153,6 +153,6 @@ export async function voidInvoice(_prevState: ActionState, formData: FormData): 
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("void_invoice", { p_invoice_id: invoiceId });
   if (error) return { ok: false, error: "Gagal membatalkan tagihan. Tagihan mungkin sudah lunas." };
-  revalidatePath("/admin/billing/invoices");
+  revalidatePath("/admin/invoices");
   return { ok: true, message: "Tagihan dibatalkan" };
 }

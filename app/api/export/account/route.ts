@@ -7,7 +7,7 @@ import { REAUTH_ERROR, verifyReauth } from "@/lib/auth/reauth";
 import { buildAccountExport } from "@/lib/export/account";
 import { logAudit } from "@/lib/audit";
 
-const PAGE = "/home/settings";
+const PAGE = "/settings";
 
 function back(request: Request, error: string) {
   return NextResponse.redirect(new URL(`${PAGE}?galat=${error}`, request.url), 303);

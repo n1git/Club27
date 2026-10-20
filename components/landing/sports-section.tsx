@@ -22,7 +22,7 @@ export function SportsSection({ types }: { types: PublicClubType[] }) {
           {ready.map((t, i) => (
             <li key={t.code}>
               <Link
-                href={`/sports/${t.code}`}
+                href={`/s/${t.code}`}
                 className="group flex h-full items-center gap-4 rounded-[20px] bg-card px-5 py-4 transition-[transform,box-shadow,background-color] duration-300 hover:-translate-y-0.5 hover:bg-primary hover:text-primary-foreground hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
               >
                 <span className="font-display text-2xl leading-none text-accent-foreground group-hover:text-primary-foreground" aria-hidden>
@@ -36,7 +36,7 @@ export function SportsSection({ types }: { types: PublicClubType[] }) {
         </ul>
         <p className="mt-7 text-[15.5px] text-muted-foreground">
           Olahraga Anda belum ada?{" "}
-          <Link href="/sports" className="font-semibold text-foreground underline underline-offset-4 hover:text-accent-foreground">
+          <Link href="/s" className="font-semibold text-foreground underline underline-offset-4 hover:text-accent-foreground">
             Lihat semua olahraga
           </Link>{" "}
           atau pilih Lainnya saat mendaftar.

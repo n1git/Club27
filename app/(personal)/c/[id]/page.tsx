@@ -25,7 +25,7 @@ export default async function ChallengeDetailPage({ params }: { params: Promise<
     <div className="flex flex-col gap-6">
       <PageHeader title={challenge.name} subtitle={`${challenge.scopeName} · Target ${formatChallengeValue(challenge.target, challenge.metric)}`} />
       <ul>
-        <ChallengeCard challenge={challenge} progress={progress} joined={state.joined.has(challenge.id)} today={getJakartaDateString()} sportLabel={sportLabel} href={`/home/challenges/${challenge.id}`} />
+        <ChallengeCard challenge={challenge} progress={progress} joined={state.joined.has(challenge.id)} today={getJakartaDateString()} sportLabel={sportLabel} href={`/c/${challenge.id}`} />
       </ul>
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Peserta</h2>

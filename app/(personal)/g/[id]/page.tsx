@@ -58,7 +58,7 @@ export default async function GroupPage({
       if (metrik) next.set("metrik", metrik);
       if (periode) next.set("periode", periode);
       if (olahraga) next.set("olahraga", olahraga);
-      return `/home/groups/${group.id}?${next.toString()}`;
+      return `/g/${group.id}?${next.toString()}`;
     };
     return (
       <div className="flex flex-col gap-6">
@@ -208,8 +208,8 @@ function GroupTabs({ groupId, active }: { groupId: string; active: "ringkasan" |
   );
   return (
     <nav aria-label="Bagian grup" className="flex gap-2">
-      {tab("ringkasan", "Ringkasan", `/home/groups/${groupId}`)}
-      {tab("peringkat", "Peringkat", `/home/groups/${groupId}?tab=peringkat`)}
+      {tab("ringkasan", "Ringkasan", `/g/${groupId}`)}
+      {tab("peringkat", "Peringkat", `/g/${groupId}?tab=peringkat`)}
     </nav>
   );
 }

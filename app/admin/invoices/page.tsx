@@ -175,7 +175,7 @@ export default async function InvoicesPage({
       <Pagination
         page={page}
         total={count ?? 0}
-        pathname="/admin/billing/invoices"
+        pathname="/admin/invoices"
         params={{ status, q }}
       />
 

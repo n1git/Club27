@@ -1,9 +1,9 @@
 # short-urls progress
 
-Status: Phase 0 done, waiting for the owner's OK before Phase 1.
+Status: Phase 1 done (owner approved the Phase 0 plan with "oke").
 
 - [x] Phase 0: table, references, top-level list, clash report, plan
-- [ ] Phase 1: rename folders, references, redirects
+- [x] Phase 1: rename folders, references, redirects
 - [ ] Phase 2: `/p/[id]` page and modal
 - [ ] Phase 3: migration (not applied)
 - [ ] Phase 4: `/<username>` page, `/profile` toggles, tests
@@ -105,3 +105,14 @@ Read-only query on the hosted database against the full list above: **0 accounts
 4. Public profile: `accounts.public_profile` and `accounts.public_search_ok` (default false). Anonymous may execute only `public_profile_by_username(text)`, which returns name and username when `public_profile` is on and the account is active and not banned.
 5. The posts table, comments and reactions code already exist (`lib/data/social.ts`, `lib/actions/social.ts`); `/p/[id]` reuses them. Share cards under `/api/cards/[kind]/[id]` stay.
 6. I will not apply the migration to hosted; it goes in the progress file with its dry-run command.
+
+## Phase 1 result
+
+- Folders moved with `git mv`: `app/s` (was `sports`), `app/i`, `app/r`, `app/checkin/result`, `app/(personal)/{workouts,friends,groups,g/[id],challenges,c/[id],health,settings,upgrade,join}`, `app/admin/{invoices,packages,subscriptions,cash,plan,requests,modules,screen/[pointId]}`. The old `app/home`, `app/admin/billing` and empty folders are gone.
+- `/`: `app/page.tsx` shows the landing page without a session, the personal home (`components/personal/home-page.tsx` inside `components/personal/personal-layout.tsx`, the same shell as the `(personal)` group) for role `personal`, and redirects owner, staff and member as before.
+- References updated in code, emails (`/i/<token>`, `/r/<token>`, `/admin/plan` in reminders), sitemap, canonical, Open Graph and JSON-LD URLs, `revalidatePath` (the former `"/home", "layout"` is now `"/", "layout"`), `redirect()` strings, docs (`ARCHITECTURE.md`, `CLAUDE.md`, `README.md`) and a CHANGELOG entry.
+- `next.config.ts`: `MOVED_PATHS` rewritten; 64 old URLs checked with `curl`-style requests against the dev server: every one is a single 308 straight to its final path (`progress/short-urls-progress.md` table; query strings kept).
+- Access rules: `lib/auth/roles.ts` (`PERSONAL_HOME` is `/`, `PERSONAL_PATHS`, `isPersonalPath`, `underPath` exported), `proxy.ts` (segment-exact protected paths), `lib/auth/permissions.ts` (rules for the renamed paths, `BILLING_PREFIX` is `/admin/plan`), `lib/billing/access.ts` (`BILLING_OPEN_PATHS`), `RESERVED_USERNAMES` extended to the full list.
+- Proof that nothing loosened: a script ran the old and new `adminPathAllowed` on 120,000 combinations (owner or not, 4,000 random permission sets, each old path against its new path): 0 differences; `canAccessPath` for the four roles over every old/new personal and role path: 0 differences.
+- Browser run on a local database: signed-out `/` is the landing page and every protected path goes to `/login`; a login lands on `/` with the personal menu; every flattened personal path opens; entering a club opens `/admin/club`, then `/admin/plan`, `/admin/invoices`, `/admin/packages`, `/admin/subscriptions`, `/admin/cash`, `/admin/requests`, `/admin/modules`, `/admin/club/export`, `/admin/checkin`; from a club context the personal paths and `/` send the owner to `/admin/club`.
+- `npx next typegen && npx tsc --noEmit` is clean. eslint has one error that was already on `main` (`components/social/post-composer.tsx`, set-state in an effect) and is not part of this change.

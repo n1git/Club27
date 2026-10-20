@@ -32,7 +32,7 @@ export function MeasurementTable({ rows }: { rows: Measurement[] }) {
             <TableCell>{formatMeasure(row.weightKg, " kg")}</TableCell>
             <TableCell>{formatMeasure(bmi(row.heightCm, row.weightKg))}</TableCell>
             <TableCell className="flex gap-2">
-              <Link href={`/home/health?ubah=${row.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+              <Link href={`/health?ubah=${row.id}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
                 Ubah
               </Link>
               <ActionForm action={deleteMeasurement}>

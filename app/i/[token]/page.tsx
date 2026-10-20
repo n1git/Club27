@@ -32,7 +32,7 @@ export default async function InvitationPage({ params }: { params: Promise<{ tok
     invitation.kind === "owner"
       ? `pemilik di ${invitation.organizationName}`
       : `${invitation.roleName ?? "staf"} di ${invitation.clubName ?? invitation.organizationName}`;
-  const next = encodeURIComponent(`/invite/${token}`);
+  const next = encodeURIComponent(`/i/${token}`);
   const matches = Boolean(session && existing && session.account_id === existing.id);
 
   return (

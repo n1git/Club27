@@ -13,7 +13,7 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { measurementSchema } from "@/lib/validations/health";
 import { type ActionState } from "./types";
 
-const PATH = "/home/health";
+const PATH = "/health";
 
 function parse(formData: FormData) {
   return measurementSchema.safeParse({
@@ -99,7 +99,7 @@ export async function giveHealthConsent(_prevState: ActionState, formData: FormD
     if (error) return { ok: false, error: "Persetujuan gagal disimpan" };
   }
   revalidatePath(PATH);
-  revalidatePath("/home/settings");
+  revalidatePath("/settings");
   return { ok: true };
 }
 
@@ -110,6 +110,6 @@ export async function withdrawHealthConsent(_prevState: ActionState, formData: F
   const { error } = await createAdminSupabaseClient().rpc("withdraw_health_consent", { p_account: session.account_id });
   if (error) return { ok: false, error: "Persetujuan gagal ditarik" };
   revalidatePath(PATH);
-  revalidatePath("/home/settings");
+  revalidatePath("/settings");
   return { ok: true };
 }

@@ -20,7 +20,7 @@ export async function setLeaderboardOptin(_prevState: ActionState, formData: For
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("set_leaderboard_optin", { p_club: parsed.data.clubId, p_on: parsed.data.on === "1" });
   if (error) return { ok: false, error: "Gagal menyimpan pengaturan peringkat" };
-  revalidatePath("/home/join-club");
+  revalidatePath("/join");
   revalidatePath("/member/leaderboard");
   return { ok: true, message: parsed.data.on === "1" ? "Total latihan Anda tampil di peringkat klub" : "Anda tidak lagi tampil di peringkat klub" };
 }

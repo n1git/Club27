@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const token = params.get("t") ?? "";
 
   const result = (code: string, extra: Record<string, string> = {}) =>
-    NextResponse.redirect(new URL(`/checkin/hasil?${new URLSearchParams({ r: code, ...extra })}`, request.url));
+    NextResponse.redirect(new URL(`/checkin/result?${new URLSearchParams({ r: code, ...extra })}`, request.url));
 
   if (!z.string().uuid().safeParse(pointId).success || !/^[0-9a-f]{12}$/.test(token)) {
     return result("CK005");

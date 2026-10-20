@@ -89,7 +89,7 @@ export function AccountForm({
               Langganan, atau nonaktifkan pengguna yang tidak diperlukan.
             </span>
             <span className="flex gap-2">
-              <Link href="/admin/club/subscription" className={buttonVariants({ size: "sm" })}>
+              <Link href="/admin/plan" className={buttonVariants({ size: "sm" })}>
                 Buka Langganan
               </Link>
               <Button type="button" size="sm" variant="outline" onClick={() => setFull(null)}>

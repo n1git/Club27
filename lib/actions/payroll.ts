@@ -45,7 +45,7 @@ export async function createPayrollRun(
   }
 
   revalidatePath("/admin/payroll");
-  revalidatePath("/admin/cash-ledger");
+  revalidatePath("/admin/cash");
   return { ok: true };
 }
 

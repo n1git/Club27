@@ -7,7 +7,7 @@ Sports club platform (swimming, gym, tennis, padel, pilates, yoga and more) with
 
 Stack: Next.js (App Router) + TypeScript, Supabase Postgres with Row Level Security, Tailwind CSS v4, Vercel. UI in Indonesian; brand "Ruzz" (assets in `public/brand/`, tokens in `app/globals.css`).
 
-Public pages: `/` (landing), `/sports/<code>` (one page per ready club type, read from the database), `/signup`, `/login`, `/privacy`, `/terms`. Every login lands on `/home` (Beranda, Profil, Latihan, Teman, Grup, Klub, Upgrade, Pengaturan); from there an account enters its clubs or organizations. Roles: platform superadmin (`/superadmin`, including `/superadmin/reports` for moderation), club owner and staff (`/admin`), coach (`/coach`), member (`/member`).
+Public pages: `/` (landing), `/s/<code>` (one page per ready club type, read from the database), `/signup`, `/login`, `/privacy`, `/terms`. Every login lands on `/` (Beranda, Profil, Latihan, Teman, Grup, Klub, Upgrade, Pengaturan); from there an account enters its clubs or organizations. Roles: platform superadmin (`/superadmin`, including `/superadmin/reports` for moderation), club owner and staff (`/admin`), coach (`/coach`), member (`/member`).
 
 ## Local setup
 

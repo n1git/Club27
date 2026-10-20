@@ -38,7 +38,7 @@ export function BusinessSection({ types }: { types: PublicClubType[] }) {
             </Link>
             <p className="mt-[22px] text-[15px] text-muted-foreground">
               {ready.length > 0 ? `${ready.length} olahraga siap dipakai. ` : ""}
-              <Link href="/sports" className="font-semibold text-foreground underline underline-offset-4 hover:text-accent-foreground">
+              <Link href="/s" className="font-semibold text-foreground underline underline-offset-4 hover:text-accent-foreground">
                 Lihat semua olahraga
               </Link>
               . Olahraga lain ditambahkan lewat data.

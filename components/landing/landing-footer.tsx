@@ -54,7 +54,7 @@ export function LandingFooter() {
     { href: "/#gratis", label: "Gratis untuk anggota" },
     { href: "/#gabung", label: "Gabung klub" },
     { href: "/#klub", label: "Untuk klub" },
-    { href: "/sports", label: "Semua olahraga" },
+    { href: "/s", label: "Semua olahraga" },
     { href: "/#harga", label: "Harga" },
   ];
   const community: FooterLink[] = [

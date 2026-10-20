@@ -51,7 +51,7 @@ export async function createGroupChallenge(_prevState: ActionState, formData: Fo
   const groupId = uuidField.safeParse(formData.get("groupId"));
   if (!groupId.success) return { ok: false, error: "Pilih grup" };
   const result = await create(groupId.data, null, formData);
-  if (result.ok) revalidatePath("/home/challenges");
+  if (result.ok) revalidatePath("/challenges");
   return result;
 }
 
@@ -71,7 +71,7 @@ export async function joinChallenge(_prevState: ActionState, formData: FormData)
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("join_challenge", { p_id: id.data });
   if (error) return fail(error, "Gagal mengikuti tantangan");
-  revalidatePath("/home/challenges", "layout");
+  revalidatePath("/challenges", "layout");
   return { ok: true, message: "Anda ikut tantangan ini" };
 }
 
@@ -82,7 +82,7 @@ export async function leaveChallenge(_prevState: ActionState, formData: FormData
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("leave_challenge", { p_id: id.data });
   if (error) return fail(error, "Gagal keluar dari tantangan");
-  revalidatePath("/home/challenges", "layout");
+  revalidatePath("/challenges", "layout");
   return { ok: true, message: "Anda keluar dari tantangan" };
 }
 
@@ -98,8 +98,8 @@ export async function deleteGroupChallenge(_prevState: ActionState, formData: Fo
   await requireActionRole("personal");
   const result = await remove(formData);
   if (!result.ok) return result;
-  revalidatePath("/home/challenges", "layout");
-  redirect("/home/challenges");
+  revalidatePath("/challenges", "layout");
+  redirect("/challenges");
 }
 
 export async function deleteClubChallenge(_prevState: ActionState, formData: FormData): Promise<ActionState> {

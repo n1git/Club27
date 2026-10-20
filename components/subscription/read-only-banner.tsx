@@ -20,7 +20,7 @@ export async function ReadOnlyBanner({ canRenew }: { canRenew: boolean }) {
           {canRenew ? "" : " Hubungi pemilik klub untuk memperpanjang."}
         </span>
         {canRenew ? (
-          <Link href="/admin/club/subscription" className={buttonVariants({ size: "sm", className: "w-fit" })}>
+          <Link href="/admin/plan" className={buttonVariants({ size: "sm", className: "w-fit" })}>
             Perpanjang langganan
           </Link>
         ) : null}

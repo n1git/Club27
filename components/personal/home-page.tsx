@@ -16,7 +16,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 
-export default async function PersonalHomePage({ searchParams }: { searchParams: Promise<{ sebelum?: string }> }) {
+export async function PersonalHomePage({ searchParams }: { searchParams: Promise<{ sebelum?: string }> }) {
   const { profile } = await requireValidSession();
   const { sebelum } = await searchParams;
   const before = sebelum && !Number.isNaN(Date.parse(sebelum)) ? sebelum : undefined;
@@ -53,7 +53,7 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/home/workouts" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <Link href="/workouts" className={buttonVariants({ variant: "outline", size: "sm" })}>
               Catat latihan
             </Link>
           </CardContent>
@@ -70,11 +70,11 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
               <ContextList options={entries.map((e) => ({ key: e.key, label: e.label, detail: e.detail }))} />
             ) : (
               <>
-                <Link href="/home/join-club" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+                <Link href="/join" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                   Gabung klub
                 </Link>{" "}
                 dengan kode dari admin klub, atau{" "}
-                <Link href="/home/upgrade" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+                <Link href="/upgrade" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                   buat klub sendiri
                 </Link>
                 .
@@ -92,7 +92,7 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
             <ul className="flex flex-col gap-2 text-sm">
               {upcoming.map((e) => (
                 <li key={e.id}>
-                  <Link href={`/home/groups/${e.groupId}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+                  <Link href={`/g/${e.groupId}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                     {e.title}
                   </Link>
                   <span className="text-xs text-muted-foreground">
@@ -115,14 +115,14 @@ export default async function PersonalHomePage({ searchParams }: { searchParams:
         </Card>
         {feed.posts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            Belum ada postingan. <Link href="/home/friends" className="font-medium text-accent-foreground underline-offset-4 hover:underline">Tambah teman</Link> untuk melihat aktivitas mereka.
+            Belum ada postingan. <Link href="/friends" className="font-medium text-accent-foreground underline-offset-4 hover:underline">Tambah teman</Link> untuk melihat aktivitas mereka.
           </p>
         ) : (
           feed.posts.map((post) => <PostCard key={post.id} post={post} sportLabels={sportLabels} />)
         )}
         {feed.hasMore ? (
           <Link
-            href={`/home?sebelum=${encodeURIComponent(feed.posts[feed.posts.length - 1].createdAt)}`}
+            href={`/?sebelum=${encodeURIComponent(feed.posts[feed.posts.length - 1].createdAt)}`}
             className={buttonVariants({ variant: "outline", size: "sm" }) + " w-fit"}
           >
             Postingan sebelumnya

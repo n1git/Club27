@@ -45,7 +45,7 @@ const QUICK_LINKS = [
   { href: "/admin/members/new", label: "Tambah Anggota" },
   { href: "/admin/schedule/new", label: "Tambah Kelas", module: "classes" },
   {
-    href: "/admin/billing/invoices",
+    href: "/admin/invoices",
     label: "Kelola Tagihan",
     module: "billing",
   },

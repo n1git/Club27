@@ -37,7 +37,7 @@ export default async function OrganizationPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/admin/club/subscription" className={buttonVariants({ variant: "outline" })}>
+          <Link href="/admin/plan" className={buttonVariants({ variant: "outline" })}>
             Langganan
           </Link>
           <CreateTenantButton disabled={full} clubTypes={clubTypes} />

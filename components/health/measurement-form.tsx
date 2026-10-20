@@ -29,7 +29,7 @@ export function MeasurementForm({ today, entry }: { today: string; entry?: Measu
       <div className="flex flex-wrap gap-2 sm:col-span-3">
         <ActionSubmitButton className="w-fit">{entry ? "Simpan perubahan" : "Simpan catatan"}</ActionSubmitButton>
         {entry ? (
-          <Link href="/home/health" className={buttonVariants({ variant: "outline" })}>
+          <Link href="/health" className={buttonVariants({ variant: "outline" })}>
             Batal
           </Link>
         ) : null}

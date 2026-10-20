@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import { APP_ROLES, canAccessPath, roleHome, type AppRole } from "@/lib/auth/roles";
+import { APP_ROLES, canAccessPath, isPersonalPath, roleHome, underPath, type AppRole } from "@/lib/auth/roles";
 
 const COOKIE_NAME = "app_session";
 const SUPERADMIN_COOKIE_NAME = "superadmin_session";
 const SUPERADMIN_AUDIENCE = "ruzz-superadmin";
-const PROTECTED_PREFIXES = ["/admin", "/coach", "/member", "/home", "/change-password", "/profile"];
+const PROTECTED_PREFIXES = ["/admin", "/coach", "/member", "/change-password", "/profile"];
 const GUEST_ONLY_PREFIXES = ["/login", "/signup"];
 
 function getSecret() {
@@ -79,7 +79,7 @@ export async function proxy(request: NextRequest) {
 
   const appRole = await readAppRole(request);
 
-  if (PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix)) && !appRole) {
+  if ((PROTECTED_PREFIXES.some((prefix) => underPath(pathname, prefix)) || isPersonalPath(pathname)) && !appRole) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

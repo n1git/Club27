@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const base = pageMetadata({
     title: `Aplikasi Manajemen Klub: ${names.slice(0, 4).join(", ")}, dan Lainnya`,
     description: `Ruzz mendukung ${list.length} jenis olahraga: ${names.slice(0, 10).join(", ")}${names.length > 10 ? ", dan lainnya" : ""}. Pilih olahraga Anda dan lihat fitur yang tersedia.`,
-    path: "/sports",
+    path: "/s",
   });
   const image = { url: "/opengraph-image", width: 1200, height: 630 };
   return { ...base, openGraph: { ...base.openGraph, images: [image] }, twitter: { ...base.twitter, images: [image] } };
@@ -37,13 +37,13 @@ export default async function SportsIndex() {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: APP_NAME, item: `${SITE_URL}/` },
-          { "@type": "ListItem", position: 2, name: "Olahraga", item: `${SITE_URL}/sports` },
+          { "@type": "ListItem", position: 2, name: "Olahraga", item: `${SITE_URL}/s` },
         ],
       },
       {
         "@type": "CollectionPage",
         name: `Olahraga yang didukung ${APP_NAME}`,
-        url: `${SITE_URL}/sports`,
+        url: `${SITE_URL}/s`,
         inLanguage: "id",
         mainEntity: {
           "@type": "ItemList",
@@ -52,7 +52,7 @@ export default async function SportsIndex() {
             "@type": "ListItem",
             position: i + 1,
             name: t.name,
-            url: `${SITE_URL}/sports/${t.code}`,
+            url: `${SITE_URL}/s/${t.code}`,
           })),
         },
       },
@@ -88,7 +88,7 @@ export default async function SportsIndex() {
                 return (
                   <li key={t.code}>
                     <Link
-                      href={`/sports/${t.code}`}
+                      href={`/s/${t.code}`}
                       className="group flex h-full flex-col gap-3 rounded-[24px] bg-card p-6 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none"
                     >
                       <span className="font-display text-3xl leading-none text-accent-foreground" aria-hidden>

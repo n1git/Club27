@@ -12,19 +12,19 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
     {
       items: [
         { href: PERSONAL_HOME, label: "Beranda", icon: "home", exact: true, primary: true },
-        { href: "/home/friends", label: "Teman", icon: "members", primary: true, badge: badges.friends },
-        { href: "/home/groups", label: "Grup", icon: "schedule", primary: true, badge: badges.groups },
-        { href: "/home/workouts", label: "Latihan", icon: "visits", primary: true },
-        { href: "/home/challenges", label: "Tantangan", icon: "trophy" },
-        { href: "/home/health", label: "Kesehatan", icon: "reports" },
+        { href: "/friends", label: "Teman", icon: "members", primary: true, badge: badges.friends },
+        { href: "/groups", label: "Grup", icon: "schedule", primary: true, badge: badges.groups },
+        { href: "/workouts", label: "Latihan", icon: "visits", primary: true },
+        { href: "/challenges", label: "Tantangan", icon: "trophy" },
+        { href: "/health", label: "Kesehatan", icon: "reports" },
         { href: "/profile", label: "Profil", icon: "profile" },
-        { href: "/home/join-club", label: "Gabung klub", icon: "switchClub" },
-        { href: "/home/upgrade", label: "Upgrade", icon: "club" },
-        { href: "/home/settings", label: "Pengaturan", icon: "settings" },
+        { href: "/join", label: "Gabung klub", icon: "switchClub" },
+        { href: "/upgrade", label: "Upgrade", icon: "club" },
+        { href: "/settings", label: "Pengaturan", icon: "settings" },
       ],
     },
   ];
-  const hidden = new Set(restriction === "minor" ? ["/home/friends", "/home/groups", "/home/challenges", "/home/health"] : restriction ? ["/home/friends", "/home/groups", "/home/challenges"] : []);
+  const hidden = new Set(restriction === "minor" ? ["/friends", "/groups", "/challenges", "/health"] : restriction ? ["/friends", "/groups", "/challenges"] : []);
   const navGroups = allGroups.map((g) => ({ ...g, items: g.items.filter((i) => !hidden.has(i.href)) }));
   return (
     <AppShell

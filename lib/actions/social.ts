@@ -20,7 +20,7 @@ function fail(error: { code?: string; message: string } | null, fallback: string
 }
 
 function done(): ActionState {
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 
@@ -46,7 +46,7 @@ export async function sendFriendRequest(_prevState: ActionState, formData: FormD
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("request_friend", { p_username: parsed.data.username });
   if (error) return fail(error, "Gagal mengirim permintaan");
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true, message: data === "accepted" ? "Kalian sekarang berteman" : "Permintaan pertemanan dikirim" };
 }
 
@@ -118,7 +118,7 @@ export async function shareWorkout(_prevState: ActionState, formData: FormData):
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.rpc("share_workout", { p_log: id.data, p_body: note || null });
   if (error) return fail(error, "Gagal membagikan latihan");
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true, message: "Latihan dibagikan ke teman" };
 }
 
@@ -134,7 +134,7 @@ export async function shareAchievement(_prevState: ActionState, formData: FormDa
   if (!type) return { ok: false, error: "Lencana tidak ditemukan" };
   const { error } = await supabase.rpc("create_post", { p_body: `Meraih lencana ${type.name}: ${type.description}.` });
   if (error) return fail(error, "Gagal membagikan lencana");
-  revalidatePath("/home", "layout");
+  revalidatePath("/", "layout");
   return { ok: true, message: "Lencana dibagikan ke teman" };
 }
 

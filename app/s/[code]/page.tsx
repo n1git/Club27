@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
   return pageMetadata({
     title: `Aplikasi Manajemen ${type.name}`,
     description: summary(content.tagline, content.intro),
-    path: `/sports/${type.code}`,
+    path: `/s/${type.code}`,
   });
 }
 
@@ -41,7 +41,7 @@ export default async function SportRoute({ params }: { params: Promise<{ code: s
   if (!type) notFound();
   const content = sportContent(type, has);
   const faq = [...content.faq, ...commonFaq(type, plans)];
-  const url = `${SITE_URL}/sports/${type.code}`;
+  const url = `${SITE_URL}/s/${type.code}`;
   const data = {
     "@context": "https://schema.org",
     "@graph": [
@@ -49,7 +49,7 @@ export default async function SportRoute({ params }: { params: Promise<{ code: s
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: APP_NAME, item: `${SITE_URL}/` },
-          { "@type": "ListItem", position: 2, name: "Olahraga", item: `${SITE_URL}/sports` },
+          { "@type": "ListItem", position: 2, name: "Olahraga", item: `${SITE_URL}/s` },
           { "@type": "ListItem", position: 3, name: type.name, item: url },
         ],
       },

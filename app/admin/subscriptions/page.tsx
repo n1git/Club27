@@ -178,7 +178,7 @@ export default async function SubscriptionsPage({
       <Pagination
         page={page}
         total={count ?? 0}
-        pathname="/admin/billing/subscriptions"
+        pathname="/admin/subscriptions"
         params={{ status, package: packageId }}
       />
     </div>

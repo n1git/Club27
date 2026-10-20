@@ -96,7 +96,7 @@ export default async function CashLedgerPage({ searchParams }: { searchParams: P
           ) : null}
         </TableBody>
       </Table>
-      <Pagination page={page} total={count ?? 0} pathname="/admin/cash-ledger" params={{}} />
+      <Pagination page={page} total={count ?? 0} pathname="/admin/cash" params={{}} />
     </div>
   );
 }

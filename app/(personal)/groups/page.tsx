@@ -53,7 +53,7 @@ export default async function GroupsPage() {
             <ul className="flex flex-col gap-3">
               {active.map((g) => (
                 <li key={g.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <Link href={`/home/groups/${g.id}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
+                  <Link href={`/g/${g.id}`} className="font-medium text-accent-foreground underline-offset-4 hover:underline">
                     {g.name}
                   </Link>
                   {g.isOwner ? <Badge variant="secondary">Pemilik</Badge> : null}
