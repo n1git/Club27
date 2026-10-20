@@ -3,7 +3,7 @@
 Bagian A: kepatuhan UU PDP. Bagian B: fitur kompetitif dan sosial. Bagian B baru dikerjakan setelah A selesai dan owner memberi OK.
 
 ## Status
-Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 diterapkan ke hosted (owner, Claude Code CLI lokal, 2026-10-21) dan kode Fase 3 di-push. Fase 4 selesai; migrasi 064 belum diterapkan ke hosted dan kode Fase 4 belum di-push. A8 kwitansi ditunda owner ("pembayaran menyusul").
+Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 diterapkan ke hosted (owner, Claude Code CLI lokal, 2026-10-21) dan kode Fase 3 di-push. Semua fase selesai (kwitansi A8 ditunda owner). Migrasi 062-064 diterapkan ke hosted dan semua kode di-push. A8 kwitansi ditunda owner ("pembayaran menyusul").
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 062 dan kode A2-A7, A9
@@ -314,3 +314,13 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
   - `hidden_at`, `kind`, `post_media`, dan bucket belum ada; kolom batas bucket ada; `reports.status` dan helper ada; 0 reaksi; versi terakhir 063.
 - Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
 - Blocker: kode Fase 4 membaca kolom dan tabel baru; push menunggu 064 diterapkan.
+
+### Penerapan hosted 064 (2026-10-21)
+- Owner menerapkan `20250101000064_post_media_reactions.sql`.
+- Dicek dari sesi ini:
+  - tiga versi teratas: 064 `post_media_reactions`, 063, 062;
+  - `posts.hidden_at` dan `post_reactions.kind` ada; `post_media` ada dengan RLS;
+  - bucket `post-media` privat, 5 MB, hanya `image/webp`;
+  - trigger `reports_sync_post_hidden` dan policy `reactions_update` ada; `kudos_for_posts` mengembalikan `kind`; `can_see_post` memeriksa `hidden_at`; `sync_post_hidden` tidak bisa dipanggil `authenticated`.
+- Lalu kode Fase 4 di-push.
+- Belum diuji: unggah foto ke Supabase Storage sungguhan (e2e lokal memakai tiruan API Storage). Uji satu post berfoto di production setelah deploy.
