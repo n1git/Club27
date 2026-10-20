@@ -80,3 +80,78 @@ export async function getWorkoutData() {
     today,
   };
 }
+
+export interface PersonalRecord {
+  sport: string;
+  year: number;
+  longestDistance: { meters: number; on: string } | null;
+  longestDuration: { minutes: number; on: string } | null;
+  bestPace: { minPerKm: number; on: string } | null;
+}
+
+export interface Achievement {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  earnedOn: string;
+}
+
+type InsightLog = { performed_on: string; sport: string; duration_min: number; distance_m: number | null };
+
+export function computeStreak(logs: { performedOn: string }[], goal: number | null, today: string): number {
+  if (!goal) return 0;
+  const counts = new Map<string, number>();
+  for (const log of logs) {
+    const week = weekStartOf(log.performedOn);
+    counts.set(week, (counts.get(week) ?? 0) + 1);
+  }
+  const current = weekStartOf(today);
+  let streak = 0;
+  for (let i = 0; i <= 260; i++) {
+    const met = (counts.get(addDays(current, -7 * i)) ?? 0) >= goal;
+    if (met) streak += 1;
+    else if (i > 0) break;
+  }
+  return streak;
+}
+
+export function computeRecords(logs: InsightLog[]): PersonalRecord[] {
+  const map = new Map<string, PersonalRecord>();
+  for (const log of logs) {
+    const year = Number(log.performed_on.slice(0, 4));
+    const key = `${log.sport}:${year}`;
+    const rec = map.get(key) ?? { sport: log.sport, year, longestDistance: null, longestDuration: null, bestPace: null };
+    if (!rec.longestDuration || log.duration_min > rec.longestDuration.minutes) rec.longestDuration = { minutes: log.duration_min, on: log.performed_on };
+    if (log.distance_m) {
+      if (!rec.longestDistance || log.distance_m > rec.longestDistance.meters) rec.longestDistance = { meters: log.distance_m, on: log.performed_on };
+      const pace = log.duration_min / (log.distance_m / 1000);
+      if (!rec.bestPace || pace < rec.bestPace.minPerKm) rec.bestPace = { minPerKm: pace, on: log.performed_on };
+    }
+    map.set(key, rec);
+  }
+  return [...map.values()].sort((a, b) => b.year - a.year || a.sport.localeCompare(b.sport));
+}
+
+export async function getWorkoutInsights(weeklyGoal: number | null) {
+  const supabase = await createServerSupabaseClient();
+  const today = getJakartaDateString();
+  const [logs, earned] = await Promise.all([
+    supabase.from("workout_logs").select("performed_on, sport, duration_min, distance_m").order("performed_on", { ascending: false }).limit(10000),
+    supabase
+      .from("achievements")
+      .select("id, code, earned_on, achievement_types(name, description, sort_order)")
+      .order("earned_on", { ascending: false })
+      .limit(200),
+  ]);
+  const rows = (logs.data ?? []) as InsightLog[];
+  const achievements: Achievement[] = (earned.data ?? []).map((a) => {
+    const t = (Array.isArray(a.achievement_types) ? a.achievement_types[0] : a.achievement_types) as { name: string; description: string } | null;
+    return { id: a.id as string, code: a.code as string, name: t?.name ?? (a.code as string), description: t?.description ?? "", earnedOn: a.earned_on as string };
+  });
+  return {
+    streak: computeStreak(rows.map((r) => ({ performedOn: r.performed_on })), weeklyGoal, today),
+    records: computeRecords(rows),
+    achievements,
+  };
+}

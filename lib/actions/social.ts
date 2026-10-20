@@ -113,6 +113,22 @@ export async function shareWorkout(_prevState: ActionState, formData: FormData):
   return { ok: true, message: "Latihan dibagikan ke teman" };
 }
 
+export async function shareAchievement(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireActionRole("personal");
+  const limited = await socialLimited(session.account_id, "share", 30);
+  if (limited) return limited;
+  const id = uuidField.safeParse(formData.get("achievementId"));
+  if (!id.success) return { ok: false, error: "Data tidak valid" };
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase.from("achievements").select("achievement_types(name, description)").eq("id", id.data).maybeSingle();
+  const type = (Array.isArray(data?.achievement_types) ? data?.achievement_types[0] : data?.achievement_types) as { name: string; description: string } | null | undefined;
+  if (!type) return { ok: false, error: "Lencana tidak ditemukan" };
+  const { error } = await supabase.rpc("create_post", { p_body: `Meraih lencana ${type.name}: ${type.description}.` });
+  if (error) return fail(error, "Gagal membagikan lencana");
+  revalidatePath("/home", "layout");
+  return { ok: true, message: "Lencana dibagikan ke teman" };
+}
+
 export async function deletePost(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   await requireActionRole("personal");
   const id = uuidField.safeParse(formData.get("postId"));

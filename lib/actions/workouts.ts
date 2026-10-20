@@ -31,7 +31,7 @@ export async function addWorkout(_prevState: ActionState, formData: FormData): P
     notes: parsed.data.notes || null,
   });
   if (error) {
-    if (error.code === "WL001" || error.code === "WL002") return { ok: false, error: error.message };
+    if (error.code === "WL001" || error.code === "WL002" || error.code === "WL003") return { ok: false, error: error.message };
     return { ok: false, error: "Gagal menyimpan catatan latihan" };
   }
   revalidatePath(PATH);

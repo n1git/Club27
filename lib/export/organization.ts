@@ -30,6 +30,7 @@ const CLUB_TABLES: { file: string; table: string; order?: string[] }[] = [
   { file: "promo", table: "promos" },
   { file: "persetujuan", table: "consents" },
   { file: "permintaan_gabung", table: "club_join_requests" },
+  { file: "tantangan", table: "challenges" },
 ];
 
 type Row = Record<string, unknown>;

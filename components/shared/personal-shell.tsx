@@ -15,6 +15,7 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
         { href: "/home/friends", label: "Teman", icon: "members", primary: true, badge: badges.friends },
         { href: "/home/groups", label: "Grup", icon: "schedule", primary: true, badge: badges.groups },
         { href: "/home/workouts", label: "Latihan", icon: "visits", primary: true },
+        { href: "/home/challenges", label: "Tantangan", icon: "trophy" },
         { href: "/home/health", label: "Kesehatan", icon: "reports" },
         { href: "/profile", label: "Profil", icon: "profile" },
         { href: "/home/join-club", label: "Gabung klub", icon: "switchClub" },
@@ -23,7 +24,7 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
       ],
     },
   ];
-  const hidden = new Set(restriction === "minor" ? ["/home/friends", "/home/groups", "/home/health"] : restriction ? ["/home/friends", "/home/groups"] : []);
+  const hidden = new Set(restriction === "minor" ? ["/home/friends", "/home/groups", "/home/challenges", "/home/health"] : restriction ? ["/home/friends", "/home/groups", "/home/challenges"] : []);
   const navGroups = allGroups.map((g) => ({ ...g, items: g.items.filter((i) => !hidden.has(i.href)) }));
   return (
     <AppShell

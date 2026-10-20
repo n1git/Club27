@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   BOARD_SIZE,
@@ -6,6 +7,7 @@ import {
   METRIC_LABEL,
   PERIOD_KEY,
   PERIOD_LABEL,
+  PREV_PERIOD_LABEL,
   type BoardMetric,
   type BoardParams,
   type BoardPeriod,
@@ -58,8 +60,9 @@ export function Leaderboard({
   hrefFor: (patch: { metrik?: string; periode?: string; olahraga?: string | null }) => string;
   emptyHint?: string;
 }) {
-  const top = rows.filter((r) => r.rank <= BOARD_SIZE);
-  const outside = rows.find((r) => r.rank > BOARD_SIZE) ?? null;
+  const top = rows.filter((r) => r.rank !== null && r.rank <= BOARD_SIZE);
+  const outside = rows.find((r) => r.rank !== null && r.rank > BOARD_SIZE) ?? null;
+  const pastChampions = rows.filter((r) => r.rank === null && r.prevChampion);
   const placeholders = Math.max(BOARD_SIZE - top.length, 0);
 
   return (
@@ -93,9 +96,16 @@ export function Leaderboard({
         ) : null}
       </div>
 
+      {pastChampions.length ? (
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Crown aria-hidden className="size-4 shrink-0 text-accent-foreground" />
+          Juara {PREV_PERIOD_LABEL[params.period]}: {pastChampions.map((r) => `${r.fullName} (@${r.username})`).join(", ")}
+        </p>
+      ) : null}
+
       <ol aria-label="Peringkat" className="flex flex-col gap-2">
         {top.map((row) => (
-          <Row key={row.accountId} row={row} metric={params.metric} />
+          <Row key={row.accountId} row={row} metric={params.metric} period={params.period} />
         ))}
         {Array.from({ length: placeholders }, (_, i) => (
           <li key={`empty-${i}`} className="flex items-center gap-4 rounded-2xl border border-dashed border-border px-4 py-3 text-muted-foreground">
@@ -111,7 +121,7 @@ export function Leaderboard({
             ···
           </p>
           <ol aria-label="Posisi Anda" className="flex flex-col gap-2">
-            <Row row={outside} metric={params.metric} />
+            <Row row={outside} metric={params.metric} period={params.period} />
           </ol>
         </div>
       ) : null}
@@ -121,17 +131,48 @@ export function Leaderboard({
   );
 }
 
-function Row({ row, metric }: { row: BoardRow; metric: BoardMetric }) {
+function amount(value: number, metric: BoardMetric) {
+  if (metric === "distance") return distance(value);
+  if (metric === "duration") return duration(value);
+  return `${value} sesi`;
+}
+
+function Movement({ row }: { row: BoardRow }) {
+  if (row.rank === null) return null;
+  if (row.prevRank === null) return <span className="text-xs font-semibold text-muted-foreground">Baru</span>;
+  const diff = row.prevRank - row.rank;
+  if (diff === 0) return <span className="text-xs text-muted-foreground" aria-label="Posisi tetap">=</span>;
+  return diff > 0 ? (
+    <span className="text-xs font-semibold text-success" aria-label={`Naik ${diff} peringkat`}>
+      ▲{diff}
+    </span>
+  ) : (
+    <span className="text-xs font-semibold text-destructive" aria-label={`Turun ${-diff} peringkat`}>
+      ▼{-diff}
+    </span>
+  );
+}
+
+function Row({ row, metric, period }: { row: BoardRow; metric: BoardMetric; period: BoardPeriod }) {
   const detail = secondary(row, metric);
   return (
     <li className={cn("flex items-center gap-4 rounded-2xl px-4 py-3", row.isMe ? "bg-primary/30 dark:bg-primary/15" : "bg-card")}>
-      <span className="w-8 shrink-0 text-right font-display text-2xl leading-none">{row.rank}</span>
+      <span className="flex w-8 shrink-0 flex-col items-end gap-0.5">
+        <span className="font-display text-2xl leading-none">{row.rank}</span>
+        <Movement row={row} />
+      </span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-semibold">
+          {row.prevChampion ? <Crown aria-label={`Juara ${PREV_PERIOD_LABEL[period]}`} className="mr-1 inline size-4 align-[-2px] text-accent-foreground" /> : null}
           {row.fullName}
           {row.isMe ? <span className="ml-2 rounded-full bg-foreground px-2 py-0.5 text-xs font-bold text-background">Kamu</span> : null}
         </span>
         <span className="truncate text-xs text-muted-foreground">@{row.username}</span>
+        {row.isMe && row.gapToNext !== null && row.nextRank !== null ? (
+          <span className="text-xs font-medium text-accent-foreground">
+            Kurang {amount(row.gapToNext, metric)} lagi untuk naik ke #{row.nextRank}
+          </span>
+        ) : null}
       </span>
       <span className="flex flex-col items-end text-right">
         <span className="font-semibold tabular-nums">{primary(row, metric)}</span>

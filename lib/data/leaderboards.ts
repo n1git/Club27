@@ -4,7 +4,11 @@ export type BoardMetric = "distance" | "duration" | "sessions";
 export type BoardPeriod = "week" | "month";
 
 export interface BoardRow {
-  rank: number;
+  rank: number | null;
+  prevRank: number | null;
+  gapToNext: number | null;
+  nextRank: number | null;
+  prevChampion: boolean;
   accountId: string;
   username: string;
   fullName: string;
@@ -35,11 +39,16 @@ export function parseBoardParams(query: { metrik?: string; periode?: string; ola
 
 export const METRIC_LABEL: Record<BoardMetric, string> = { distance: "Jarak", duration: "Durasi", sessions: "Sesi" };
 export const PERIOD_LABEL: Record<BoardPeriod, string> = { week: "Minggu ini", month: "Bulan ini" };
+export const PREV_PERIOD_LABEL: Record<BoardPeriod, string> = { week: "minggu lalu", month: "bulan lalu" };
 export const METRIC_KEY: Record<BoardMetric, string> = { distance: "jarak", duration: "durasi", sessions: "sesi" };
 export const PERIOD_KEY: Record<BoardPeriod, string> = { week: "minggu", month: "bulan" };
 
 type RawRow = {
-  rank: number;
+  rank: number | null;
+  prev_rank: number | null;
+  gap_to_next: number | string | null;
+  next_rank: number | null;
+  prev_champion: boolean;
   account_id: string;
   username: string;
   full_name: string;
@@ -52,6 +61,10 @@ type RawRow = {
 function toRows(data: RawRow[] | null): BoardRow[] {
   return (data ?? []).map((r) => ({
     rank: r.rank,
+    prevRank: r.prev_rank,
+    gapToNext: r.gap_to_next == null ? null : Number(r.gap_to_next),
+    nextRank: r.next_rank,
+    prevChampion: r.prev_champion,
     accountId: r.account_id,
     username: r.username,
     fullName: r.full_name,

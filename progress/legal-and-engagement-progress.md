@@ -3,12 +3,12 @@
 Bagian A: kepatuhan UU PDP. Bagian B: fitur kompetitif dan sosial. Bagian B baru dikerjakan setelah A selesai dan owner memberi OK.
 
 ## Status
-Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Menunggu OK owner untuk Bagian B. A8 kwitansi ditunda owner ("pembayaran menyusul").
+Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 belum diterapkan ke hosted dan kode Fase 3 belum di-push. A8 kwitansi ditunda owner ("pembayaran menyusul").
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 062 dan kode A2-A7, A9
 - [x] Fase 2: DPIA, rencana respons insiden, aturan A10 (kwitansi ditunda owner)
-- [ ] Fase 3: migrasi 063, peringkat, tantangan, lencana, rekor, streak
+- [x] Fase 3: migrasi 063, peringkat, tantangan, lencana, rekor, streak
 - [ ] Fase 4: migrasi 064, foto post, reaksi, kartu bagikan
 
 ## Teks persetujuan (`lib/consent.ts`, `CONSENT_VERSION = "2026-10-20"`)
@@ -230,3 +230,41 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
   - `withdraw_health_consent` dan `retention_candidates` ada dan tidak bisa dipanggil `authenticated`;
   - `enforce_body_measurement` memuat `BM003`, guard memuat `ruzz.purge`.
 - Lalu kode Fase 1 dan 2 di-push.
+
+### Fase 3 (selesai, belum di hosted)
+- Migrasi `20250101000063_competition.sql`:
+  - `club_types.max_m_per_min`, diisi 150 untuk renang (satu-satunya jenis aktif yang berjarak); `enforce_workout_log` menolak catatan di atas batas dengan `WL003`;
+  - `leaderboard_rows`/`group_leaderboard`/`club_leaderboard` dibuat ulang dengan `prev_rank`, `gap_to_next`, `next_rank` (peringkat tujuan, benar saat seri), `prev_champion`; juara periode lalu yang tidak masuk daftar sekarang ikut dikembalikan dengan `rank` kosong;
+  - izin `challenges.manage` untuk preset Admin dan Kepala Pelatih (peran yang sudah ada ikut diberi);
+  - tantangan:
+    - tabel `challenges` (grup atau klub; penjaga `a00_org_writable`; masuk `purge_organization` dan ekspor organisasi) dan `challenge_participants`;
+    - RPC `create_challenge`, `delete_challenge`, `join_challenge`, `leave_challenge`, `challenge_progress`; kode `CH001`-`CH004`; maksimal 20 tantangan aktif per grup/klub;
+  - lencana: `achievement_types` (9 jenis) dan `achievements` (unik per akun, kode, ref);
+  - trigger `award_achievements` setelah insert latihan: sesi pertama, 10/50/100 sesi, 100 km, streak 4/12 minggu, finisher tantangan, juara bulanan;
+  - juara bulanan = peringkat 1 jumlah sesi bulan lalu di grup dengan minimal 2 anggota, tanpa seri; diberikan saat latihan pertama bulan ini.
+- Kode:
+  - peringkat: `components/social/leaderboard.tsx` (▲/▼/Baru, mahkota, "Kurang X lagi untuk naik ke #N" di baris sendiri, baris juara periode lalu), `lib/data/leaderboards.ts`;
+  - tantangan:
+    - `lib/validations/challenge.ts` (target jarak dalam km, disimpan meter), `lib/data/challenges.ts`, `lib/actions/challenges.ts`;
+    - `components/challenges/`, halaman `/home/challenges`, `/home/challenges/[id]` dan `/admin/challenges` (izin `challenges.manage`, aturan path, menu admin);
+    - menu "Tantangan" di akun pribadi, disembunyikan untuk akun yang dibatasi sosial atau anak;
+  - Latihan: kartu Streak, Lencana dengan "Bagikan ke feed" (`shareAchievement`, membuat post teks), tabel rekor pribadi per olahraga dan tahun (jarak terjauh, durasi terlama, pace terbaik); tombol bagikan disembunyikan untuk akun yang dibatasi; `WL003` dipetakan;
+  - ekspor: organisasi `tantangan.csv`; akun `lencana.csv`, `tantangan_diikuti.csv`. `challenge_participants` memakai `created_at` karena ekspor akun mengurutkan dengan kolom itu.
+- Tes SQL (lokal, database baru 001-063), 15 berkas, semua kode keluar 0:
+  - baru `competition_phase1`: WL003, ▲/▼/selisih/juara, lencana privat, tantangan grup dan klub (izin, visibilitas, ikut/keluar, finisher), juara bulanan, streak, hak fungsi;
+  - `leaderboards_phase7` mengosongkan batas renang di awal, karena datanya tidak realistis (misalnya 50 km dalam 60 menit);
+  - `accounts_phase1` mengecualikan katalog `achievement_types` dari loop isolasi.
+- E2E (`/tmp/hb/e2e/compete.cjs`), kode keluar 0, 22 pemeriksaan:
+  - WL003 tampil dan catatan tidak tersimpan; lencana dan rekor (1,5 km, 26:40 /km);
+  - bagikan lencana menjadi post; peringkat grup menampilkan ▲1/▼1, "Kurang 1 sesi lagi untuk naik ke #1" dan mahkota;
+  - tantangan grup: dibuat pemilik, diikuti anggota, progres, selesai, lencana Finisher;
+  - tantangan klub: dibuat pemilik di admin, terlihat anggota tertaut, tidak terlihat non-anggota;
+  - ekspor akun memuat lencana dan tantangan.
+- Tangkapan layar HP dicek; nama lingkup ganda ("Grup Grup Renang") diperbaiki.
+- Hosted: uji rollback 063 tidak dijalankan lewat MCP (pernyataan `drop`/`update`/`delete` membuat MCP macet seperti 062). Gantinya cek baca-saja:
+  - md5 `purge_organization` dan `enforce_workout_log` di hosted sama dengan basis lokal;
+  - ketiga fungsi peringkat ada dengan tanda tangan yang di-drop;
+  - `enforce_org_writable`, `is_linked_club_member`, preset `admin`/`kepala_pelatih` ada;
+  - kolom, izin, dan tabel baru belum ada; tidak ada catatan renang di atas 150 m/menit; versi terakhir 062.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
+- Blocker: kode Fase 3 membaca tabel dan kolom baru (ekspor akun dan organisasi gagal tanpa tabelnya). Push menunggu 063 diterapkan.

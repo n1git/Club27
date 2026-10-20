@@ -45,6 +45,8 @@ export async function buildAccountExport(accountId: string): Promise<{ filename:
   add("akun", [account as Row]);
   add("latihan", await fetchAll("workout_logs", "id, sport, performed_on, duration_min, distance_m, notes, created_at", "account_id", accountId));
   add("kesehatan", await fetchAll("body_measurements", "measured_on, height_cm, weight_kg, created_at", "account_id", accountId));
+  add("lencana", await fetchAll("achievements", "code, ref, earned_on, created_at", "account_id", accountId));
+  add("tantangan_diikuti", flat(await fetchAll("challenge_participants", "challenge_id, created_at, c:challenges(name, metric, target, starts_on, ends_on)", "account_id", accountId), "c", "name", "nama_tantangan"));
   add("target_latihan", ((await supabase.from("workout_goals").select("weekly_sessions").eq("account_id", accountId)).data ?? []) as Row[]);
 
   const friendships = [
