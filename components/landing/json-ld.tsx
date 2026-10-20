@@ -24,7 +24,7 @@ export async function JsonLd({ plans }: { plans: PricingPlan[] }) {
     "@id": organizationId,
     name: APP_NAME,
     url: `${SITE_URL}/`,
-    logo: { "@type": "ImageObject", url: `${SITE_URL}/brand/logo-a-on-light.png`, width: 1200, height: 600 },
+    logo: { "@type": "ImageObject", url: `${SITE_URL}/brand/ruzz-italic-icon-yellow.png`, width: 512, height: 512 },
     parentOrganization: { "@type": "Organization", name: LEGAL_OPERATORS, url: LEGAL_OPERATORS_URL },
     ...(contact.email || contact.whatsapp
       ? {

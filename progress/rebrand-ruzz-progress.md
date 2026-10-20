@@ -82,3 +82,11 @@ Migrations written, NOT applied to hosted (for the owner):
 - `20250101000059_rebrand_ruzz_messages.sql`: `enforce_billing_gate(uuid)` and `enforce_org_club_limit()` with only the "Hubungi admin platform ..." brand word changed to "Ruzz". Bodies copied from `pg_get_functiondef` of a fully migrated local database (the latest definitions, not the ones in 031, 035, 042, 036, 046). Migrations 031, 035 and 042 were not touched; their messages were already replaced by later migrations, except the two above.
 - `20250101000060_rename_plus_plan.sql`: sets `subscription_plans.name` from "27 Club Plus" to "Ruzz Plus" for `plus` (the landing, sign-up and renewal read the name from the table, so without it the old name would still show). Not requested in the task; delete the file if you want to keep the old plan name.
 - Both ran in a rolled-back transaction on a local database (functions replaced, plan renamed, no function left with the old brand).
+
+## Phase 2
+
+- `public/brand/` now holds only the 14 files from the zip (SVG and PNG); all `logo-a-*`, `icon-a*`, `favicon.*` and `apple-touch-icon.png` removed.
+- `BrandLogo` (lockup, `h-10` default = 40 px, so never below the minimum) uses `lockup-white-transparent` in light and `lockup-black-transparent` in dark, switched with the `dark` class. `BrandIcon` uses `icon-yellow` in light and `icon-black` in dark; the old ring and radius classes were dropped because the tile is already rounded.
+- Wired through the existing components: sidebar, app header (icon on mobile), landing header and footer, auth pages, status pages, superadmin header.
+- `app/icon.svg` = `icon-yellow.svg`; `app/favicon.ico` (16, 32, 48 px) and `app/apple-icon.png` (180 px, square tile without rounded corners so iOS can mask it) rendered from the same icon.
+- `app/opengraph-image.tsx`: ink `#111214` background, dark lockup, muted text `#a6a7ab`. JSON-LD organization logo now the yellow icon PNG (512 px).
