@@ -143,3 +143,7 @@ To apply (for the owner): `supabase db push --dry-run` (needs `SUPABASE_ACCESS_T
 - Reserved-name rule: every new top-level segment must be added to `RESERVED_USERNAMES` and `username_reserved` (noted in `CLAUDE.md`).
 - Not-found pages return HTTP 200 (existing behaviour from the root `loading.tsx`); all misses are identical, so profile existence is not revealed by status or text. Timing is not equalised.
 - No avatar exists in the data, so none is shown; unknown, private and blocked profiles cannot be told apart.
+
+## Hosted rollout of 066
+
+Another session had already applied `066` and recorded it (`9b39e38`). On the owner's "oke" I dry-ran the file on hosted in a rolled-back statement (0 accounts clash, anonymous can run only `public_profile_by_username`, `profile_by_username` is authenticated only, `account_is_minor` has no client grant) and then applied it; every statement is idempotent, so the second run changed nothing. The extra history row it created (`20261020183218 public_profiles`) was removed; history ends `...064 post_media_reactions, 065 more_sports, 066 public_profiles`. Hosted check afterwards: both columns present, three functions present, 0 reserved-name clashes.
