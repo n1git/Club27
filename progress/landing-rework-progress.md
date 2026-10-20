@@ -209,3 +209,25 @@ The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan c
 | Running community: no booking or kasir | `club_type_modules` for `running` (065) |
 | Several clubs under one organization, within the plan's club limit | `enforce_org_club_limit` (`SW004`), `subscription_plans.club_limit` |
 | Account of a running community member can log workouts and join challenges | accounts are personal by default; `workout_logs`, challenges are by account |
+
+## FAQ refresh (2026-10-21)
+
+| Claim on the page | Proof |
+|---|---|
+| Buat akun: nama, email, username terisi otomatis dan bisa diubah, kata sandi; centang 18+ dan S&K/Kebijakan Privasi dengan rincian di bawah centang; langsung ke Beranda; masuk dengan email atau username | `app/signup/account`, `suggest_username`, `components/shared/consent-checkbox.tsx`, `consent-details.tsx`, `lib/consent.ts`; login `identifier` |
+| Gratis: profil, latihan, rekor, streak, lencana, catatan kesehatan, teman, grup, tantangan, gabung klub | personal tables have no `club_id` and no plan gate (`workout_logs`, `achievements` 063, `body_measurements` 058, `challenges` 063, `club_join_requests`) |
+| Latihan, rekor, streak pribadi; latihan, lencana, foto tampil di feed teman bila dibagikan | RLS `current_account_id()` on `workout_logs`; records and streak in `lib/data/workouts.ts`; `posts_visible` friends only, `post_media` (064), `shareAchievement` |
+| Tantangan: sesi, jarak, atau durasi, di grup atau klub, ikut/keluar kapan saja | `challenges.metric` (`sessions`/`distance`/`duration`), `join_challenge`/`leave_challenge` (063) |
+| Lencana otomatis: sesi pertama, streak, menyelesaikan tantangan | `achievement_types` `first_session`, `streak*`, `challenge_finisher`; trigger `award_achievements` (063) |
+| Catatan tidak wajar untuk olahraganya ditolak | `club_types.max_m_per_min`, `WL003` (063) |
+| Catatan kesehatan hanya pemilik, persetujuan terpisah, ditarik = dihapus | RLS on `body_measurements` (058); `has_health_consent`, `BM003`, `withdraw_health_consent` (062) |
+| Profil publik di Profil: `/<username>`, hanya nama dan @username, pilihan mesin pencari | `accounts.public_profile`, `public_search_ok`, `public_profile_by_username` (066), `components/profile/public-profile-form.tsx`, `app/[username]/page.tsx` (noindex unless search allowed) |
+| Postingan yang dilaporkan beberapa orang disembunyikan otomatis | `sync_post_hidden`: 3 open reports set `posts.hidden_at` (064) |
+| Pengaturan: persetujuan dengan versi dan tanggal, ekspor, hapus akun; bukti persetujuan disimpan | `components/shared/my-consents-card.tsx`, `/settings`; `guard_consents` `CN001`, `account-delete.ts` revokes instead of deleting (062) |
+| Anak didaftarkan klub dengan persetujuan orang tua/wali, tanpa fitur sosial | `components/members/member-consent-fields.tsx` (`guardianName`); `isMinorAccount`/`socialRestriction` in `lib/auth/social-access.ts` |
+| Upgrade dari Beranda menjadikan akun pemilik tanpa daftar ulang | `createOrganizationFromAccount` in `lib/actions/organization.ts`, `/upgrade` |
+| Daftarkan klub membuat akun dan klub; email terdaftar tidak bisa dipakai | `app/api/onboarding/register/route.ts` (existing email gets an "already registered" email, no new account) |
+| Batas klub, harga per seat, gratis tahunan, minimal seat, trial | `subscription_plans` via `plans` prop (`clubLimit`, `pricePerUserMonth`, `yearlyFreeMonths`, `minSeats`, `trialDays`); sentences hidden when empty |
+| Semua fitur bisnis tanpa paket tambahan | single plan `plus`, all `ready` modules per `club_type_modules` (`KAJIAN_PAKET.md`) |
+| Tidak ditagih otomatis | renewals only through `request_renewal`/`request_seat_purchase`; no recurring charge in Midtrans Snap flow |
+| Belum ada: feed publik, chat, notifikasi kudos/komentar, aplikasi mobile, pembayaran online tagihan anggota, kwitansi langganan | no such tables or routes; invoices paid manually; no receipt numbering |

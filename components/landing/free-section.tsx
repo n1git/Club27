@@ -136,7 +136,7 @@ export function FreeSection() {
           ))}
         </ul>
         <p className="mt-4 text-[15.5px] text-muted-foreground">
-          <b className="text-foreground">Belum ada:</b> feed publik, chat, notifikasi kudos dan komentar, aplikasi mobile.
+          <b className="text-foreground">Belum ada:</b> feed publik, chat, notifikasi kudos dan komentar, dan aplikasi mobile.
         </p>
       </Wrap>
     </section>
