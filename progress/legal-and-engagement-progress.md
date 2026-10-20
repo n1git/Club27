@@ -3,7 +3,7 @@
 Bagian A: kepatuhan UU PDP. Bagian B: fitur kompetitif dan sosial. Bagian B baru dikerjakan setelah A selesai dan owner memberi OK.
 
 ## Status
-Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 belum diterapkan ke hosted dan kode Fase 3 belum di-push. A8 kwitansi ditunda owner ("pembayaran menyusul").
+Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 diterapkan ke hosted (owner, Claude Code CLI lokal, 2026-10-21) dan kode Fase 3 di-push. Berikutnya Fase 4. A8 kwitansi ditunda owner ("pembayaran menyusul").
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 062 dan kode A2-A7, A9
@@ -268,3 +268,13 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
   - kolom, izin, dan tabel baru belum ada; tidak ada catatan renang di atas 150 m/menit; versi terakhir 062.
 - Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
 - Blocker: kode Fase 3 membaca tabel dan kolom baru (ekspor akun dan organisasi gagal tanpa tabelnya). Push menunggu 063 diterapkan.
+
+### Penerapan hosted 063 (2026-10-21)
+- Owner menerapkan `20250101000063_competition.sql` (nama `competition`) lewat Claude Code CLI lokal.
+- Dicek dari sesi ini:
+  - tiga versi teratas: 063 `competition`, 062, 061;
+  - tabel `challenges`, `challenge_participants`, `achievements` ada; 9 jenis lencana;
+  - batas renang 150; izin `challenges.manage` ada;
+  - trigger `workout_logs_award` dan `a00_org_writable` di `challenges` terpasang; `purge_organization` memuat `challenges:t`;
+  - fungsi peringkat mengembalikan `next_rank`; `award_achievements` tidak bisa dipanggil `authenticated`.
+- Lalu kode Fase 3 di-push.
