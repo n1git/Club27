@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { addComment, blockAccount, deleteComment, deletePost } from "@/lib/actions/social";
 import { ActionButton } from "@/components/shared/action-button";
 import { ActionForm } from "@/components/shared/action-form";
@@ -28,7 +29,7 @@ function name(author: { fullName: string; username: string } | null) {
   return author ? author.fullName : "Pengguna";
 }
 
-export function PostCard({ post, sportLabels }: { post: FeedPost; sportLabels: Record<string, string> }) {
+export function PostCard({ post, sportLabels, permalink = false }: { post: FeedPost; sportLabels: Record<string, string>; permalink?: boolean }) {
   return (
     <Card>
       <CardContent className="flex flex-col gap-3 pt-5">
@@ -37,7 +38,13 @@ export function PostCard({ post, sportLabels }: { post: FeedPost; sportLabels: R
             <span className="font-medium">{name(post.author)}</span>
             <span className="text-xs text-muted-foreground">
               {post.author ? `@${post.author.username} · ` : ""}
-              {formatJakartaDateTime(post.createdAt)}
+              {permalink ? (
+                formatJakartaDateTime(post.createdAt)
+              ) : (
+                <Link href={`/p/${post.id}`} className="hover:text-foreground hover:underline">
+                  {formatJakartaDateTime(post.createdAt)}
+                </Link>
+              )}
             </span>
           </div>
           {post.mine ? (

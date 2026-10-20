@@ -58,6 +58,25 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   const hasMore = rows.length > FEED_PAGE;
   const page = rows.slice(0, FEED_PAGE);
   if (!page.length) return { posts: [], hasMore: false };
+  return { hasMore, posts: await hydratePosts(page, accountId) };
+}
+
+export async function getPost(accountId: string, id: string): Promise<FeedPost | null> {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase
+    .from("posts")
+    .select("id, account_id, kind, body, sport, performed_on, duration_min, distance_m, created_at, hidden_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return null;
+  return (await hydratePosts([data], accountId))[0] ?? null;
+}
+
+type PostRow = Record<string, unknown>;
+
+async function hydratePosts(page: PostRow[], accountId: string): Promise<FeedPost[]> {
+  const supabase = await createServerSupabaseClient();
   const ids = page.map((p) => p.id as string);
   const [reactions, comments, media] = await Promise.all([
     supabase.rpc("kudos_for_posts", { p_posts: ids }),
@@ -66,9 +85,7 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   ]);
   const photos = await signPhotos((media.data ?? []) as { post_id: string; path: string; position: number; width: number; height: number }[]);
   const people = await peopleMap([...page.map((p) => p.account_id as string), ...(comments.data ?? []).map((c) => c.account_id as string)]);
-  return {
-    hasMore,
-    posts: page.map((p) => {
+  return page.map((p) => {
       const givers = ((reactions.data ?? []) as { post_id: string; username: string | null; full_name: string | null; is_me: boolean; kind: string }[]).filter((r) => r.post_id === p.id);
       const counts: Record<string, number> = {};
       for (const r of givers) counts[r.kind] = (counts[r.kind] ?? 0) + 1;
@@ -100,8 +117,7 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
             mine: c.account_id === accountId,
           })),
       };
-    }),
-  };
+  });
 }
 
 export interface FriendLists {
