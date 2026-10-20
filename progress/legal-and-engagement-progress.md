@@ -3,7 +3,7 @@
 Bagian A: kepatuhan UU PDP. Bagian B: fitur kompetitif dan sosial. Bagian B baru dikerjakan setelah A selesai dan owner memberi OK.
 
 ## Status
-Fase 0 disetujui (2026-10-20). Fase 1 selesai; migrasi 062 belum diterapkan ke hosted dan kode Fase 1 belum di-push (menunggu OK penerapan). A8 kwitansi ditunda owner ("pembayaran menyusul").
+Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Menunggu OK owner untuk Bagian B. A8 kwitansi ditunda owner ("pembayaran menyusul").
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 062 dan kode A2-A7, A9
@@ -221,3 +221,12 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
 - Sesi rebrand menerapkan `20250101000061_ruzz_sweep` ke hosted, jadi migrasi persetujuan dipindah ke `20250101000062_consent_compliance.sql`, dan migrasi Bagian B menjadi 063 (kompetisi) dan 064 (foto dan reaksi).
 - `ruzz_sweep` mengganti setting `club27.*` menjadi `ruzz.*`, termasuk `ruzz.purge`. Guard persetujuan menerima `club27.purge` maupun `ruzz.purge`; `consent_phase1` sekarang memakai `ruzz.purge`.
 - Diuji ulang di database lokal baru 001-058 + 059, 060, 061 `ruzz_sweep`, 062: 14 berkas tes SQL, semua kode keluar 0.
+
+### Penerapan hosted 062 (2026-10-21)
+- Owner menerapkan `20250101000062_consent_compliance.sql` lewat Claude Code CLI di komputernya. Di sesi cloud, `apply_migration` dan `execute_sql` timeout, diduga karena konfirmasi pernyataan destruktif tidak muncul di sini.
+- Dicek dari sesi ini:
+  - tiga versi teratas: 062 `consent_compliance`, 061 `ruzz_sweep`, 060 `rename_plus_plan`;
+  - `consents.revoked_at` ada, trigger `consents_guard` terpasang, `consents_kind_check` memuat `health_data`;
+  - `withdraw_health_consent` dan `retention_candidates` ada dan tidak bisa dipanggil `authenticated`;
+  - `enforce_body_measurement` memuat `BM003`, guard memuat `ruzz.purge`.
+- Lalu kode Fase 1 dan 2 di-push.
