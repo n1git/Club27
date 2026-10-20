@@ -1,6 +1,6 @@
 # more-sports progress
 
-Status: Phases 0 to 3 done; migration 065 is written and NOT applied to hosted.
+Status: Phases 0 to 3 done; migration 065 is applied to hosted.
 
 - [x] Phase 0: read the sport data and code, two questions answered
 - [x] Phase 1: migration (not applied)
@@ -66,3 +66,7 @@ Left as is (list for the owner, nothing built):
 ## Phase 3: hosted (not applied)
 
 Dry run needs `SUPABASE_ACCESS_TOKEN` and the database password: `supabase db push --dry-run`. Without them, the project's rolled-back-transaction dry run applies. Then `apply_migration` for `20250101000065_more_sports.sql` and rename the history version to `20250101000065`. Hosted is currently at 064.
+
+## Phase 3 result: applied to hosted
+
+Owner approved ("oke"). `supabase db push --dry-run` is not available here (no access token or database password), so the migration ran first on hosted in a statement that ended with a deliberate exception (rolled back): 18 ready, 0 soon, 175 module links, 17 presets, `running` with 8 modules and no `resource_booking`, `pos` or presets. Then `apply_migration` and the history row renamed to `20250101000065 more_sports`. Hosted now: 18 ready types, 0 soon, 175 `club_type_modules`, 17 `club_type_presets`; existing organizations untouched.
