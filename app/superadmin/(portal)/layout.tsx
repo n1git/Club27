@@ -20,7 +20,7 @@ export default async function SuperadminPortalLayout({ children }: { children: R
     <div className="flex min-h-screen w-full flex-col">
       <header className="flex items-center justify-between border-b border-border bg-card px-4 py-2 sm:px-6">
         <div className="flex items-center gap-2">
-          <BrandIcon className="size-9 sm:hidden" />
+          <span className="sm:hidden"><BrandIcon /></span>
           <span className="hidden sm:block">
             <BrandLogo />
           </span>

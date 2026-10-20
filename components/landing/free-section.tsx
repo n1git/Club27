@@ -20,7 +20,7 @@ const ALSO = [
 function TileHead({ icon: Icon, title, children }: { icon: typeof Activity; title: string; children: React.ReactNode }) {
   return (
     <div>
-      <span className="mb-[18px] grid size-[46px] place-items-center rounded-[14px] bg-foreground text-primary">
+      <span className="mb-[18px] grid size-[46px] place-items-center rounded-[14px] bg-foreground text-primary dark:bg-primary dark:text-primary-foreground">
         <Icon className="size-5" strokeWidth={1.75} aria-hidden />
       </span>
       <h3 className="text-[25px] font-bold leading-[1.15]">{title}</h3>
@@ -68,13 +68,13 @@ export function FreeSection() {
               </p>
             </div>
           </article>
-          <article className="rounded-[28px] bg-primary/30 p-6 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl motion-reduce:transition-none sm:p-8">
+          <article className="rounded-[28px] bg-primary/30 p-6 dark:bg-primary/15 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl motion-reduce:transition-none sm:p-8">
             <TileHead icon={UserPlus} title="Teman dan feed khusus teman">
               Cari teman dengan username persis. Posting, beri kudos, komentari, atau bagikan latihan ke feed.
             </TileHead>
             <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <span className="inline-flex items-center gap-2 rounded-full bg-card py-2 pl-2 pr-4 text-[15px] font-bold">
-                <span className="grid size-[22px] place-items-center rounded-full bg-foreground text-[9px] text-primary">DP</span>@dimasp
+                <span className="grid size-[22px] place-items-center rounded-full bg-foreground text-[9px] text-primary dark:bg-primary dark:text-primary-foreground">DP</span>@dimasp
               </span>
               <Pill dark icon={UserPlus}>
                 Tambah teman

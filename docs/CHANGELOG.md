@@ -2,7 +2,7 @@
 
 ## 2026-10-21
 
-- Rebrand: the product is now called Ruzz (UI, emails, titles, legal pages), with the new logo, a yellow `#FFD21F` and ink `#111214` palette and Archivo display type. Technical names (`club27` project, JWT audiences, settings, seed domain) are unchanged. The plan is shown as "Ruzz Plus". Migrations 059 (billing messages) and 060 (plan name) are written but not applied to hosted.
+- Rebrand: the product is now called Ruzz (UI, emails, titles, legal pages), with the new logo, an R in the page loader, a yellow `#FFD21F` and ink `#111214` palette and Archivo display type. Technical names (`club27` project, JWT audiences, settings, seed domain) are unchanged. The plan is shown as "Ruzz Plus". Migrations 059 (billing messages) and 060 (plan name) are written but not applied to hosted.
 - Leaderboards: each group has a "Peringkat" tab, and clubs have a board for members (`/member/leaderboard`) and for admins (`/admin/leaderboard`). Rank by distance, duration or sessions, for this week or this month, optionally for one sport. The board shows the top 10 (members with no sessions are hidden, empty ranks show a prompt to start a session) and your own rank if you are outside it. Only totals are shown, never individual workouts. A club board lists only members who switched it on for that club (off by default, in `/home/join-club` or on the board page); switching off or leaving the club removes you at once.
 - "Suka" on posts is now "Kudos", with the names of the people who gave it (friends and group peers; others count as "dan N lainnya").
 - Privacy policy updated for boards and kudos (new version); the account export includes your club board choices. Migration 057.

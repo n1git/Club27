@@ -1,12 +1,12 @@
 # rebrand-ruzz progress
 
-Status: Phase 0 done.
+Status: all phases done.
 
 - [x] Phase 0: inventory, token table, Design Read
-- [ ] Phase 1: name and copy
-- [ ] Phase 2: logo assets
-- [ ] Phase 3: tokens and type
-- [ ] Phase 4: page sweep and screenshots
+- [x] Phase 1: name and copy
+- [x] Phase 2: logo assets
+- [x] Phase 3: tokens and type
+- [x] Phase 4: page sweep and screenshots
 
 Logo files: `ruzz-italic.zip` (read `description.txt`; its hex values win: yellow `#FFD21F`, ink `#111214`, white `#FFFFFF`, blush red `#E5412B` for the logo dot only). The zip notes the name "Ruzz" has not passed a brand or IP check.
 
@@ -97,3 +97,24 @@ Migrations written, NOT applied to hosted (for the owner):
 - `app/layout.tsx`: Archivo (`next/font/google`, variable weight, `wdth` axis) replaces Barlow Condensed, upright.
 - Hard-coded colours cleared: `components/ui/button.tsx`, `components/landing/{phone-stage,cta,final-cta,join-section}.tsx` (ink `#111214`, hover `#26272a`, muted `#a6a7ab` and `#3a3b3e`, final-cta text now `text-primary-foreground`, join shadow neutral ink). Grep for `#c8f31d`, `#4d6400`, `#6b8a00`, `rgb(30 36 8`, `rgb(30_36_8`, `#0e0e0e` in `app/`, `components/`, `lib/`, `public/` finds nothing.
 - Landing hero and dark sections checked in a browser (light and dark).
+
+## Phase 4
+
+Sweep done in a browser (landing, `/login`, `/signup`, `/superadmin/login`, `/sports/swimming`, `/terms`, `/home`, `/admin`, `/member`, landing at 375 px; light and dark). Coach pages and the superadmin portal use the same shell as `/admin` and were checked there.
+
+Fixed:
+- App header and superadmin header showed the mobile icon on desktop in dark mode (the theme `hidden`/`dark:block` classes beat `sm:hidden`): the icon is now wrapped in a `sm:hidden` span.
+- Landing icon tiles (`bg-foreground text-primary`) were yellow on off-white in dark mode: dark mode now uses a yellow tile with ink glyph.
+- The yellow-tinted friends card and the "me" row on the leaderboard turned muddy olive in dark mode: tint lowered to 15%.
+- Checkboxes use `accent-accent-foreground` (amber in light, yellow in dark) instead of yellow on cream.
+- The selected plan card border on `/signup` used yellow on cream (1.3:1): now `border-accent-foreground`.
+- The page loader's "27" mark became "R".
+- Docs: `CLAUDE.md` "Tata letak halaman" rule, `docs/ARCHITECTURE.md` brand paragraph, `PRODUCT_BLUEPRINT.md` font and brand row.
+
+Kept: the large yellow panels on the landing (hero phone stage, plan card, closing card) are the approved social-first layout; they are not on app pages. The plan card still shows the English bullets ("Add up to 5 Club*") from the existing plan text; not changed here.
+
+Screenshots (1440 px): `progress/rebrand-ruzz/{light,dark}-{landing,login,admin,member}.png`.
+
+Done-when check: grep for "27 Club" and "27club" in `app/`, `components/`, `lib/`, `public/` finds nothing; grep for the old volt values finds nothing outside `progress/`; title, favicon, Apple icon and OG image use the Ruzz files.
+
+Not applied to hosted, for the owner: migrations 059 and 060.

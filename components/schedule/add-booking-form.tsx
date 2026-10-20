@@ -64,7 +64,7 @@ export function AddBookingForm({
             name="lateAttendance"
             checked={late}
             onChange={(event) => setLate(event.target.checked)}
-            className="mt-0.5 size-5 shrink-0 accent-primary"
+            className="mt-0.5 size-5 shrink-0 accent-accent-foreground"
           />
           <span>
             Catat kehadiran susulan

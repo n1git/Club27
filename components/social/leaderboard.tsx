@@ -124,7 +124,7 @@ export function Leaderboard({
 function Row({ row, metric }: { row: BoardRow; metric: BoardMetric }) {
   const detail = secondary(row, metric);
   return (
-    <li className={cn("flex items-center gap-4 rounded-2xl px-4 py-3", row.isMe ? "bg-primary/30" : "bg-card")}>
+    <li className={cn("flex items-center gap-4 rounded-2xl px-4 py-3", row.isMe ? "bg-primary/30 dark:bg-primary/15" : "bg-card")}>
       <span className="w-8 shrink-0 text-right font-display text-2xl leading-none">{row.rank}</span>
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-semibold">

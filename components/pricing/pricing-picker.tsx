@@ -128,7 +128,7 @@ export function PlanCard({
     <div
       className={cn(
         "flex flex-col rounded-lg border p-6",
-        selected ? "border-primary bg-secondary" : "border-border bg-card"
+        selected ? "border-accent-foreground bg-secondary" : "border-border bg-card"
       )}
     >
       <h3 className="font-heading text-lg font-semibold text-foreground">{plan.name}</h3>

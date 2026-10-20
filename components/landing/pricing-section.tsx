@@ -40,7 +40,7 @@ export function PricingSection({ plans }: { plans: PricingPlan[] }) {
                 { icon: Blocks, title: "Semua modul tersedia", text: "Termasuk di paket ini." },
               ].map(({ icon: Icon, title, text }) => (
                 <li key={title} className="flex items-start gap-3.5">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-[14px] bg-foreground text-primary">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-[14px] bg-foreground text-primary dark:bg-primary dark:text-primary-foreground">
                     <Icon className="size-5" strokeWidth={1.75} aria-hidden />
                   </span>
                   <p>

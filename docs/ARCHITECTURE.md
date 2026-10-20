@@ -506,11 +506,12 @@ signed-in session is redirected to its home.
 ## Look, loading and caching
 
 - Brand (`app/globals.css`, `public/brand/`): off-white `#F2F2EE` and
-  near-black `#0E0E0E` surfaces, volt `#C8F31D` for primary buttons, the active
-  item and focus (text on volt is always `#0E0E0E`; use `text-accent-foreground`,
-  `#4D6400` on light and volt on dark, for coloured text, never `text-primary`).
-  Source Sans 3 for text, Barlow Condensed 800 italic (`font-display`) for
-  headings, metric numbers and the hero. Tinted shadows use `--shadow-ink`.
+  ink `#111214` surfaces, Ruzz yellow `#FFD21F` for primary buttons, the active
+  item and key numbers (text on yellow is always `#111214`; use
+  `text-accent-foreground`, `#7A5A00` on light and yellow on dark, for coloured
+  text and focus rings, never `text-primary`). Blush red `#E5412B` exists only
+  as the dot in the logo files. Source Sans 3 for text, Archivo 800 upright at
+  `wdth` 68 (`font-display`) for page titles, metric numbers and the hero. Tinted shadows use `--shadow-ink`.
   The product name reads "Ruzz".
 - Loading: every route group has a `loading.tsx` with skeletons
   (`components/ui/skeleton.tsx`); a delayed spinner and a top progress bar

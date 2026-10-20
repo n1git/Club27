@@ -76,7 +76,7 @@ export function RegisterAccountForm({ captchaSiteKey, nonce }: { captchaSiteKey?
         </p>
       </div>
       <label className="flex items-start gap-3 text-sm">
-        <input type="checkbox" name="acceptTerms" required className="mt-0.5 size-5 shrink-0 accent-primary" />
+        <input type="checkbox" name="acceptTerms" required className="mt-0.5 size-5 shrink-0 accent-accent-foreground" />
         <span>
           Saya menyetujui{" "}
           <a href="/terms" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">

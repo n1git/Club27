@@ -43,9 +43,7 @@ export function PageSpinner() {
             <circle cx={100} cy={100} r={70} fill="none" strokeWidth={8} strokeLinecap="round" className="loader-arc stroke-accent-foreground" />
           </svg>
           <span aria-hidden="true" className="absolute inset-0 grid place-items-center font-display text-[54px] leading-none">
-            <span>
-              2<span className="text-accent-foreground">7</span>
-            </span>
+            <span>R</span>
           </span>
         </div>
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground">Memuat...</p>

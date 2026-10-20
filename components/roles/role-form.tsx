@@ -45,7 +45,7 @@ export function RoleForm({
           name="isPaid"
           defaultChecked={initial?.isPaid}
           disabled={lockPaid}
-          className="mt-0.5 size-5 shrink-0 accent-primary"
+          className="mt-0.5 size-5 shrink-0 accent-accent-foreground"
         />
         <span>
           Staf berbayar (memakai satu seat dan perlu penugasan klub)
@@ -66,7 +66,7 @@ export function RoleForm({
                     name="permissions"
                     value={p.code}
                     defaultChecked={selected.has(p.code)}
-                    className="mt-0.5 size-4 shrink-0 accent-primary"
+                    className="mt-0.5 size-4 shrink-0 accent-accent-foreground"
                   />
                   <span>{p.label}</span>
                 </label>

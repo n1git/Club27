@@ -39,7 +39,7 @@ export function AppShell({
           <div className="flex min-w-0 flex-1 flex-col">
             <header className="relative flex min-h-[54px] flex-wrap items-center justify-between gap-2 border-b border-dashed border-border bg-card px-4 py-1.5 print:hidden sm:px-6">
               <div className="flex min-w-0 flex-wrap items-center gap-2">
-                <BrandIcon className="size-8 sm:hidden" />
+                <span className="sm:hidden"><BrandIcon className="size-8" /></span>
                 <span className="min-w-0 truncate font-heading text-base font-semibold tracking-tight text-accent-foreground">
                   {clubName}
                 </span>

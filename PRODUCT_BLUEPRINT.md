@@ -506,7 +506,7 @@ Detail ada di `docs/ARCHITECTURE.md`.
 | :--- | :--- |
 | **Framework** | Next.js 16 (App Router) + TypeScript, React 19 |
 | **UI** | Tailwind CSS v4, komponen sendiri di `components/ui`, lucide-react, sonner, recharts (dimuat malas) |
-| **Font dan merek** | Source Sans 3, Barlow Condensed 800 italic, hijau volt `#C8F31D` |
+| **Font dan merek** | Source Sans 3, Archivo 800 (lebar 68), kuning `#FFD21F` dan tinta `#111214` |
 | **Database** | PostgreSQL (Supabase), migrasi di `supabase/migrations` |
 | **Autentikasi** | Sendiri: bcrypt dan JWT (`jose`), bukan Supabase Auth; superadmin wajib TOTP |
 | **Otorisasi** | RLS per `club_id` dan peran, fungsi RPC untuk penulisan sensitif |
