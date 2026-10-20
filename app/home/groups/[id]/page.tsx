@@ -4,7 +4,8 @@ import { isSocialBanned } from "@/lib/auth/social-access";
 import { getFriendLists } from "@/lib/data/social";
 import { getGroupDetail } from "@/lib/data/groups";
 import { getReadyClubTypes } from "@/lib/club-type";
-import { getGroupBoard, parseBoardParams } from "@/lib/data/leaderboards";
+import { getGroupBoard, METRIC_KEY, parseBoardParams, PERIOD_KEY } from "@/lib/data/leaderboards";
+import { ShareCardButton } from "@/components/shared/share-card-button";
 import { Leaderboard } from "@/components/social/leaderboard";
 import Link from "next/link";
 import { cancelEvent, deleteGroup, leaveGroup, removeGroupMember, respondGroupInvite, rsvpEvent } from "@/lib/actions/groups";
@@ -64,6 +65,15 @@ export default async function GroupPage({
         <PageHeader title={group.name} subtitle="Peringkat anggota grup" />
         <GroupTabs groupId={group.id} active="peringkat" />
         <Leaderboard rows={rows} params={board} sports={sports} hrefFor={hrefFor} />
+        {rows.some((r) => r.isMe && r.rank !== null) ? (
+          <div>
+            <ShareCardButton
+              href={`/api/cards/rank/${group.id}?metrik=${METRIC_KEY[board.metric]}&periode=${PERIOD_KEY[board.period]}`}
+              filename={`peringkat-${board.metric}-${board.period}`}
+              label="Kartu peringkat saya"
+            />
+          </div>
+        ) : null}
         <p className="text-xs text-muted-foreground">Hanya total per anggota yang tampil, bukan catatan latihannya. Anggota yang memblokir atau diblokir olehmu tidak ikut tampil.</p>
       </div>
     );

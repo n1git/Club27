@@ -1,6 +1,6 @@
 "use client";
 
-import { addComment, blockAccount, deleteComment, deletePost, toggleReaction } from "@/lib/actions/social";
+import { addComment, blockAccount, deleteComment, deletePost } from "@/lib/actions/social";
 import { ActionButton } from "@/components/shared/action-button";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { formatJakartaDateTime } from "@/lib/format";
 import type { FeedPost } from "@/lib/data/social";
 import { ReportDialog } from "./report-dialog";
+import { PostReactions } from "./post-reactions";
+import { PostPhotos } from "./post-photos";
 
 function distance(m: number) {
   return m >= 1000 ? `${(m / 1000).toLocaleString("id-ID", { maximumFractionDigits: 2 })} km` : `${m} m`;
@@ -18,8 +20,8 @@ function kudosLine({ given, names, others }: FeedPost["kudos"]): string | null {
   const parts = [...(given ? ["Kamu"] : []), ...names];
   if (parts.length === 0 && others === 0) return null;
   const list = parts.join(", ");
-  if (others > 0) return `Kudos dari ${list ? `${list} dan ` : ""}${others} lainnya`;
-  return `Kudos dari ${list}`;
+  if (others > 0) return `Reaksi dari ${list ? `${list} dan ` : ""}${others} lainnya`;
+  return `Reaksi dari ${list}`;
 }
 
 function name(author: { fullName: string; username: string } | null) {
@@ -48,14 +50,13 @@ export function PostCard({ post, sportLabels }: { post: FeedPost; sportLabels: R
             {post.distanceM ? `, ${distance(post.distanceM)}` : ""}
           </p>
         ) : null}
+        {post.hidden && post.mine ? (
+          <p className="rounded-lg bg-secondary px-3 py-2 text-xs">Postingan ini disembunyikan sementara dari teman karena beberapa laporan sedang ditinjau.</p>
+        ) : null}
         {post.body ? <p className="whitespace-pre-wrap break-words text-sm">{post.body}</p> : null}
+        {post.photos.length ? <PostPhotos photos={post.photos} /> : null}
         <div className="flex flex-wrap items-center gap-3">
-          <ActionButton
-            action={toggleReaction}
-            fields={{ postId: post.id, liked: post.kudos.given ? "1" : "0" }}
-            label={`${post.kudos.given ? "Batal kudos" : "Beri kudos"} · ${post.kudos.count}`}
-            variant={post.kudos.given ? "secondary" : "outline"}
-          />
+          <PostReactions postId={post.id} counts={post.reactions} mine={post.myReaction} />
           {post.mine || !post.author ? null : <ReportDialog targetType="post" targetId={post.id} />}
         </div>
         {kudosLine(post.kudos) ? <p className="text-xs text-muted-foreground">{kudosLine(post.kudos)}</p> : null}

@@ -10,6 +10,7 @@ import { SITE_URL } from "@/lib/site";
 import { APP_NAME } from "@/lib/config";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { commentSchema, friendUsernameSchema, postSchema, reportSchema, uuidField } from "@/lib/validations/social";
+import { photoFiles, postPhotoPaths, removePhotoPaths, storePostPhotos, validatePhotos } from "@/lib/media/post-media";
 import { type ActionState } from "./types";
 
 const KNOWN = new Set(["FR001", "FR002", "FR003", "FR004", "PO001", "PO002"]);
@@ -93,9 +94,17 @@ export async function createPost(_prevState: ActionState, formData: FormData): P
   if (limited) return limited;
   const parsed = postSchema.safeParse({ body: formData.get("body") });
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+  const photos = photoFiles(formData);
+  const invalid = await validatePhotos(photos);
+  if (invalid) return { ok: false, error: invalid };
   const supabase = await createServerSupabaseClient();
-  const { error } = await supabase.rpc("create_post", { p_body: parsed.data.body });
-  return error ? fail(error, "Gagal memposting") : done();
+  const { data: postId, error } = await supabase.rpc("create_post", { p_body: parsed.data.body });
+  if (error || !postId) return fail(error, "Gagal memposting");
+  if (photos.length && !(await storePostPhotos(session.account_id, postId as string, photos))) {
+    await supabase.from("posts").delete().eq("id", postId as string);
+    return { ok: false, error: "Foto gagal diproses. Coba foto lain." };
+  }
+  return done();
 }
 
 export async function shareWorkout(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -130,29 +139,38 @@ export async function shareAchievement(_prevState: ActionState, formData: FormDa
 }
 
 export async function deletePost(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  await requireActionRole("personal");
-  const id = uuidField.safeParse(formData.get("postId"));
-  if (!id.success) return { ok: false, error: "Data tidak valid" };
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from("posts").delete().eq("id", id.data).select("id");
-  return error || !data?.length ? { ok: false, error: "Gagal menghapus postingan" } : done();
-}
-
-export async function toggleReaction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
   const session = await requireActionRole("personal");
   const id = uuidField.safeParse(formData.get("postId"));
   if (!id.success) return { ok: false, error: "Data tidak valid" };
   const supabase = await createServerSupabaseClient();
-  if (formData.get("liked") !== "1") {
-    const blocked = await socialBlocked(session.account_id);
-    if (blocked) return blocked;
-  }
-  if (formData.get("liked") === "1") {
+  const { data: own } = await supabase.from("posts").select("id").eq("id", id.data).eq("account_id", session.account_id).maybeSingle();
+  if (!own) return { ok: false, error: "Gagal menghapus postingan" };
+  const paths = await postPhotoPaths(id.data);
+  const { data, error } = await supabase.from("posts").delete().eq("id", id.data).select("id");
+  if (error || !data?.length) return { ok: false, error: "Gagal menghapus postingan" };
+  await removePhotoPaths(paths);
+  return done();
+}
+
+const REACTIONS = ["kudos", "fire", "strong", "clap"] as const;
+
+export async function toggleReaction(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await requireActionRole("personal");
+  const id = uuidField.safeParse(formData.get("postId"));
+  const kind = String(formData.get("kind") ?? "kudos");
+  if (!id.success || !REACTIONS.includes(kind as (typeof REACTIONS)[number])) return { ok: false, error: "Data tidak valid" };
+  const supabase = await createServerSupabaseClient();
+  const { data: current } = await supabase.from("post_reactions").select("kind").eq("post_id", id.data).eq("account_id", session.account_id).maybeSingle();
+  if (current?.kind === kind) {
     const { error } = await supabase.from("post_reactions").delete().eq("post_id", id.data).eq("account_id", session.account_id);
-    return error ? { ok: false, error: "Gagal membatalkan kudos" } : done();
+    return error ? { ok: false, error: "Gagal membatalkan reaksi" } : done();
   }
-  const { error } = await supabase.from("post_reactions").insert({ post_id: id.data });
-  return error && error.code !== "23505" ? { ok: false, error: "Gagal memberi kudos" } : done();
+  const blocked = await socialBlocked(session.account_id);
+  if (blocked) return blocked;
+  const { error } = current
+    ? await supabase.from("post_reactions").update({ kind }).eq("post_id", id.data).eq("account_id", session.account_id)
+    : await supabase.from("post_reactions").insert({ post_id: id.data, kind });
+  return error && error.code !== "23505" ? { ok: false, error: "Gagal memberi reaksi" } : done();
 }
 
 export async function addComment(_prevState: ActionState, formData: FormData): Promise<ActionState> {

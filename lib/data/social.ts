@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { signPhotos, type PostPhoto } from "@/lib/media/post-media";
 
 export interface Person {
   id: string;
@@ -26,6 +27,10 @@ export interface FeedPost {
   distanceM: number | null;
   createdAt: string;
   kudos: { count: number; given: boolean; names: string[]; others: number };
+  reactions: Record<string, number>;
+  myReaction: string | null;
+  photos: PostPhoto[];
+  hidden: boolean;
   comments: FeedComment[];
 }
 
@@ -44,7 +49,7 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   const supabase = await createServerSupabaseClient();
   let query = supabase
     .from("posts")
-    .select("id, account_id, kind, body, sport, performed_on, duration_min, distance_m, created_at")
+    .select("id, account_id, kind, body, sport, performed_on, duration_min, distance_m, created_at, hidden_at")
     .order("created_at", { ascending: false })
     .limit(FEED_PAGE + 1);
   if (before) query = query.lt("created_at", before);
@@ -54,15 +59,19 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   const page = rows.slice(0, FEED_PAGE);
   if (!page.length) return { posts: [], hasMore: false };
   const ids = page.map((p) => p.id as string);
-  const [reactions, comments] = await Promise.all([
+  const [reactions, comments, media] = await Promise.all([
     supabase.rpc("kudos_for_posts", { p_posts: ids }),
     supabase.from("post_comments").select("id, post_id, account_id, body, created_at").in("post_id", ids).order("created_at").limit(2000),
+    supabase.from("post_media").select("post_id, path, position, width, height").in("post_id", ids).limit(400),
   ]);
+  const photos = await signPhotos((media.data ?? []) as { post_id: string; path: string; position: number; width: number; height: number }[]);
   const people = await peopleMap([...page.map((p) => p.account_id as string), ...(comments.data ?? []).map((c) => c.account_id as string)]);
   return {
     hasMore,
     posts: page.map((p) => {
-      const givers = ((reactions.data ?? []) as { post_id: string; username: string | null; full_name: string | null; is_me: boolean }[]).filter((r) => r.post_id === p.id);
+      const givers = ((reactions.data ?? []) as { post_id: string; username: string | null; full_name: string | null; is_me: boolean; kind: string }[]).filter((r) => r.post_id === p.id);
+      const counts: Record<string, number> = {};
+      for (const r of givers) counts[r.kind] = (counts[r.kind] ?? 0) + 1;
       const names = givers.filter((r) => !r.is_me && r.full_name).map((r) => r.full_name as string);
       const given = givers.some((r) => r.is_me);
       return {
@@ -77,6 +86,10 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
         distanceM: p.distance_m as number | null,
         createdAt: p.created_at as string,
         kudos: { count: givers.length, given, names: names.slice(0, 3), others: givers.length - (given ? 1 : 0) - Math.min(names.length, 3) },
+        reactions: counts,
+        myReaction: givers.find((r) => r.is_me)?.kind ?? null,
+        photos: photos.get(p.id as string) ?? [],
+        hidden: Boolean(p.hidden_at),
         comments: (comments.data ?? [])
           .filter((c) => c.post_id === p.id)
           .map((c) => ({

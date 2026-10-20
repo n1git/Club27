@@ -7,6 +7,7 @@ import { isKeyRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { verifyReauth } from "@/lib/auth/reauth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/audit";
+import { removeAccountPhotos } from "@/lib/media/post-media";
 import { type ActionState } from "./types";
 
 export async function deleteOwnAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -30,6 +31,7 @@ export async function deleteOwnAccount(_prevState: ActionState, formData: FormDa
 
   const { error } = await supabase.from("accounts").delete().eq("id", session.account_id);
   if (error) return { ok: false, error: "Akun tidak bisa dihapus. Hubungi admin platform." };
+  await removeAccountPhotos(session.account_id);
   await supabase
     .from("consents")
     .update({ revoked_at: new Date().toISOString(), guardian_name: null })

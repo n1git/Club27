@@ -6,6 +6,7 @@ import { shareAchievement } from "@/lib/actions/social";
 import { deleteWorkout } from "@/lib/actions/workouts";
 import { shareWorkout } from "@/lib/actions/social";
 import { ActionButton } from "@/components/shared/action-button";
+import { ShareCardButton } from "@/components/shared/share-card-button";
 import { formatJakartaDate } from "@/lib/format";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
@@ -69,7 +70,12 @@ export default async function WorkoutPage() {
                       {a.description} · {formatJakartaDate(`${a.earnedOn}T00:00:00+07:00`, { dateStyle: "medium" })}
                     </span>
                   </span>
-                  {canShare ? <ActionButton action={shareAchievement} fields={{ achievementId: a.id }} label="Bagikan ke feed" /> : null}
+                  {canShare ? (
+                    <span className="flex flex-wrap justify-end gap-2">
+                      <ActionButton action={shareAchievement} fields={{ achievementId: a.id }} label="Bagikan ke feed" />
+                      <ShareCardButton href={`/api/cards/badge/${a.id}`} filename={`lencana-${a.code}`} />
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -90,6 +96,7 @@ export default async function WorkoutPage() {
                 <TableHead>Jarak terjauh</TableHead>
                 <TableHead>Durasi terlama</TableHead>
                 <TableHead>Pace terbaik</TableHead>
+                {canShare ? <TableHead /> : null}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -100,6 +107,14 @@ export default async function WorkoutPage() {
                   <TableCell>{r.longestDistance ? distance(r.longestDistance.meters) : "-"}</TableCell>
                   <TableCell>{r.longestDuration ? `${r.longestDuration.minutes} menit` : "-"}</TableCell>
                   <TableCell>{r.bestPace ? pace(r.bestPace.minPerKm) : "-"}</TableCell>
+                  {canShare ? (
+                    <TableCell>
+                      <ShareCardButton
+                        href={`/api/cards/record/${r.sport}-${r.year}?m=${r.longestDistance ? "distance" : "duration"}`}
+                        filename={`rekor-${r.sport}-${r.year}`}
+                      />
+                    </TableCell>
+                  ) : null}
                 </TableRow>
               ))}
             </TableBody>
@@ -151,6 +166,7 @@ export default async function WorkoutPage() {
                   <TableCell className="max-w-xs truncate">{log.notes ?? ""}</TableCell>
                   <TableCell className="flex gap-2">
                     {canShare ? <ActionButton action={shareWorkout} fields={{ workoutId: log.id }} label="Bagikan" /> : null}
+                    {canShare ? <ShareCardButton href={`/api/cards/workout/${log.id}`} filename={`latihan-${log.performedOn}`} /> : null}
                     <ActionForm action={deleteWorkout}>
                       <input type="hidden" name="workoutId" value={log.id} />
                       <ActionSubmitButton variant="destructive" size="sm" confirmMessage="Hapus catatan ini?">

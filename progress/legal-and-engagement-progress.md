@@ -3,13 +3,13 @@
 Bagian A: kepatuhan UU PDP. Bagian B: fitur kompetitif dan sosial. Bagian B baru dikerjakan setelah A selesai dan owner memberi OK.
 
 ## Status
-Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 diterapkan ke hosted (owner, Claude Code CLI lokal, 2026-10-21) dan kode Fase 3 di-push. Berikutnya Fase 4. A8 kwitansi ditunda owner ("pembayaran menyusul").
+Fase 0 disetujui (2026-10-20). Fase 1 dan 2 selesai; migrasi 062 diterapkan ke hosted (owner, lewat Claude Code CLI lokal, 2026-10-21) dan semua kode di-push. Bagian B disetujui (2026-10-21). Fase 3 selesai; migrasi 063 diterapkan ke hosted (owner, Claude Code CLI lokal, 2026-10-21) dan kode Fase 3 di-push. Fase 4 selesai; migrasi 064 belum diterapkan ke hosted dan kode Fase 4 belum di-push. A8 kwitansi ditunda owner ("pembayaran menyusul").
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 062 dan kode A2-A7, A9
 - [x] Fase 2: DPIA, rencana respons insiden, aturan A10 (kwitansi ditunda owner)
 - [x] Fase 3: migrasi 063, peringkat, tantangan, lencana, rekor, streak
-- [ ] Fase 4: migrasi 064, foto post, reaksi, kartu bagikan
+- [x] Fase 4: migrasi 064, foto post, reaksi, kartu bagikan
 
 ## Teks persetujuan (`lib/consent.ts`, `CONSENT_VERSION = "2026-10-20"`)
 
@@ -278,3 +278,39 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
   - trigger `workout_logs_award` dan `a00_org_writable` di `challenges` terpasang; `purge_organization` memuat `challenges:t`;
   - fungsi peringkat mengembalikan `next_rank`; `award_achievements` tidak bisa dipanggil `authenticated`.
 - Lalu kode Fase 3 di-push.
+
+### Fase 4 (selesai, belum di hosted)
+- Migrasi `20250101000064_post_media_reactions.sql`:
+  - post tersembunyi:
+    - `posts.hidden_at`; `posts_visible` dan `can_see_post` menyembunyikan post tersembunyi dari teman, penulis tetap melihat;
+    - trigger `sync_post_hidden` di `reports`: 3 laporan terbuka menyembunyikan post; post muncul lagi hanya bila semua laporannya diabaikan; laporan yang diputus `removed`/`suspended` membuat post tetap tersembunyi;
+  - reaksi: `post_reactions.kind` (`kudos`/`fire`/`strong`/`clap`, bawaan `kudos`) dengan policy update milik sendiri; `kudos_for_posts` mengembalikan `kind`;
+  - foto: `post_media` (maks 4 lewat `position` 0-3, ukuran sisi maks 1600, maks 5 MB, hanya ditulis service role, dibaca lewat `can_see_post`); bucket privat `post-media` (webp, 5 MB; batas dipasang bila kolomnya ada).
+- Kode:
+  - `sharp` 0.35.4 jadi dependensi langsung; `serverActions.bodySizeLimit` 2100kb -> 4mb (di bawah batas body Vercel 4,5 MB);
+  - foto:
+    - `lib/media/post-media.ts`: validasi tipe dari isi berkas, encode ulang `sharp` (rotate, maks 1600 px, webp q80, metadata dibuang), unggah lewat service role, URL bertanda tangan 1 jam, hapus berkas;
+    - `components/social/post-composer.tsx`: browser mengecilkan foto ke maks 1600 px sebelum dikirim (supaya 4 foto muat di batas Vercel) dan menampilkan pratinjau;
+    - `createPost` menolak berkas tidak valid dan membatalkan post bila foto gagal diproses;
+  - feed (`lib/data/social.ts`): foto dari `post_media` yang lolos RLS, ditandatangani server; jumlah reaksi per jenis;
+  - `components/social/post-reactions.tsx` (4 reaksi, tekan lagi untuk membatalkan, ganti jenis) dan `post-photos.tsx`; pemberitahuan post tersembunyi untuk penulis;
+  - hapus post, penghapusan konten oleh superadmin, dan hapus akun menghapus berkas storage setelah barisnya terhapus, supaya foto tidak hilang bila penghapusan gagal;
+  - kartu bagikan:
+    - `app/api/cards/[kind]/[id]/route.tsx` (`next/og`, 1080x1350) untuk latihan, rekor, lencana, posisi peringkat grup;
+    - data dibaca dengan RLS pemilik, sesi diperiksa, akun yang dibatasi mendapat 404; isi username, angka, logo, tanpa nama lengkap; `Cache-Control: private, no-store`;
+    - `components/shared/share-card-button.tsx`: Web Share API, cadangan unduh; dipasang di Latihan (catatan, rekor, lencana) dan peringkat grup;
+  - ekspor akun: `foto.csv`.
+- Tes SQL (lokal, database baru 001-064): 16 berkas, semua kode keluar 0, termasuk `media_phase1` baru (batas foto, visibilitas, reaksi, laporan dan sembunyi).
+- E2E (`/tmp/hb/e2e/media.cjs`; proxy lokal dengan tiruan API Storage), kode keluar 0, 19 pemeriksaan:
+  - JPEG 2400x1800 ber-EXIF dan GPS dikirim langsung tanpa pengecilan di browser; tersimpan sebagai webp 1600x1200 tanpa EXIF;
+  - teman melihat 2 foto dan unduhannya tanpa EXIF; non-teman tidak melihat post maupun foto;
+  - reaksi Api, ganti ke Kuat, tekan lagi menghapus;
+  - 3 laporan menyembunyikan post dari teman dan penulis melihat pemberitahuan;
+  - kartu latihan, lencana, dan rekor terbuka untuk pemilik; akun lain dan tanpa sesi mendapat 404;
+  - hapus post menghapus berkasnya; ekspor memuat `foto.csv`; hapus akun mengosongkan foldernya.
+- Kegagalan selama e2e: kartu gagal dirender karena `@{username}` menjadi dua node teks tanpa `display: flex` (bug kode, diperbaiki); satu asersi salah karena tiruan storage meninggalkan folder kosong (bug tes, diperbaiki).
+- Hosted: cek baca-saja:
+  - md5 `can_see_post`, `kudos_for_posts`, dan ekspresi `posts_visible` sama dengan basis lokal;
+  - `hidden_at`, `kind`, `post_media`, dan bucket belum ada; kolom batas bucket ada; `reports.status` dan helper ada; 0 reaksi; versi terakhir 063.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
+- Blocker: kode Fase 4 membaca kolom dan tabel baru; push menunggu 064 diterapkan.

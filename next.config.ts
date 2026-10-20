@@ -57,7 +57,7 @@ const MOVED_PATHS: [string, string][] = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
-    serverActions: { bodySizeLimit: "2100kb" },
+    serverActions: { bodySizeLimit: "4mb" },
     staleTimes: { dynamic: 60, static: 60 },
   },
   async headers() {
