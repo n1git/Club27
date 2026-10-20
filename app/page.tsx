@@ -11,6 +11,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { Hero } from "@/components/landing/hero";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { FreeSection } from "@/components/landing/free-section";
+import { SportsSection } from "@/components/landing/sports-section";
 import { JoinSection } from "@/components/landing/join-section";
 import { BusinessSection } from "@/components/landing/business-section";
 import { Faq } from "@/components/landing/faq";
@@ -20,7 +21,7 @@ import { JsonLd } from "@/components/landing/json-ld";
 export const metadata: Metadata = pageMetadata({
   absoluteTitle: `${APP_NAME}: catat latihan, ajak teman, gabung klub`,
   description:
-    "Buat akun gratis untuk mencatat latihan, berteman, dan bergabung ke klub dengan kode. Punya klub? Kelola anggota, jadwal, booking fasilitas, tagihan, kasir, dan buku kas dari akun yang sama.",
+    "Akun gratis untuk mencatat latihan, berteman, ikut peringkat dan tantangan, dan bergabung ke klub dengan kode, untuk banyak olahraga. Punya klub? Kelola anggota, jadwal, booking fasilitas, tagihan, kasir, dan buku kas dari akun yang sama.",
   path: "/",
 });
 
@@ -34,8 +35,9 @@ export default async function Home() {
       <SkipLink />
       <LandingHeader />
       <main id="konten" className="flex flex-1 flex-col">
-        <Hero />
+        <Hero sports={clubTypes.filter((t) => t.status === "ready")} />
         <FreeSection />
+        <SportsSection types={clubTypes} />
         <JoinSection />
         <BusinessSection types={clubTypes} />
         <PricingSection plans={plans} />

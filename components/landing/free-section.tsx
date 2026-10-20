@@ -1,4 +1,4 @@
-import { Activity, BadgeCheck, Ban, CalendarCheck, Download, Lock, TicketCheck, Trophy, UserPlus, UserRound } from "lucide-react";
+import { Activity, BadgeCheck, Ban, CalendarCheck, Download, Heart, Lock, TicketCheck, Trophy, UserPlus, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Wrap } from "./wrap";
 
@@ -9,9 +9,14 @@ const WEEKS = [
   { n: 3, h: 62, label: "Minggu ini" },
 ];
 
+const BOARD = [
+  { rank: 1, name: "Nadia Putri", handle: "@nadiap", total: "42,3 km" },
+  { rank: 2, name: "Dimas Prakoso", handle: "@dimasp", total: "38,1 km" },
+  { rank: 3, name: "Ayu Lestari", handle: "@ayul", total: "31,5 km" },
+];
+
 const ALSO = [
   { icon: BadgeCheck, label: "Profil dan username unik" },
-  { icon: Trophy, label: "Peringkat grup dan klub" },
   { icon: Ban, label: "Blokir dan laporkan konten" },
   { icon: Download, label: "Ekspor data akun" },
   { icon: UserRound, label: "Hapus akun sendiri" },
@@ -43,10 +48,10 @@ export function FreeSection() {
     <section id="gratis" aria-labelledby="gratis-judul" className="scroll-mt-20 py-14 sm:py-[88px]">
       <Wrap>
         <h2 id="gratis-judul" className="max-w-[21ch] text-balance font-display text-[40px] uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
-          Gratis untuk siapa saja, bukan masa percobaan.
+          Latihan lebih seru bersama teman.
         </h2>
-        <p className="mt-4 max-w-[52ch] text-pretty text-lg text-muted-foreground sm:text-[19px]">
-          Daftar di satu halaman. Tidak perlu organisasi, tidak perlu kartu.
+        <p className="mt-4 max-w-[56ch] text-pretty text-lg text-muted-foreground sm:text-[19px]">
+          Gratis untuk siapa saja, bukan masa percobaan. Daftar di satu halaman, tanpa organisasi dan tanpa kartu.
         </p>
         <div className="mt-12 grid gap-5 md:grid-cols-[7fr_5fr]">
           <article className="flex flex-col justify-between gap-7 rounded-[28px] bg-card p-6 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl motion-reduce:transition-none sm:p-8 md:row-span-2">
@@ -88,6 +93,37 @@ export function FreeSection() {
             <div className="mt-5 flex flex-wrap items-center gap-2.5">
               <Pill icon={Lock}>Lari Subuh</Pill>
               <Pill icon={TicketCheck}>14 dari 20 kursi</Pill>
+            </div>
+          </article>
+          <article className="grid gap-8 rounded-[28px] bg-foreground p-6 text-background transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-xl motion-reduce:transition-none sm:p-8 md:col-span-2 md:grid-cols-[5fr_7fr] md:items-center md:gap-12">
+            <div>
+              <span className="mb-[18px] grid size-[46px] place-items-center rounded-[14px] bg-primary text-primary-foreground">
+                <Trophy className="size-5" strokeWidth={1.75} aria-hidden />
+              </span>
+              <h3 className="text-[25px] font-bold leading-[1.15]">Peringkat, kudos, dan tantangan</h3>
+              <p className="mt-2 max-w-[46ch] text-background/70">
+                Lihat total latihan anggota grup Anda, beri kudos pada latihan teman, dan ikut tantangan dari grup dan klub. Peringkat klub hanya menampilkan anggota yang mengaktifkannya sendiri.
+              </p>
+            </div>
+            <div>
+              <ol className="flex flex-col gap-2.5" aria-label="Contoh peringkat jarak minggu ini">
+                {BOARD.map((row) => (
+                  <li key={row.rank} className="flex items-center gap-4 rounded-2xl bg-background/10 px-4 py-3">
+                    <span className="w-8 shrink-0 text-right font-display text-2xl leading-none text-primary">{row.rank}</span>
+                    <span className="flex-1 font-bold leading-tight">
+                      {row.name} <span className="font-normal text-background/60">{row.handle}</span>
+                    </span>
+                    <span className="font-bold tabular-nums">{row.total}</span>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-4 flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-2 rounded-full bg-background/10 px-3.5 py-1.5 text-[14px] font-bold">
+                  <Heart className="size-4 text-primary" strokeWidth={1.75} aria-hidden />
+                  12 kudos
+                </span>
+                <b className="rounded-full bg-background/15 px-2.5 py-0.5 text-[12.5px] font-bold">Contoh data</b>
+              </p>
             </div>
           </article>
         </div>

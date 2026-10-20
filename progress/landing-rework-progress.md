@@ -190,3 +190,22 @@ The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan c
 | Peringkat grup dan klub; total latihan tampil di peringkat grup bagi anggota grup | `group_leaderboard` (057), `supabase/tests/leaderboards_phase7.sql` |
 | Peringkat klub hanya jika anggota mengaktifkannya sendiri | `club_leaderboard_optins`, `set_leaderboard_optin`, `club_leaderboard` (057); default off, removed on leaving the club |
 | Beri kudos; nama pemberi tampil untuk teman dan sesama grup | `kudos_for_posts` (057), `components/social/post-card.tsx` |
+
+## Sports pages and social emphasis (2026-10-21)
+
+| Claim on the page | Proof |
+|---|---|
+| "N olahraga" and the sport list on `/`, `/sports`, footer | `club_types.status = 'ready'` via `getPublicClubTypes`; the number is the row count |
+| Leaderboard tile: total latihan anggota grup, peringkat klub hanya untuk yang mengaktifkannya, kudos, ikut tantangan dari grup dan klub | `group_leaderboard`, `club_leaderboard_optins` (057); `kudos_for_posts`; `/home/challenges` ("Tantangan dari grup dan klub Anda. Ikut sukarela, progres dihitung dari catatan latihan") |
+| Leaderboard rows and "12 kudos" | invented example, labelled "Contoh data" |
+| Sport page text: modules a sport lists (booking, kasir, kelas, check-in) | `club_type_modules` (065 for the new sports); the feature list and `describe()` only show modules the sport has |
+| Walk-in customers: staff book by name and phone, customers cannot self-book without an account and active package | `book_resource` (guest name or member, admin and receptionist only), `book_resource_as_member` (`RB006`) |
+| Suggested setup (for example 4 badminton courts, 15 places in a CrossFit box, 60-minute slots) | `club_type_presets` (065); the text says "saran awal ... bisa diubah" |
+| Check-in QR in gym and CrossFit, code valid 30 to 60 seconds, no IP or device stored | module `checkin` for those types; `record_checkin`, `docs/ARCHITECTURE.md` check-in |
+| Pay per hour needs staff entry; payment at the cashier | Phase 0 notes in `progress/more-sports-progress.md`; `order_items.booking_id` and `paid_at` (022) |
+| Fee on each sport page: price, minimum seats, who uses a seat, trial, yearly discount | `subscription_plans` via `getActivePlans`; same rules as the plan card |
+| No member limit in the database, "sekitar 1.000 anggota per klub" policy | no member limit in SQL; FUP is text only (plan card) |
+| No mobile app | no native app; same line as the landing FAQ |
+| Running community: no booking or kasir | `club_type_modules` for `running` (065) |
+| Several clubs under one organization, within the plan's club limit | `enforce_org_club_limit` (`SW004`), `subscription_plans.club_limit` |
+| Account of a running community member can log workouts and join challenges | accounts are personal by default; `workout_logs`, challenges are by account |

@@ -23,7 +23,6 @@ const FEATURES = [
 
 export function BusinessSection({ types }: { types: PublicClubType[] }) {
   const ready = types.filter((t) => t.status === "ready");
-  const soon = types.filter((t) => t.status === "soon");
 
   return (
     <section id="klub" aria-labelledby="klub-judul" className="scroll-mt-20 py-6 sm:py-6">
@@ -37,19 +36,12 @@ export function BusinessSection({ types }: { types: PublicClubType[] }) {
             <Link href="/signup" className={`${ctaClass("solid")} mt-7`}>
               Daftarkan klub <ArrowDot />
             </Link>
-            {ready.length > 0 ? (
-              <div className="mt-[22px] flex flex-wrap items-center gap-2 text-[15px] text-muted-foreground">
-                Siap dipakai:
-                {ready.map((t) => (
-                  <Link key={t.code} href={`/sports/${t.code}`} className="rounded-full bg-card px-3.5 py-1 font-bold text-foreground transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                    {t.name}
-                  </Link>
-                ))}
-              </div>
-            ) : null}
-            <p className="mt-3 text-[15px] text-muted-foreground">
-              {soon.length > 0 ? `Segera hadir: ${soon.map((t) => t.name).join(", ")}. ` : ""}
-              Olahraga lain ditambahkan lewat data.
+            <p className="mt-[22px] text-[15px] text-muted-foreground">
+              {ready.length > 0 ? `${ready.length} olahraga siap dipakai. ` : ""}
+              <Link href="/sports" className="font-semibold text-foreground underline underline-offset-4 hover:text-accent-foreground">
+                Lihat semua olahraga
+              </Link>
+              . Olahraga lain ditambahkan lewat data.
             </p>
           </div>
           <ul className="grid content-start gap-x-7 gap-y-1.5 sm:grid-cols-2">

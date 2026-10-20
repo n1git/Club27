@@ -1,9 +1,10 @@
 import Link from "next/link";
+import type { PublicClubType } from "@/lib/club-type";
 import { ArrowDot, ctaClass } from "./cta";
 import { PhoneStage } from "./phone-stage";
 import { Wrap } from "./wrap";
 
-export function Hero() {
+export function Hero({ sports }: { sports: PublicClubType[] }) {
   return (
     <section aria-labelledby="hero-judul" className="pb-12 pt-6 sm:pb-[72px]">
       <Wrap className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-12">
@@ -23,6 +24,14 @@ export function Hero() {
               Daftarkan klub
             </Link>
           </div>
+          {sports.length > 0 ? (
+            <p className="mt-6 max-w-[48ch] text-[15.5px] text-muted-foreground">
+              Mendukung <b className="text-foreground">{sports.length} olahraga</b>: {sports.slice(0, 3).map((t) => t.name.replace(/^(Klub|Studio)\s+/, "").toLowerCase()).join(", ")}, dan lainnya.{" "}
+              <Link href="/#olahraga" className="font-semibold text-foreground underline underline-offset-4 hover:text-accent-foreground">
+                Lihat daftar
+              </Link>
+            </p>
+          ) : null}
         </div>
         <PhoneStage />
       </Wrap>

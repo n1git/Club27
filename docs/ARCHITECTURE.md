@@ -465,9 +465,10 @@ that belong in the phone tab bar. A group with no visible item is not shown.
 
 `/` is built from `components/landing/` and leads with the free personal
 account: header (skip link, section links, theme toggle, mobile menu), hero with
-three phone screens, free features (workout log, friends and feed, groups and
-events), join a club by code, "Punya klub?" business features with links to the
-ready sports, pricing, FAQ in two open columns, a dark closing call to action
+three phone screens, free and social features (workout log, friends and feed,
+groups and events, then a dark tile for leaderboards, kudos and challenges),
+a "Satu akun, N olahraga" grid that links every ready sport, join a club by
+code, "Punya klub?" business features, pricing, FAQ in two open columns, a dark closing call to action
 with two paths (free account, register a club), footer. The page follows the
 theme toggle through the brand tokens; phone screens keep fixed light colors
 (`.phone-screen` in `app/globals.css`) and the closing band is always dark. A
@@ -486,10 +487,18 @@ signed-in session is redirected to its home.
   migration proving it. When a feature changes, update the sentence and its
   row together; a `soon` module or club type is shown as "Segera hadir".
 - Per-sport pages: `/sports/<code>` (`app/sports/[code]/page.tsx`,
-  `components/landing/sport-page.tsx`, wording in `sport-copy.ts`) is read
-  from `club_types` for ready types; the sign-up button preselects the type
-  (`/signup?jenis=<code>`). The landing cards link to them and the sitemap
-  lists them. An unknown code returns HTTP 200 with `noindex` (a side effect
+  `components/landing/sport-page.tsx`) is read from `club_types` for ready
+  types; the sign-up button preselects the type (`/signup?jenis=<code>`). Each
+  page has its own title, description, canonical, Open Graph image
+  (`app/sports/[code]/opengraph-image.tsx`), intro, three use cases and FAQ
+  (`components/landing/sport-content.ts`; a sport without an entry gets text
+  generated from its terms and modules, so a new sport still renders), the
+  feature list limited to the modules the sport has, terms, price, and links to
+  the other sports. JSON-LD per page: BreadcrumbList, WebPage,
+  SoftwareApplication with the live offer, and FAQPage (the same questions as
+  the visible FAQ). `/sports` lists every ready sport (CollectionPage and
+  ItemList). The landing grid, `/sports`, the footer and the sitemap link
+  them. An unknown code returns HTTP 200 with `noindex` (a side effect
   of the root `loading.tsx`) and the not-found view.
 - SEO: `lib/seo.ts` (`pageMetadata`: title, description, canonical, Open Graph,
   Twitter per page), `app/sitemap.ts` (with `lastModified`), `app/robots.ts`,

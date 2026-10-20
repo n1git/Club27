@@ -8,7 +8,7 @@ import { FEATURES } from "./features-section";
 import { PlanCard } from "./plan-card";
 import { LandingFooter } from "./landing-footer";
 import { LandingHeader, SkipLink } from "./landing-header";
-import { describe } from "./sport-copy";
+import { commonFaq, sportContent } from "./sport-content";
 
 export function SportPage({
   type,
@@ -32,6 +32,8 @@ export function SportPage({
     ["Sesi", type.terms.session],
     ["Lokasi", type.terms.location],
   ];
+  const content = sportContent(type, has);
+  const faq = [...content.faq, ...commonFaq(type, plans)];
   const trial = plans.find((p) => p.trialDays > 0);
   const cta = trial ? `Coba gratis ${trialLabel(trial.trialDays)}` : `Daftarkan ${type.name}`;
 
@@ -51,7 +53,7 @@ export function SportPage({
                 </li>
                 <li aria-hidden>/</li>
                 <li>
-                  <Link href="/#olahraga" className="hover:text-foreground hover:underline">
+                  <Link href="/sports" className="hover:text-foreground hover:underline">
                     Olahraga
                   </Link>
                 </li>
@@ -65,7 +67,7 @@ export function SportPage({
               Aplikasi manajemen {type.name}
             </h1>
             <p className="mt-6 max-w-2xl text-pretty text-lg text-muted-foreground">
-              Kelola {describe(type, ready)} dalam satu aplikasi.
+              {content.tagline}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link href={`/signup?jenis=${type.code}`} className={buttonVariants({ size: "lg", className: "h-12 px-6 text-base" })}>
@@ -75,6 +77,24 @@ export function SportPage({
                 Lihat harga
               </Link>
             </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="ringkas-judul" className="py-16 sm:py-24">
+          <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+            <div>
+              <h2 id="ringkas-judul" className="text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
+                Ruzz untuk {type.name}
+              </h2>
+              <p className="mt-4 text-pretty text-lg text-muted-foreground">{content.intro}</p>
+            </div>
+            <ul className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+              {content.uses.map((u) => (
+                <li key={u} className="rounded-2xl bg-card p-5 font-semibold leading-snug">
+                  {u}
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 
@@ -118,6 +138,22 @@ export function SportPage({
           </div>
         </section>
 
+        <section aria-labelledby="faq-sport-judul" className="py-16 sm:py-24">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+            <h2 id="faq-sport-judul" className="max-w-2xl text-balance font-heading text-3xl font-semibold tracking-tight sm:text-4xl">
+              Pertanyaan tentang {type.name}
+            </h2>
+            <dl className="mt-10 grid gap-x-16 gap-y-8 md:grid-cols-2">
+              {faq.map((item) => (
+                <div key={item.q}>
+                  <dt className="text-lg font-bold leading-snug">{item.q}</dt>
+                  <dd className="mt-1.5 text-pretty text-muted-foreground">{item.a}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+
         {plans.length > 0 ? (
           <section id="harga" aria-labelledby="harga-sport-judul" className="py-16 sm:py-24">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
@@ -137,7 +173,7 @@ export function SportPage({
           <section aria-labelledby="lainnya-judul" className="py-16 sm:py-20">
             <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
               <h2 id="lainnya-judul" className="font-heading text-2xl font-semibold tracking-tight">
-                Jenis klub lainnya
+                Olahraga lainnya
               </h2>
               <ul className="mt-6 flex flex-wrap gap-3">
                 {others.map((o) => (
@@ -149,6 +185,11 @@ export function SportPage({
                   </li>
                 ))}
               </ul>
+              <p className="mt-6">
+                <Link href="/sports" className="font-semibold underline underline-offset-4 hover:text-accent-foreground">
+                  Lihat semua olahraga
+                </Link>
+              </p>
             </div>
           </section>
         ) : null}
