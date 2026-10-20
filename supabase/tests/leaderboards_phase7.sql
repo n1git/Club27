@@ -66,6 +66,7 @@ begin
     (pg_temp.uid('la@t.test'), pg_temp.uid('lg@t.test'), 'accepted'),
     (pg_temp.uid('la@t.test'), pg_temp.uid('ld@t.test'), 'accepted');
 
+  update club_types set max_m_per_min = null where code = 'swimming';
   insert into workout_logs (account_id, sport, performed_on, duration_min, distance_m) values
     (pg_temp.uid('la@t.test'), 'swimming', v_today, 30, 4000), (pg_temp.uid('la@t.test'), 'swimming', v_today, 30, 6000),
     (pg_temp.uid('lb@t.test'), 'gym', v_today, 30, 5000),

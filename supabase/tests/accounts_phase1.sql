@@ -116,7 +116,7 @@ from pg_class c join pg_namespace n on n.oid = c.relnamespace
 where n.nspname = 'public'
   and (
     (c.relkind = 'r' and c.relrowsecurity
-      and c.relname not in ('subscription_plans', 'platform_modules', 'club_types', 'club_type_modules', 'club_type_presets'))
+      and c.relname not in ('subscription_plans', 'platform_modules', 'club_types', 'club_type_modules', 'club_type_presets', 'achievement_types'))
     or (c.relkind = 'v' and c.relname <> 'social_people' and not coalesce('security_invoker=true' = any (c.reloptions), false))
   )
   and has_table_privilege('authenticated', c.oid, 'select');
