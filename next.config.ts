@@ -55,6 +55,7 @@ const MOVED_PATHS: [string, string][] = [
 ];
 
 const nextConfig: NextConfig = {
+  htmlLimitedBots: /.*/,
   poweredByHeader: false,
   experimental: {
     serverActions: { bodySizeLimit: "4mb" },
