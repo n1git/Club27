@@ -7,7 +7,7 @@ Fase 0 disetujui (2026-10-20). Fase 1 selesai; migrasi 061 belum diterapkan ke h
 
 - [x] Fase 0: rencana
 - [x] Fase 1: migrasi 061 dan kode A2-A7, A9
-- [ ] Fase 2: kwitansi, DPIA, rencana respons insiden, aturan A10 (lalu tunggu OK)
+- [x] Fase 2: DPIA, rencana respons insiden, aturan A10 (kwitansi ditunda owner)
 - [ ] Fase 3: migrasi 062, peringkat, tantangan, lencana, rekor, streak
 - [ ] Fase 4: migrasi 063, foto post, reaksi, kartu bagikan
 
@@ -202,3 +202,17 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
   - menjalankan semuanya sekaligus membuat alat MCP timeout di luar database (database bersih, tidak ada transaksi menggantung), diduga konfirmasi pernyataan destruktif `update` + `delete` yang tidak muncul.
 - Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
 - Blocker: kode Fase 1 membaca `consents.revoked_at` dan `health_data`. Push sebelum 061 diterapkan akan merusak Pengaturan, Kesehatan, dan hapus akun di production. Kode ditahan sampai OK penerapan.
+
+### Fase 2 (selesai, kecuali kwitansi)
+- `docs/legal/DPIA.md`:
+  - data anak, data kesehatan, foto postingan (rencana Fase 4);
+  - untuk tiap data: tujuan, dasar, akses, risiko, pengendalian, sisa risiko;
+  - penyedia dan masa simpan.
+- `docs/legal/INCIDENT_RESPONSE.md`:
+  - penanggung jawab (nama koordinator perlu diisi owner);
+  - langkah dengan jam: catat, tahan (cabut sesi lewat `accounts.sessions_valid_after`, nonaktifkan akun/klub), rotasi kunci (JWT Supabase, service role, superadmin, cron, Midtrans, Resend, Turnstile, rahasia titik check-in), selidiki, beri tahu dalam 3 x 24 jam, pulihkan, tutup;
+  - templat pemberitahuan ke pengguna dan ke lembaga, dan log insiden.
+- `CLAUDE.md` (Aturan teknis): aturan persetujuan dan aturan A10 (fitur publik tanpa anak dan post privat sebagai bawaan, agregat minimal 10 akun, data impor pihak ketiga hanya untuk pemilik, persetujuan AI terpisah).
+- Kwitansi (A8) ditunda owner sampai pembayaran berjalan.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
+- Blocker: sama dengan Fase 1 (kode menunggu penerapan 061).
