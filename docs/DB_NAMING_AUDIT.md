@@ -18,7 +18,7 @@ Kolom "Usulan" = saran saya. Kosong = nama sudah cukup jelas.
 | `accounts` | Akun login universal | Jelas | tetap |
 | `subscriptions` | Langganan paket murid (membership) | Bentrok dengan `organization_subscriptions` (langganan platform) dan `subscription_*` lain | `member_memberships` |
 | `membership_packages` | Paket yang dijual klub ke murid | Pasangan dari `subscriptions` | tetap, atau `membership_plans` |
-| `subscription_plans` | Paket harga platform (27 Club Plus) | Mirip `membership_packages` dan `platform_plans` | `platform_plans` (nama itu dipakai tabel lama, drop dulu) |
+| `subscription_plans` | Paket harga platform (Ruzz Plus) | Mirip `membership_packages` dan `platform_plans` | `platform_plans` (nama itu dipakai tabel lama, drop dulu) |
 | `organization_subscriptions` | Langganan platform milik organisasi | Panjang tapi benar | tetap |
 | `bookings` | Booking murid ke kelas | Bentrok dengan `resource_bookings` | `class_bookings` |
 | `classes.instructor_id` vs `members.coach_id` vs `payroll_runs.coach_id` | Orang yang sama (pelatih) | Dua istilah: instructor dan coach | pilih satu: `coach_id` |
@@ -104,6 +104,6 @@ Usulan nama fungsi: `current_tenant_id` -> `current_club_id`; `create_tenant_for
 
 - Postgres otomatis mengikuti `alter table ... rename` untuk FK, index, policy, view, dan trigger. Isi fungsi plpgsql/sql TIDAK ikut berubah: semua fungsi yang menyebut nama lama (puluhan) harus ditulis ulang.
 - Kode TS memanggil tabel dengan string (`from("profiles")` 32 kali, `organization_members` 18, `members` 17, `tenants` 12) dan embed PostgREST yang memakai nama FK (mis. `profiles!classes_instructor_id_fkey`). Perlu diubah bersamaan.
-- Klaim JWT `tenant_id`, setting Postgres `club27.*`, skrip seed, tes SQL, docs, dan CLAUDE.md ikut.
+- Klaim JWT `tenant_id`, setting Postgres `ruzz.*`, skrip seed, tes SQL, docs, dan CLAUDE.md ikut.
 - Urutan aman: (1) pembersihan tabel/kolom warisan dulu (mengurangi yang harus di-rename), (2) satu migrasi rename + tulis ulang fungsi, (3) ubah TS dan tes dalam commit yang sama, (4) uji regresi penuh (SQL, e2e) sebelum terapan hosted. Karena database produksi masih kosong, ini waktu termurah untuk melakukannya.
 - Rename paling berisiko: `tenants`/`tenant_id` (menyentuh semua policy) dan `members`/`profiles` (paling banyak dipakai kode).

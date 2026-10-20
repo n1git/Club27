@@ -1,10 +1,10 @@
 # ruzz-sweep progress
 
-Status: Phase 0 done, waiting for the owner's OK before Phase 1.
+Status: Phases 0 to 2 done. Waiting for the second OK before Phase 3 (apply to hosted).
 
 - [x] Phase 0: audit (3 agents), table, migration plan
-- [ ] Phase 1: A and C in the repo, tests, new migration written (not applied)
-- [ ] Phase 2: class D (app and migration together)
+- [x] Phase 1: A and C in the repo, tests, new migration written (not applied)
+- [x] Phase 2: class D (app and migration together)
 - [ ] Phase 3: apply to hosted (second OK needed)
 - [ ] Phase 4: re-run the searches, record the result
 
@@ -109,3 +109,17 @@ plus the original `pg_get_functiondef` and `pg_get_triggerdef` of the 14 functio
 1. **Superadmin email.** The login email `superadmin@club27.test` changes to `superadmin@ruzz.test`. After Phase 3 that superadmin signs in with the new address (the password and TOTP secret stay). Alternative: leave the email, since `.test` is a seed address, and report it as a remaining B hit. I plan to rename it.
 2. **Weak-password list.** Keep the `27club...` entries (they still block guessable passwords) and add `ruzz` ones. The done-criteria search will still hit this file.
 3. **`audit/seed-credentials.json`** stays untouched (untracked, holds passwords).
+
+## Phase 1 and 2 (owner approved the Phase 0 plan with "ok")
+
+Decisions taken as approved: superadmin email renamed; weak-password list keeps the `27club...` entries and gains `ruzz1234`, `ruzz12345`; `audit/seed-credentials.json` untouched.
+
+Repo changes: `package.json` and `package-lock.json` name `ruzz`; `instrumentation.ts` log prefix `[ruzz]`; `scripts/seed-demo.ts` domain `demo.ruzz.test` and setting `ruzz.purge`; `lib/validations/auth.ts` (two weak passwords added); `docs/DEPLOY.md` example URL; `docs/DB_NAMING_AUDIT.md`; `docs/ARCHITECTURE.md` and `CLAUDE.md` (class D and E names). `supabase/tests/*.sql` had no assertion on the old messages or settings, so none changed.
+
+Class D (app and migration together): JWT audiences `ruzz-superadmin` and `ruzz-superadmin-mfa` in `proxy.ts` and `lib/auth/superadmin.ts`; the five settings `ruzz.purge`, `ruzz.late_attendance`, `ruzz.audit_suppress`, `ruzz.order_request`, `ruzz.payment_request` in migration `061` (11 functions, 2 triggers). Effects: every superadmin session signed with the old audience is invalid after the app deploy, so the one hosted superadmin signs in again (and, after 061, with `superadmin@ruzz.test`). The app never sets the settings (only `seed-demo.ts`, now updated), so the database apply and the app deploy do not depend on each other's order.
+
+Migration `20250101000061_ruzz_sweep.sql` (written, NOT applied): bodies from `pg_get_functiondef` of a fully migrated local database whose hashes equal hosted for all 14 functions and 2 triggers (Phase 0); `CREATE OR REPLACE` for the 11 functions with only `club27.` changed to `ruzz.`; the two triggers dropped and recreated; `username_reserved` with `'club27', 'ruzz'`; `superadmins.email` updated with `WHERE email ilike '%club27.test'`. Idempotent. The two message functions and the plan name are in `059` and `060`.
+
+Checks: a fresh local database through `061` has no function or trigger matching the patterns except `username_reserved` (the kept `'club27'`); the plan reads "Ruzz Plus"; all 13 `supabase/tests/*.sql` exit 0, each on a database cloned from that fresh one; `npx tsc --noEmit` is clean.
+
+Phase 3 plan: save the before-values and the 14 function and 2 trigger definitions to `progress/ruzz-sweep-before.sql`; run the dry run (`supabase db push --dry-run`, needs `SUPABASE_ACCESS_TOKEN` and the DB password, which this environment lacks; if it stays unavailable I will use a rolled-back transaction on hosted instead and say so); then apply 059, 060 and 061 in one transaction.

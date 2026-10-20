@@ -4,7 +4,7 @@ import path from "node:path";
 import { generateTempPassword, hashPassword } from "../lib/auth/password";
 
 const PREFIX = "[DEMO]";
-const DOMAIN = "demo.club27.test";
+const DOMAIN = "demo.ruzz.test";
 
 interface Args {
   scale: "demo" | "full";
@@ -192,7 +192,7 @@ begin
     return;
   end if;
   v_clubs := coalesce(v_clubs, '{}');
-  perform set_config('club27.purge', 'on', true);
+  perform set_config('ruzz.purge', 'on', true);
   delete from audit_log where club_id = any(v_clubs) or organization_id = any(v_orgs);
   delete from consents where club_id = any(v_clubs) or organization_id = any(v_orgs);
   delete from email_verifications where organization_id = any(v_orgs);

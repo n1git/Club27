@@ -5,7 +5,7 @@ import { APP_ROLES, canAccessPath, roleHome, type AppRole } from "@/lib/auth/rol
 
 const COOKIE_NAME = "app_session";
 const SUPERADMIN_COOKIE_NAME = "superadmin_session";
-const SUPERADMIN_AUDIENCE = "club27-superadmin";
+const SUPERADMIN_AUDIENCE = "ruzz-superadmin";
 const PROTECTED_PREFIXES = ["/admin", "/coach", "/member", "/home", "/change-password", "/profile"];
 const GUEST_ONLY_PREFIXES = ["/login", "/signup"];
 

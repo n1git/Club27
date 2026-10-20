@@ -555,7 +555,7 @@ status from `/superadmin`.
   ```
 - `/superadmin/login` uses its own `superadmin_session` cookie. The JWT
   carries `{ sub, superadmin: true, email, full_name }` with audience
-  `club27-superadmin`, is never sent to Supabase as a bearer token, and a
+  `ruzz-superadmin`, is never sent to Supabase as a bearer token, and a
   club session JWT is rejected there. Every portal query uses the
   service-role client; the portal groups clubs by organization, edits plans,
   subscription status and the club-limit override, and can deactivate an
