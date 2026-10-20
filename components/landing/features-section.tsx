@@ -11,7 +11,14 @@ import {
   Wallet,
 } from "lucide-react";
 
-export const FEATURES = [
+type Has = (module: string) => boolean;
+
+export const FEATURES: {
+  icon: typeof Users;
+  module: string;
+  title: string;
+  body: string | ((has: Has) => string);
+}[] = [
   {
     icon: Users,
     module: "members",
@@ -46,13 +53,17 @@ export const FEATURES = [
     icon: Wallet,
     module: "cash_ledger",
     title: "Buku kas & gaji pelatih",
-    body: "Setiap pembayaran tagihan dan kasir masuk ke buku kas secara otomatis. Entri tidak bisa diubah atau dihapus dari aplikasi; koreksi dicatat sebagai entri baru. Gaji pelatih dibukukan langsung ke buku kas.",
+    body: (has) =>
+      `Setiap pembayaran tagihan${has("pos") ? " dan kasir" : ""} masuk ke buku kas secara otomatis. Entri tidak bisa diubah atau dihapus dari aplikasi; koreksi dicatat sebagai entri baru. Gaji pelatih dibukukan langsung ke buku kas.`,
   },
   {
     icon: Smartphone,
     module: "member_portal",
     title: "Portal anggota",
-    body: "Anggota masuk dengan satu akun untuk semua klub tempat ia terdaftar, lalu melihat paket, tagihan, jadwal, booking, dan pesanannya sendiri.",
+    body: (has) => {
+      const shown = ["paket", "tagihan", ...(has("classes") ? ["jadwal"] : []), ...(has("resource_booking") ? ["booking"] : []), ...(has("pos") ? ["pesanan"] : [])];
+      return `Anggota masuk dengan satu akun untuk semua klub tempat ia terdaftar, lalu melihat ${shown.slice(0, -1).join(", ")}, dan ${shown[shown.length - 1]} miliknya sendiri.`;
+    },
   },
   {
     icon: UserCog,
@@ -64,7 +75,11 @@ export const FEATURES = [
     icon: BarChart3,
     module: "members",
     title: "Laporan & dasbor",
-    body: "Pendapatan dari tagihan, tunggakan, arus kas bulanan, biaya gaji, booking hari ini, okupansi fasilitas minggu ini, dan penjualan hari ini.",
+    body: (has) => {
+      const parts = ["pendapatan dari tagihan", "tunggakan", "arus kas bulanan", "biaya gaji", ...(has("resource_booking") ? ["booking hari ini", "okupansi fasilitas minggu ini"] : []), ...(has("pos") ? ["penjualan hari ini"] : [])];
+      const text = `${parts.slice(0, -1).join(", ")}, dan ${parts[parts.length - 1]}`;
+      return `${text[0].toUpperCase()}${text.slice(1)}.`;
+    },
   },
   {
     icon: SlidersHorizontal,

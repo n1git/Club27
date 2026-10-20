@@ -423,8 +423,11 @@ orders page and the dashboard.
 
 `club_types` (code, name, `ready` or `soon`, `terms`), `club_type_modules`
 and `club_type_presets` define a sport; registration and "Tambah klub" list
-the `ready` rows. Ready: swimming, gym, tennis, padel, pilates, yoga. Soon:
-crossfit, martial_arts, dance, badminton, futsal, basketball, other.
+the `ready` rows. Ready (migration 065): swimming, gym, tennis, padel, pilates, yoga, futsal,
+badminton, mini_soccer, basketball, volleyball, pickleball, table_tennis,
+crossfit, martial_arts, dance, running, other. `running` has no
+`resource_booking`, `pos` or presets, so its menu and landing page show only
+the modules it has.
 
 To add a sport, with SQL only (a migration):
 1. `club_types`: code, name, status `ready`, `terms` (`member`, `coach`,

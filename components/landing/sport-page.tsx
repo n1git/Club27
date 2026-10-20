@@ -23,6 +23,7 @@ export function SportPage({
 }) {
   const ready = new Set(modules.filter((m) => m.status === "ready").map((m) => m.code));
   const features = FEATURES.filter((f) => type.modules.includes(f.module) && ready.has(f.module));
+  const has = (module: string) => type.modules.includes(module) && ready.has(module);
   const terms: [string, string][] = [
     ["Anggota", type.terms.member],
     ["Pelatih", type.terms.coach],
@@ -89,7 +90,7 @@ export function SportPage({
                     <f.icon className="mt-0.5 size-5 shrink-0 text-accent-foreground" aria-hidden />
                     <h3 className="font-heading text-lg font-semibold leading-snug">{f.title}</h3>
                   </div>
-                  <p className="text-pretty text-muted-foreground">{f.body}</p>
+                  <p className="text-pretty text-muted-foreground">{typeof f.body === "function" ? f.body(has) : f.body}</p>
                 </li>
               ))}
             </ul>
