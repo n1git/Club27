@@ -4,6 +4,9 @@ begin;
 insert into accounts (email, username, full_name, password_hash) values
   ('ha@t.test', 'huser.a', 'A', 'h'), ('hb@t.test', 'huser.b', 'B', 'h');
 
+insert into consents (subject_type, subject_id, kind, version)
+select 'account', id, 'health_data', 'test' from accounts where email in ('ha@t.test', 'hb@t.test');
+
 create function pg_temp.act(p_email text, p_iat bigint default null) returns void language sql security definer as $f$
   select set_config('request.jwt.claims', jsonb_build_object(
     'sub', (select id from accounts where email = p_email), 'role', 'authenticated', 'club_id', '',
@@ -64,7 +67,7 @@ begin
 
   perform set_config('request.jwt.claims', '', true);
   assert (select count(*) from body_measurements) = 0, 'no token, no rows';
-  begin insert into body_measurements (measured_on, weight_kg) values (today - 20, 60); assert false, 'no token cannot write'; exception when insufficient_privilege or not_null_violation or sqlstate '42501' then null; end;
+  begin insert into body_measurements (measured_on, weight_kg) values (today - 20, 60); assert false, 'no token cannot write'; exception when insufficient_privilege or not_null_violation or sqlstate '42501' or sqlstate 'BM003' then null; end;
 end $$;
 
 reset role;

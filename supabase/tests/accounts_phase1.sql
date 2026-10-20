@@ -104,6 +104,9 @@ select set_config('t.plain', (select id::text from accounts where email = 'plain
        set_config('t.owner_tenant', (select club_id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false),
        set_config('t.owner_account', (select account_id::text from club_profiles where owner_id is not null and email = 'owner@t.test'), false);
 
+insert into consents (subject_type, subject_id, kind, version)
+select 'account', id, 'health_data', 'test' from accounts where email in ('owner@t.test', 'member@t.test');
+
 insert into body_measurements (account_id, measured_on, height_cm, weight_kg)
 select id, (now() at time zone 'Asia/Jakarta')::date, 170, 65 from accounts where email in ('owner@t.test', 'member@t.test');
 
