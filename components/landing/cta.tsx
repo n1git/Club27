@@ -8,7 +8,7 @@ const variants = {
   solid: "border-foreground bg-foreground text-background hover:bg-foreground/85",
   line: "border-foreground bg-transparent text-foreground hover:bg-foreground hover:text-background",
   volt: "border-primary bg-primary text-primary-foreground hover:brightness-105",
-  ink: "border-[#0e0e0e] bg-[#0e0e0e] text-[#f2f2ee] hover:bg-[#26261f]",
+  ink: "border-[#111214] bg-[#111214] text-[#f2f2ee] hover:bg-[#26272a]",
 } as const;
 
 export function ctaClass(variant: keyof typeof variants = "solid", small = false) {

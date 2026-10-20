@@ -5,7 +5,7 @@ import { Wrap } from "./wrap";
 function Step({ className, icon: Icon, title, text, children }: { className?: string; icon: typeof KeyRound; title: string; text: string; children: React.ReactNode }) {
   return (
     <li className={cn("relative lg:before:absolute lg:before:-left-11 lg:before:top-24 lg:before:w-8 lg:before:border-t-[3px] lg:before:border-dotted lg:before:border-foreground lg:[&:not(:first-child)]:before:content-['']", className)}>
-      <div className="flex min-h-48 flex-col justify-center gap-3 rounded-[28px] bg-card p-[22px] shadow-[0_24px_48px_-20px_rgb(30_36_8/0.28),0_4px_10px_-4px_rgb(30_36_8/0.12)]">{children}</div>
+      <div className="flex min-h-48 flex-col justify-center gap-3 rounded-[28px] bg-card p-[22px] shadow-[0_24px_48px_-20px_rgb(17_18_20/0.28),0_4px_10px_-4px_rgb(17_18_20/0.12)]">{children}</div>
       <h3 className="mt-[22px] flex items-center gap-2.5 text-2xl font-bold">
         <Icon className="size-[26px] shrink-0 text-accent-foreground" strokeWidth={1.75} aria-hidden />
         {title}
@@ -28,7 +28,7 @@ export function JoinSection() {
   return (
     <section id="gabung" aria-labelledby="gabung-judul" className="scroll-mt-20 py-14 sm:py-[88px]">
       <Wrap>
-        <h2 id="gabung-judul" className="max-w-[22ch] text-balance font-display text-[40px] font-normal uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
+        <h2 id="gabung-judul" className="max-w-[22ch] text-balance font-display text-[40px] uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
           Sudah punya klub? Gabung dengan kode.
         </h2>
         <p className="mt-4 max-w-[52ch] text-pretty text-lg text-muted-foreground sm:text-[19px]">Untuk usia 18 tahun ke atas. Anak-anak didaftarkan oleh klub.</p>

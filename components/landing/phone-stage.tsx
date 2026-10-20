@@ -30,10 +30,10 @@ function Phone({ title, active, className, children }: { title: string; active: 
     <div className={cn("absolute left-1/2 -ml-[132px] [transform-origin:50%_0] [transform:translateX(var(--x))_rotate(var(--r))_scale(var(--s))]", className)}>
       <div
         aria-hidden="true"
-        className="phone-screen relative flex h-[560px] w-[264px] flex-col overflow-hidden rounded-[40px] border-8 border-[#0e0e0e] bg-(--ph-cream) text-[12.5px] leading-[1.4] shadow-[0_30px_50px_-18px_rgb(14_14_14/0.45)] motion-safe:animate-[float_7s_ease-in-out_infinite]"
+        className="phone-screen relative flex h-[560px] w-[264px] flex-col overflow-hidden rounded-[40px] border-8 border-[#111214] bg-(--ph-cream) text-[12.5px] leading-[1.4] shadow-[0_30px_50px_-18px_rgb(14_14_14/0.45)] motion-safe:animate-[float_7s_ease-in-out_infinite]"
         style={{ animationDelay: "var(--d, 0s)" }}
       >
-        <span className="absolute left-1/2 top-2 z-10 h-4 w-[62px] -translate-x-1/2 rounded-full bg-[#0e0e0e]" />
+        <span className="absolute left-1/2 top-2 z-10 h-4 w-[62px] -translate-x-1/2 rounded-full bg-[#111214]" />
         <div className="flex items-center justify-between px-3.5 pb-2 pt-[34px]">
           <h4 className="text-[17px] font-bold">{title}</h4>
           <Avatar tone="volt">RA</Avatar>
@@ -98,7 +98,7 @@ function WorkoutLog({ sport, when, amount }: { sport: string; when: string; amou
     <div className="flex items-center justify-between rounded-[14px] bg-(--ph-paper) px-2.5 py-2 font-semibold">
       <span>
         {sport}
-        <small className="block text-[11px] font-normal text-(--ph-muted)">{when}</small>
+        <small className="block text-[11px] text-(--ph-muted)">{when}</small>
       </span>
       <em className="text-[11px] font-bold not-italic text-(--ph-deep)">{amount}</em>
     </div>
@@ -150,14 +150,14 @@ export function PhoneStage() {
         </Phone>
 
         <Phone title="Latihan" active="Latihan" className="top-[66px] [--r:6deg] [--s:0.78] [--x:128px] [--d:-2.3s] z-[2] sm:top-[92px] sm:[--s:0.95] sm:[--x:176px]">
-          <div className="rounded-[20px] bg-[#0e0e0e] p-[13px] text-[#f2f2ee]">
-            <small className="text-[11px] font-semibold text-[#a6a69e]">Sesi minggu ini</small>
+          <div className="rounded-[20px] bg-[#111214] p-[13px] text-[#f2f2ee]">
+            <small className="text-[11px] font-semibold text-[#a6a7ab]">Sesi minggu ini</small>
             <div className="my-0.5 mb-2 font-display text-[44px] leading-none text-(--ph-volt)">
-              3<span className="text-2xl text-[#a6a69e]"> / 4</span>
+              3<span className="text-2xl text-[#a6a7ab]"> / 4</span>
             </div>
             <div className="flex gap-[5px]">
               {[true, true, true, false].map((on, i) => (
-                <i key={i} className={cn("h-[7px] flex-1 rounded-full", on ? "bg-(--ph-volt)" : "bg-[#3a3a35]")} />
+                <i key={i} className={cn("h-[7px] flex-1 rounded-full", on ? "bg-(--ph-volt)" : "bg-[#3a3b3e]")} />
               ))}
             </div>
           </div>

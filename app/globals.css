@@ -8,17 +8,17 @@ html {
 
 :root {
   --background: #f2f2ee;
-  --foreground: #0e0e0e;
+  --foreground: #111214;
   --card: #fbfbf8;
-  --card-foreground: #0e0e0e;
-  --primary: #c8f31d;
-  --primary-foreground: #0e0e0e;
+  --card-foreground: #111214;
+  --primary: #ffd21f;
+  --primary-foreground: #111214;
   --secondary: #e6e6e0;
-  --secondary-foreground: #0e0e0e;
+  --secondary-foreground: #111214;
   --muted: #e6e6e0;
   --muted-foreground: #57574f;
   --accent: #e6e6e0;
-  --accent-foreground: #4d6400;
+  --accent-foreground: #7a5a00;
   --destructive: #c62828;
   --destructive-foreground: #ffffff;
   --success: #276b2b;
@@ -27,15 +27,15 @@ html {
   --warning-foreground: #ffffff;
   --border: #d6d6ce;
   --input: #d6d6ce;
-  --ring: #4d6400;
-  --shadow-ink: rgb(30 36 8 / 0.14);
+  --ring: #7a5a00;
+  --shadow-ink: rgb(17 18 20 / 0.14);
   --radius: 0.625rem;
 
   --sidebar: #fbfbf8;
-  --sidebar-foreground: #0e0e0e;
+  --sidebar-foreground: #111214;
   --sidebar-muted-foreground: #57574f;
-  --sidebar-accent: #c8f31d;
-  --sidebar-accent-foreground: #0e0e0e;
+  --sidebar-accent: #ffd21f;
+  --sidebar-accent-foreground: #111214;
   --sidebar-border: #d6d6ce;
 
   --frame: color-mix(in oklab, var(--background) 55%, var(--muted));
@@ -50,34 +50,34 @@ html {
 }
 
 .dark {
-  --background: #0e0e0e;
+  --background: #111214;
   --foreground: #f2f2ee;
-  --card: #171716;
+  --card: #1a1b1d;
   --card-foreground: #f2f2ee;
-  --primary: #c8f31d;
-  --primary-foreground: #0e0e0e;
-  --secondary: #21211f;
+  --primary: #ffd21f;
+  --primary-foreground: #111214;
+  --secondary: #232426;
   --secondary-foreground: #f2f2ee;
-  --muted: #21211f;
-  --muted-foreground: #a6a69e;
-  --accent: #21211f;
-  --accent-foreground: #c8f31d;
+  --muted: #232426;
+  --muted-foreground: #a6a7ab;
+  --accent: #232426;
+  --accent-foreground: #ffd21f;
   --destructive: #ff7a6e;
-  --destructive-foreground: #0e0e0e;
+  --destructive-foreground: #111214;
   --success: #6fd38a;
-  --success-foreground: #0e0e0e;
+  --success-foreground: #111214;
   --warning: #f5b544;
-  --warning-foreground: #0e0e0e;
-  --border: #2c2c29;
-  --input: #2c2c29;
-  --ring: #c8f31d;
+  --warning-foreground: #111214;
+  --border: #2e2f32;
+  --input: #2e2f32;
+  --ring: #ffd21f;
   --shadow-ink: rgb(0 0 0 / 0.55);
-  --sidebar: #121211;
+  --sidebar: #141517;
   --sidebar-foreground: #f2f2ee;
-  --sidebar-muted-foreground: #a6a69e;
-  --sidebar-accent: #c8f31d;
-  --sidebar-accent-foreground: #0e0e0e;
-  --sidebar-border: #2c2c29;
+  --sidebar-muted-foreground: #a6a7ab;
+  --sidebar-accent: #ffd21f;
+  --sidebar-accent-foreground: #111214;
+  --sidebar-border: #2e2f32;
 }
 
 @theme inline {
@@ -141,16 +141,16 @@ html {
   }
 
   .phone-screen {
-    --ph-ink: #0e0e0e;
+    --ph-ink: #111214;
     --ph-cream: #f2f2ee;
     --ph-card: #fbfbf8;
     --ph-paper: #ffffff;
     --ph-frame: #e6e6e0;
     --ph-line: #d6d6ce;
     --ph-muted: #57574f;
-    --ph-volt: #c8f31d;
-    --ph-deep: #4d6400;
-    --ph-tint: color-mix(in oklab, #c8f31d 30%, #f2f2ee);
+    --ph-volt: #ffd21f;
+    --ph-deep: #7a5a00;
+    --ph-tint: color-mix(in oklab, #ffd21f 30%, #f2f2ee);
     color: var(--ph-ink);
   }
 
@@ -178,6 +178,11 @@ body {
     font-weight: 600;
     letter-spacing: -0.01em;
   }
+}
+
+.font-display {
+  font-weight: 800;
+  font-variation-settings: "wdth" 68;
 }
 
 .menu-sheet {

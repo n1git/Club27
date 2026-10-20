@@ -30,7 +30,7 @@ export function BusinessSection({ types }: { types: PublicClubType[] }) {
       <Wrap>
         <div className="grid gap-9 rounded-[32px] bg-secondary px-5 py-7 sm:p-11 lg:grid-cols-[minmax(0,4fr)_minmax(0,8fr)] lg:gap-14 lg:rounded-[40px] lg:p-16">
           <div className="lg:sticky lg:top-[104px] lg:self-start">
-            <h2 id="klub-judul" className="text-balance font-display text-[40px] font-normal uppercase leading-[0.98] sm:text-5xl lg:text-[58px]">
+            <h2 id="klub-judul" className="text-balance font-display text-[40px] uppercase leading-[0.98] sm:text-5xl lg:text-[58px]">
               Punya klub? Naik kelas dari akun yang sama.
             </h2>
             <p className="mt-[18px] text-lg text-muted-foreground">Pilih Upgrade di akun Anda dan berlangganan. Tanpa membuat akun baru.</p>

@@ -1,16 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Barlow_Condensed, Source_Sans_3 } from "next/font/google";
+import { Archivo, Source_Sans_3 } from "next/font/google";
 import { APP_NAME } from "@/lib/config";
 import { SITE_URL } from "@/lib/site";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { LazyToaster } from "@/components/shared/lazy-toaster";
 import "./globals.css";
 
-const display = Barlow_Condensed({
+const display = Archivo({
   subsets: ["latin"],
-  weight: ["800"],
-  style: ["italic"],
+  axes: ["wdth"],
   variable: "--nf-display",
 });
 

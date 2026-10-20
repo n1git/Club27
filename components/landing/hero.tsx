@@ -8,7 +8,7 @@ export function Hero() {
     <section aria-labelledby="hero-judul" className="pb-12 pt-6 sm:pb-[72px]">
       <Wrap className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)] lg:gap-12">
         <div>
-          <h1 id="hero-judul" className="max-w-[14ch] text-balance font-display text-[50px] lg:max-w-none font-normal uppercase leading-[0.98] tracking-[-0.005em] sm:text-[64px] lg:text-[78px]">
+          <h1 id="hero-judul" className="max-w-[14ch] text-balance font-display text-[50px] lg:max-w-none uppercase leading-[0.98] tracking-[-0.005em] sm:text-[64px] lg:text-[78px]">
             Buat akun gratis.{" "}
             <span className="bg-[linear-gradient(transparent_62%,var(--primary)_62%_92%,transparent_92%)] px-0.5 dark:bg-none dark:text-primary">Ajak teman.</span>
           </h1>

@@ -42,7 +42,7 @@ export function FreeSection() {
   return (
     <section id="gratis" aria-labelledby="gratis-judul" className="scroll-mt-20 py-14 sm:py-[88px]">
       <Wrap>
-        <h2 id="gratis-judul" className="max-w-[21ch] text-balance font-display text-[40px] font-normal uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
+        <h2 id="gratis-judul" className="max-w-[21ch] text-balance font-display text-[40px] uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
           Gratis untuk siapa saja, bukan masa percobaan.
         </h2>
         <p className="mt-4 max-w-[52ch] text-pretty text-lg text-muted-foreground sm:text-[19px]">

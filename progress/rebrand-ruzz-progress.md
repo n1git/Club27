@@ -90,3 +90,10 @@ Migrations written, NOT applied to hosted (for the owner):
 - Wired through the existing components: sidebar, app header (icon on mobile), landing header and footer, auth pages, status pages, superadmin header.
 - `app/icon.svg` = `icon-yellow.svg`; `app/favicon.ico` (16, 32, 48 px) and `app/apple-icon.png` (180 px, square tile without rounded corners so iOS can mask it) rendered from the same icon.
 - `app/opengraph-image.tsx`: ink `#111214` background, dark lockup, muted text `#a6a7ab`. JSON-LD organization logo now the yellow icon PNG (512 px).
+
+## Phase 3
+
+- `app/globals.css`: every token changed per the table above (light and dark), `.phone-screen` palette, status foregrounds `#0e0e0e` to `#111214`. `.font-display` (weight 800, `wdth` 68) is a plain rule so Tailwind weight utilities do not turn the display type back to 400; the `font-normal` classes that compensated for the one-weight font were removed from the landing headings.
+- `app/layout.tsx`: Archivo (`next/font/google`, variable weight, `wdth` axis) replaces Barlow Condensed, upright.
+- Hard-coded colours cleared: `components/ui/button.tsx`, `components/landing/{phone-stage,cta,final-cta,join-section}.tsx` (ink `#111214`, hover `#26272a`, muted `#a6a7ab` and `#3a3b3e`, final-cta text now `text-primary-foreground`, join shadow neutral ink). Grep for `#c8f31d`, `#4d6400`, `#6b8a00`, `rgb(30 36 8`, `rgb(30_36_8`, `#0e0e0e` in `app/`, `components/`, `lib/`, `public/` finds nothing.
+- Landing hero and dark sections checked in a browser (light and dark).

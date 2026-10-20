@@ -114,7 +114,7 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
   return (
     <section id="faq" aria-labelledby="faq-judul" className="scroll-mt-20 pb-14 pt-10 sm:pb-[88px]">
       <Wrap>
-        <h2 id="faq-judul" className="max-w-[22ch] text-balance font-display text-[40px] font-normal uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
+        <h2 id="faq-judul" className="max-w-[22ch] text-balance font-display text-[40px] uppercase leading-[0.98] sm:text-5xl lg:text-[64px]">
           Pertanyaan yang sering muncul.
         </h2>
         <div className="mt-11 grid gap-x-[72px] gap-y-[30px] md:grid-cols-2">
