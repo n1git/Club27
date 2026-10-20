@@ -8,7 +8,7 @@ import { clientIp, isRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit
 import { isCrossSite, readJsonBody } from "@/lib/auth/request";
 import { verifyCaptcha } from "@/lib/captcha";
 import { createAccount } from "@/lib/accounts/account";
-import { PRIVACY_VERSION } from "@/lib/privacy";
+import { CONSENT_VERSION } from "@/lib/consent";
 
 export async function POST(request: Request) {
   if (isCrossSite(request)) {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     subject_type: "account",
     subject_id: account.id,
     kind: "terms_privacy",
-    version: PRIVACY_VERSION,
+    version: CONSENT_VERSION,
   });
 
   await createSession({

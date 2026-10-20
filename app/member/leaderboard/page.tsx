@@ -1,4 +1,5 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { isSocialBanned } from "@/lib/auth/social-access";
 import { requireRole } from "@/lib/auth/guard";
 import { requireModule } from "@/lib/modules";
 import { getReadyClubTypes } from "@/lib/club-type";
@@ -13,6 +14,7 @@ export default async function MemberLeaderboardPage({ searchParams }: { searchPa
   const user = await requireRole("member");
   if (user.clubPending) redirect("/member/clubs");
   await requireModule("member_portal");
+  if (await isSocialBanned(user.accountId)) notFound();
   const query = await searchParams;
   const params = parseBoardParams(query);
   const [rows, clubTypes, clubs] = await Promise.all([getClubBoard(user.tenantId, params), getReadyClubTypes(), getMyBoardClubs()]);

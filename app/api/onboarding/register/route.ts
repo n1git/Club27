@@ -11,8 +11,8 @@ import { verifyCaptcha } from "@/lib/captcha";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
 import { SITE_URL } from "@/lib/site";
 import { APP_NAME } from "@/lib/config";
-import { PRIVACY_VERSION } from "@/lib/privacy";
 import { createAccount, discardUnusedAccount } from "@/lib/accounts/account";
+import { CONSENT_VERSION } from "@/lib/consent";
 
 const GENERIC_ERROR = "Pendaftaran tidak dapat diproses. Periksa data Anda atau masuk jika sudah punya akun.";
 
@@ -46,7 +46,7 @@ async function recordOwnerConsent(created: Created) {
     subject_type: "owner",
     subject_id: created.owner_id,
     kind: "terms_privacy",
-    version: PRIVACY_VERSION,
+    version: CONSENT_VERSION,
   });
 }
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { USERNAME_PATTERN, usernameSchema } from "./username";
+import { CONSENT_REQUIRED_ERROR } from "@/lib/consent";
 
 const COMMON_PASSWORDS = new Set([
   "password1", "password12", "password123", "password1234", "passw0rd123", "p@ssword123",
@@ -58,5 +59,5 @@ export const registerAccountSchema = z.object({
   email: z.string().trim().toLowerCase().email("Email tidak valid").max(254, "Email terlalu panjang"),
   username: usernameSchema,
   password: passwordSchema,
-  acceptTerms: z.literal(true, { message: "Setujui Syarat & Ketentuan dan Kebijakan Privasi untuk mendaftar" }),
+  acceptTerms: z.literal(true, { message: CONSENT_REQUIRED_ERROR }),
 });

@@ -28,9 +28,14 @@ export async function deleteOwnAccount(_prevState: ActionState, formData: FormDa
     };
   }
 
-  await supabase.from("consents").delete().eq("subject_type", "account").eq("subject_id", session.account_id);
   const { error } = await supabase.from("accounts").delete().eq("id", session.account_id);
   if (error) return { ok: false, error: "Akun tidak bisa dihapus. Hubungi admin platform." };
+  await supabase
+    .from("consents")
+    .update({ revoked_at: new Date().toISOString(), guardian_name: null })
+    .eq("subject_type", "account")
+    .eq("subject_id", session.account_id)
+    .is("revoked_at", null);
   await logAudit({ action: "account.delete", targetType: "account", targetId: session.account_id, actorRole: "personal" });
   await clearSession();
   redirect("/");

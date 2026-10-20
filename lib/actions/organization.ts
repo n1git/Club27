@@ -16,14 +16,14 @@ import { newToken } from "@/lib/accounts/tokens";
 import { escapeHtml } from "@/lib/accounts/mail";
 import { SITE_URL } from "@/lib/site";
 import { APP_NAME } from "@/lib/config";
-import { PRIVACY_VERSION } from "@/lib/privacy";
 import { logAudit } from "@/lib/audit";
 import type { ActionState } from "./types";
+import { CONSENT_REQUIRED_ERROR, CONSENT_VERSION } from "@/lib/consent";
 
 const schema = createTenantSchema.extend({
   planCode: z.enum(PLAN_CODES as [PlanCode, ...PlanCode[]], { message: "Pilih paket" }),
   billingPeriod: z.enum(BILLING_PERIODS as [BillingPeriod, ...BillingPeriod[]], { message: "Pilih periode" }),
-  acceptTerms: z.literal("on", { message: "Setujui Syarat & Ketentuan dan Kebijakan Privasi untuk mendaftar" }),
+  acceptTerms: z.literal("on", { message: CONSENT_REQUIRED_ERROR }),
 });
 
 type Created = { organization_id: string; club_id: string; owner_id: string; profile_id: string };
@@ -89,7 +89,7 @@ export async function createOrganizationFromAccount(_prevState: ActionState, for
     subject_type: "owner",
     subject_id: created.owner_id,
     kind: "terms_privacy",
-    version: PRIVACY_VERSION,
+    version: CONSENT_VERSION,
   });
   await logAudit({
     action: "organization.create_from_account",

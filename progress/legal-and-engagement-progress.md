@@ -3,10 +3,10 @@
 Bagian A: kepatuhan UU PDP. Bagian B: fitur kompetitif dan sosial. Bagian B baru dikerjakan setelah A selesai dan owner memberi OK.
 
 ## Status
-Fase 0 selesai (rencana). Menunggu OK owner.
+Fase 0 disetujui (2026-10-20). Fase 1 selesai; migrasi 061 belum diterapkan ke hosted dan kode Fase 1 belum di-push (menunggu OK penerapan). A8 kwitansi ditunda owner ("pembayaran menyusul").
 
 - [x] Fase 0: rencana
-- [ ] Fase 1: migrasi 061 dan kode A2-A7, A9
+- [x] Fase 1: migrasi 061 dan kode A2-A7, A9
 - [ ] Fase 2: kwitansi, DPIA, rencana respons insiden, aturan A10 (lalu tunggu OK)
 - [ ] Fase 3: migrasi 062, peringkat, tantangan, lencana, rekor, streak
 - [ ] Fase 4: migrasi 063, foto post, reaksi, kartu bagikan
@@ -18,7 +18,7 @@ Label centang: "Saya berusia 18 tahun ke atas dan menyetujui Syarat & Ketentuan 
 1. Usia. Saya berusia 18 tahun ke atas. Anak di bawah 18 tahun hanya dapat didaftarkan oleh klub dengan persetujuan orang tua atau wali.
 2. Penyedia infrastruktur dan transfer ke luar negeri. Data saya diproses oleh penyedia berikut, dan sebagian disimpan atau diproses di luar Indonesia:
    - Supabase: basis data dan penyimpanan berkas, Jepang (Tokyo, `ap-northeast-1`, dicek di project hosted);
-   - Vercel: hosting aplikasi, Amerika Serikat (wilayah fungsi bawaan; belum dikonfirmasi di dashboard, lihat "Perlu keputusan");
+   - Vercel: hosting aplikasi, Amerika Serikat (Washington, D.C., `iad1`, dikonfirmasi owner);
    - Resend: pengiriman email, Amerika Serikat;
    - Cloudflare Turnstile: pemeriksaan anti-bot saat mendaftar, Amerika Serikat;
    - Midtrans: pembayaran langganan, Indonesia.
@@ -152,3 +152,53 @@ Form: teks + "Tambah foto" (jpeg/png/webp, maks 5 MB, maks 4)
 - Reaksi (B17) mengubah primary key `post_reactions` menjadi satu reaksi per orang per post dengan `kind`. Primary key itu sudah satu per orang, jadi cukup tambah kolom.
 
 ## Log fase
+
+### Fase 0: jawaban owner (2026-10-20)
+- Vercel: `iad1`, Washington, D.C.
+- A8 kwitansi: ditunda sampai pembayaran (Midtrans production) berjalan. `receipt_no` tidak masuk migrasi 061.
+- Usulan saya dipakai untuk poin lain: validasi juga di `app/api/onboarding/register/route.ts`; data kesehatan anak disembunyikan dan dikunci, tidak dihapus; `PRIVACY_VERSION` tetap untuk persetujuan data anggota.
+
+### Fase 1 (selesai)
+- Migrasi `20250101000061_consent_compliance.sql`:
+  - `consents.kind` ditambah `health_data`, kolom `revoked_at`, indeks per akun;
+  - trigger `consents_guard`:
+    - delete ditolak `CN001`, kecuali saat purge; purge mengubah delete menjadi pelepasan: `club_id`/`organization_id`/`guardian_name` dikosongkan dan `revoked_at` diisi, baris tetap ada;
+    - update hanya boleh mengisi `revoked_at` sekali atau mengosongkan `guardian_name` (`CN002`);
+  - `has_health_consent`; `enforce_body_measurement` menolak tanpa persetujuan aktif (`BM003`);
+  - `withdraw_health_consent(account)` (service role): tarik persetujuan dan hapus semua `body_measurements` dalam satu transaksi;
+  - `retention_candidates()` (service role): `audit_log` > 5 tahun (jumlah), akun pribadi tanpa klub/organisasi yang tidak login > 3 tahun. Tidak menghapus apa pun dan tanpa cron.
+- Kode:
+  - persetujuan:
+    - `lib/consent.ts` (`CONSENT_VERSION` 2026-10-20, label, butir, teks persetujuan kesehatan);
+    - `components/shared/consent-checkbox.tsx` dan `consent-details.tsx`;
+    - `components/landing/legal-contact.tsx`: `LegalContact` dipisah supaya bisa dipakai di form klien, `legal-page.tsx` mengekspornya ulang;
+  - keempat form memakai `ConsentCheckbox`;
+  - validasi server memakai `CONSENT_REQUIRED_ERROR` dan menyimpan `CONSENT_VERSION` di `app/api/accounts/register`, `app/api/onboarding/register`, `lib/actions/organization.ts` dan `lib/actions/invitations.ts`;
+  - `/home/settings` mendapat kartu "Persetujuan saya" (`components/shared/my-consents-card.tsx`, `lib/data/consents.ts`): versi, tanggal WIB, rincian, status kesehatan, tombol tarik dengan konfirmasi HAPUS;
+  - `/home/health` menampilkan layar persetujuan sebelum dipakai; `lib/actions/health.ts` menolak tanpa persetujuan dan untuk anak, plus `giveHealthConsent` dan `withdrawHealthConsent`;
+  - pembatasan anak:
+    - `lib/auth/social-access.ts`: `isMinorAccount`, `socialRestriction`; `isSocialBanned` dan `socialBlocked` sekarang juga menahan anak dengan pesan sendiri, jadi semua halaman dan aksi sosial yang sudah dijaga ikut tertahan;
+    - `personal-shell.tsx` menyembunyikan Teman, Grup, Kesehatan untuk anak dan menampilkan pemberitahuan;
+    - `app/member/layout.tsx` dan `/member/leaderboard` menyembunyikan peringkat;
+  - `lib/actions/account-delete.ts`: persetujuan tidak lagi dihapus; setelah akun terhapus, `revoked_at` diisi dan `guardian_name` dikosongkan;
+  - `/privacy`: "foto postingan" dan kalimat rincian persetujuan; tidak ada nama penyedia;
+  - `LEGAL_UPDATED` 2026-10-20;
+  - ekspor akun memuat `revoked_at`.
+- Tes SQL (database lokal baru 001-061, Postgres 17), tiap berkas di salinan baru dengan `ON_ERROR_STOP`, semua kode keluar 0:
+  - 15 berkas: `accounts_phase1`, `club_join_phase4`, `consent_phase1` (baru), `deletion_phase6`, `friends_feed_phase3`, `groups_events_phase5`, `health_phase1`, `invitations_phase5`, `leaderboards_phase7`, `organization_members_phase2`, `permissions_phase3`, `report_review_phase6`, `seats_phase4`, `workout_logs_phase2`;
+  - `health_phase1` dan `accounts_phase1` kini menyisipkan persetujuan kesehatan sebelum data kesehatan;
+  - `health_phase1` menerima `BM003` untuk insert tanpa token, karena trigger berjalan sebelum cek NOT NULL.
+- E2E lokal (`/tmp/hb/e2e/consent.cjs`, kode keluar 0, 29 pemeriksaan):
+  - keempat form menampilkan label dan rincian (penyedia, 3 x 24 jam);
+  - kiriman tanpa centang ditahan browser dan, bila `required` dibuang, ditolak server dengan pesan Indonesia;
+  - ketiga jalur daftar menyimpan `CONSENT_VERSION`;
+  - `/privacy` tanpa nama penyedia;
+  - kesehatan: layar persetujuan, insert langsung lewat PostgREST tanpa persetujuan ditolak `BM003`, simpan setelah setuju, tarik persetujuan mengosongkan baris, baris persetujuan tetap ada dengan `revoked_at`, lalu persetujuan diminta lagi;
+  - anak (anggota klub lahir 2012): menu Teman/Grup/Kesehatan hilang, pemberitahuan tampil, ketiga halaman not-found, Latihan tetap ada;
+  - hapus akun menyisakan dua baris persetujuan dengan `revoked_at`.
+- Hosted:
+  - `list_migrations` berakhir di 058: migrasi 059 dan 060 dari sesi rebrand belum diterapkan;
+  - uji 061 dalam transaksi yang di-rollback: setiap bagian lulus bila dijalankan terpisah dengan `statement_timeout`, dan tidak ada sisa;
+  - menjalankan semuanya sekaligus membuat alat MCP timeout di luar database (database bersih, tidak ada transaksi menggantung), diduga konfirmasi pernyataan destruktif `update` + `delete` yang tidak muncul.
+- Pemeriksaan: `npx next typegen && npx tsc --noEmit` lulus.
+- Blocker: kode Fase 1 membaca `consents.revoked_at` dan `health_data`. Push sebelum 061 diterapkan akan merusak Pengaturan, Kesehatan, dan hapus akun di production. Kode ditahan sampai OK penerapan.

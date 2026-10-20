@@ -22,9 +22,9 @@ import { getTenantRoles, isInstructorRole, organizationIdForTenant } from "@/lib
 import { coachInviteSchema, staffInviteSchema } from "@/lib/validations/invitations";
 import { passwordSchema } from "@/lib/validations/auth";
 import { usernameSchema } from "@/lib/validations/username";
-import { PRIVACY_VERSION } from "@/lib/privacy";
 import { logAudit } from "@/lib/audit";
 import { PLAN_LIMIT_CODES, type ActionState } from "./types";
+import { CONSENT_REQUIRED_ERROR, CONSENT_VERSION } from "@/lib/consent";
 
 async function clubName(tenantId: string) {
   const { data } = await createAdminSupabaseClient().from("clubs").select("name").eq("id", tenantId).maybeSingle();
@@ -185,7 +185,7 @@ const newAccountSchema = z.object({
   token: tokenSchema,
   username: usernameSchema,
   password: passwordSchema,
-  acceptTerms: z.literal("on", { message: "Setujui Syarat & Ketentuan dan Kebijakan Privasi" }),
+  acceptTerms: z.literal("on", { message: CONSENT_REQUIRED_ERROR }),
 });
 
 export async function acceptInvitationNewAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -233,7 +233,7 @@ export async function acceptInvitationNewAccount(_prevState: ActionState, formDa
     subject_type: "account",
     subject_id: account.id,
     kind: "terms_privacy",
-    version: PRIVACY_VERSION,
+    version: CONSENT_VERSION,
   });
   await recordAccepted(result.row, account.id);
 

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DeleteAccountForm } from "@/components/shared/delete-account-form";
+import { MyConsentsCard } from "@/components/shared/my-consents-card";
+import { getAccountConsents } from "@/lib/data/consents";
 
 const ERRORS: Record<string, string> = {
   sandi: "Kata sandi konfirmasi salah.",
@@ -15,12 +17,13 @@ const ERRORS: Record<string, string> = {
 };
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ galat?: string }> }) {
-  await requireRole("personal");
-  const { galat } = await searchParams;
+  const user = await requireRole("personal");
+  const [{ galat }, consents] = await Promise.all([searchParams, getAccountConsents(user.accountId)]);
   const error = galat ? ERRORS[galat] : null;
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Pengaturan" />
+      <MyConsentsCard consents={consents} />
       <Card>
         <CardHeader>
           <CardTitle>Ekspor data</CardTitle>

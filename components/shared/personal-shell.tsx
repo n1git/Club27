@@ -2,12 +2,12 @@ import { AppShell } from "@/components/shared/app-shell";
 import type { NavGroup } from "@/components/shared/nav-types";
 import { APP_NAME } from "@/lib/config";
 import { PERSONAL_HOME } from "@/lib/auth/roles";
-import { isSocialBanned } from "@/lib/auth/social-access";
+import { socialRestriction } from "@/lib/auth/social-access";
 import { getSocialBadges } from "@/lib/data/social";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export async function PersonalShell({ user, children }: { user: { fullName: string; accountId: string }; children: React.ReactNode }) {
-  const [banned, badges] = await Promise.all([isSocialBanned(user.accountId), getSocialBadges(user.accountId)]);
+  const [restriction, badges] = await Promise.all([socialRestriction(user.accountId), getSocialBadges(user.accountId)]);
   const allGroups: NavGroup[] = [
     {
       items: [
@@ -23,9 +23,8 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
       ],
     },
   ];
-  const navGroups = banned
-    ? allGroups.map((g) => ({ ...g, items: g.items.filter((i) => i.href !== "/home/friends" && i.href !== "/home/groups") }))
-    : allGroups;
+  const hidden = new Set(restriction === "minor" ? ["/home/friends", "/home/groups", "/home/health"] : restriction ? ["/home/friends", "/home/groups"] : []);
+  const navGroups = allGroups.map((g) => ({ ...g, items: g.items.filter((i) => !hidden.has(i.href)) }));
   return (
     <AppShell
       navGroups={navGroups}
@@ -34,9 +33,13 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
       roleLabel="Akun"
       clubName={APP_NAME}
     >
-      {banned ? (
+      {restriction === "banned" ? (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>Fitur sosial akun Anda dinonaktifkan oleh admin platform. Latihan pribadi dan akses klub tetap berjalan.</AlertDescription>
+        </Alert>
+      ) : restriction === "minor" ? (
+        <Alert className="mb-4">
+          <AlertDescription>Fitur sosial dan catatan kesehatan hanya untuk pengguna berusia 18 tahun ke atas. Latihan pribadi tetap bisa dicatat.</AlertDescription>
         </Alert>
       ) : null}
       {children}

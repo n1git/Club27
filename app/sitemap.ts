@@ -3,7 +3,7 @@ import { getPublicClubTypes } from "@/lib/club-type";
 import { SITE_URL } from "@/lib/site";
 
 const LANDING_UPDATED = "2026-10-19";
-const LEGAL_UPDATED = "2026-10-19";
+const LEGAL_UPDATED = "2026-10-20";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const types = (await getPublicClubTypes()).filter((t) => t.status === "ready");

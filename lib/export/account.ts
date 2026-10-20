@@ -64,7 +64,7 @@ export async function buildAccountExport(accountId: string): Promise<{ filename:
   add("keanggotaan_klub", flat(await fetchAll("club_profiles", "id, role, is_active, created_at, c:clubs(name)", "account_id", accountId), "c", "name", "klub"));
   add("permintaan_gabung", flat(await fetchAll("club_join_requests", "id, status, full_name, date_of_birth, phone, message, created_at, decided_at, c:clubs(name)", "account_id", accountId), "c", "name", "klub"));
   add("laporan_dikirim", await fetchAll("reports", "id, target_type, target_id, reason, created_at", "reporter_id", accountId));
-  const { data: consents } = await supabase.from("consents").select("kind, version, accepted_at").eq("subject_type", "account").eq("subject_id", accountId);
+  const { data: consents } = await supabase.from("consents").select("kind, version, accepted_at, revoked_at").eq("subject_type", "account").eq("subject_id", accountId);
   add("persetujuan", (consents ?? []) as Row[]);
 
   const stamp = new Date().toISOString();

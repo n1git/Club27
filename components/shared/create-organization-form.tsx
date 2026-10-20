@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { formatRupiah, PERIOD_LABEL, trialLabel, type PricingPlan } from "@/lib/pricing";
+import { ConsentCheckbox } from "@/components/shared/consent-checkbox";
 
 export function CreateOrganizationForm({
   plans,
@@ -53,10 +54,7 @@ export function CreateOrganizationForm({
           ))}
         </Select>
       </div>
-      <label className="flex items-start gap-2 text-sm">
-        <input type="checkbox" name="acceptTerms" required className="mt-1" />
-        <span>Saya menyetujui Syarat &amp; Ketentuan dan Kebijakan Privasi.</span>
-      </label>
+      <ConsentCheckbox />
       <ActionSubmitButton className="w-fit">Buat organisasi</ActionSubmitButton>
     </ActionForm>
   );

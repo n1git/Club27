@@ -7,23 +7,25 @@ import type { NavGroup, NavItem } from "@/components/shared/nav-types";
 import { LazyClubSwitcher } from "@/components/member/lazy-club-switcher";
 import { APP_NAME } from "@/lib/config";
 import { ReadOnlyBanner } from "@/components/subscription/read-only-banner";
+import { isSocialBanned } from "@/lib/auth/social-access";
 
 export default async function MemberLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole("member");
   await requireModule("member_portal");
-  const [tenant, clubs, checkinOn, bookingOn, posOn] = await Promise.all([
+  const [tenant, clubs, checkinOn, bookingOn, posOn, socialOff] = await Promise.all([
     getCurrentTenant(),
     listClubsForProfile(user.id),
     isModuleReady("checkin"),
     isModuleReady("resource_booking"),
     isModuleReady("pos"),
+    isSocialBanned(user.accountId),
   ]);
 
   const navItems: NavItem[] = user.clubPending
     ? [{ href: "/member/clubs", label: "Pilih Klub", icon: "switchClub", primary: true } satisfies NavItem]
     : [
         { href: "/member", label: "Beranda", icon: "home", exact: true, primary: true } satisfies NavItem,
-        { href: "/member/leaderboard", label: "Peringkat", icon: "trophy" } satisfies NavItem,
+        ...(socialOff ? [] : [{ href: "/member/leaderboard", label: "Peringkat", icon: "trophy" } satisfies NavItem]),
         ...(bookingOn ? [{ href: "/member/booking", label: "Booking", icon: "booking", primary: true } satisfies NavItem] : []),
         ...(posOn ? [{ href: "/member/orders", label: "Pesanan", icon: "orders", primary: true } satisfies NavItem] : []),
         ...(checkinOn ? [{ href: "/member/visits", label: "Kunjungan", icon: "visits", primary: true } satisfies NavItem] : []),

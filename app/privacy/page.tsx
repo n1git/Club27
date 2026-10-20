@@ -43,11 +43,11 @@ export default function PrivacyPage() {
         <li>Data anggota yang diisi klub: tanggal lahir, alamat, kontak orang tua atau wali, dan catatan. Anggota dapat berupa anak.</li>
         <li>Data kegiatan klub: jadwal, booking, kehadiran, check-in, paket, tagihan, transaksi kasir, buku kas, dan gaji pelatih.</li>
         <li>
-          Data akun pribadi (tanpa organisasi): profil dan username, catatan latihan, catatan kesehatan, teman, postingan, komentar, kudos, grup, dan event.
+          Data akun pribadi (tanpa organisasi): profil dan username, catatan latihan, catatan kesehatan, teman, postingan, foto postingan, komentar, kudos, grup, dan event.
           Catatan latihan bersifat pribadi. Total latihan (jarak, durasi, jumlah sesi) tampil di peringkat grup bagi sesama anggota
           grup. Di peringkat klub, nama, username, dan total latihan tampil bagi anggota dan admin klub hanya jika Anda mengaktifkannya sendiri, per klub, dan dapat dimatikan kapan saja. Catatan kesehatan (tinggi dan
           berat badan per tanggal) hanya dapat dilihat oleh Anda, tidak ditampilkan ke klub, pelatih, teman, grup, feed, atau
-          peringkat, dan dapat dihapus kapan saja.
+          peringkat, dan dapat dihapus kapan saja. Rincian persetujuan Anda dapat dilihat di Pengaturan akun.
         </li>
         <li>Catatan persetujuan dan riwayat tindakan penting di aplikasi.</li>
       </ul>

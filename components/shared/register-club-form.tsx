@@ -11,6 +11,7 @@ import { computeQuote, formatRupiah, PERIOD_LABEL, type BillingPeriod, type Plan
 import { PeriodToggle, PlanCard } from "@/components/pricing/pricing-picker";
 import { TurnstileWidget } from "@/components/shared/turnstile-widget";
 import { UsernameField } from "@/components/shared/username-field";
+import { ConsentCheckbox } from "@/components/shared/consent-checkbox";
 
 export function RegisterClubForm({
   plans,
@@ -201,20 +202,7 @@ export function RegisterClubForm({
               Minimal 10 karakter, berisi huruf dan angka, dan bukan kata sandi umum.
             </p>
           </div>
-          <label className="flex items-start gap-3 text-sm">
-            <input type="checkbox" name="acceptTerms" required className="mt-0.5 size-5 shrink-0 accent-accent-foreground" />
-            <span>
-              Saya menyetujui{" "}
-              <a href="/terms" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
-                Syarat & Ketentuan
-              </a>{" "}
-              dan{" "}
-              <a href="/privacy" target="_blank" className="font-medium text-accent-foreground underline-offset-4 hover:underline">
-                Kebijakan Privasi
-              </a>
-              .
-            </span>
-          </label>
+          <ConsentCheckbox />
           {captchaSiteKey ? <TurnstileWidget siteKey={captchaSiteKey} nonce={nonce} onToken={onCaptcha} /> : null}
           <Button type="submit" disabled={loading || Boolean(captchaSiteKey && !captchaToken)}>
             {loading ? "Mendaftarkan..." : "Daftarkan klub"}
