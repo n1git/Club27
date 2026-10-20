@@ -1,6 +1,6 @@
 # faq-refresh
 
-Status: done (push held until migration 066 is on hosted)
+Status: done; pushed after migration 066 was applied to hosted
 
 - [x] Phase 1: FAQ text, free-section line, claim table
   - Files: components/landing/faq.tsx, components/landing/free-section.tsx, progress/landing-rework-progress.md

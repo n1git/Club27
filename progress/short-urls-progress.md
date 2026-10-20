@@ -1,6 +1,6 @@
 # short-urls progress
 
-Status: all phases done; migration 066 is NOT applied to hosted.
+Status: all phases done; migration 066 applied to hosted 2026-10-21 (dry run passed, 0 reserved-name clashes, version 20250101000066).
 
 - [x] Phase 0: table, references, top-level list, clash report, plan
 - [x] Phase 1: rename folders, references, redirects
