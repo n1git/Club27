@@ -8,7 +8,7 @@ create index consents_account_kind_idx on consents (subject_id, kind) where subj
 create function guard_consents() returns trigger as $$
 begin
   if tg_op = 'DELETE' then
-    if current_setting('club27.purge', true) = 'on' then
+    if 'on' in (current_setting('club27.purge', true), current_setting('ruzz.purge', true)) then
       update consents
       set club_id = null, organization_id = null, guardian_name = null, revoked_at = coalesce(revoked_at, now())
       where id = old.id;
@@ -21,7 +21,7 @@ begin
      or (new.guardian_name is not null and new.guardian_name is distinct from old.guardian_name)
      or (old.revoked_at is not null and new.revoked_at is distinct from old.revoked_at)
      or ((new.club_id is distinct from old.club_id or new.organization_id is distinct from old.organization_id)
-         and current_setting('club27.purge', true) is distinct from 'on') then
+         and not coalesce('on' in (current_setting('club27.purge', true), current_setting('ruzz.purge', true)), false)) then
     raise exception using errcode = 'CN002', message = 'Bukti persetujuan hanya bisa ditarik, tidak bisa diubah';
   end if;
   return new;

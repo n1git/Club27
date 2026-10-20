@@ -32,12 +32,12 @@ begin
   begin update consents set kind = 'health_data' where id = c; assert false, 'kind is immutable'; exception when sqlstate 'CN002' then null; end;
   begin insert into consents (subject_type, subject_id, kind, version) values ('account', a, 'ai', 'x'); assert false, 'unknown kind'; exception when check_violation then null; end;
 
-  perform set_config('club27.purge', 'on', true);
+  perform set_config('ruzz.purge', 'on', true);
   delete from consents where id = c;
   get diagnostics n = row_count;
   assert n = 0, 'purge delete is turned into a detach';
   assert exists (select 1 from consents where id = c and club_id is null and organization_id is null and revoked_at is not null), 'purged consent kept, detached';
-  perform set_config('club27.purge', '', true);
+  perform set_config('ruzz.purge', '', true);
 
   assert not has_health_consent(a), 'no health consent yet';
   begin
