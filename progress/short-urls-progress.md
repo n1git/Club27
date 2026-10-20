@@ -1,12 +1,12 @@
 # short-urls progress
 
-Status: Phase 1 done (owner approved the Phase 0 plan with "oke").
+Status: all phases done; migration 066 is NOT applied to hosted.
 
 - [x] Phase 0: table, references, top-level list, clash report, plan
 - [x] Phase 1: rename folders, references, redirects
-- [ ] Phase 2: `/p/[id]` page and modal
-- [ ] Phase 3: migration (not applied)
-- [ ] Phase 4: `/<username>` page, `/profile` toggles, tests
+- [x] Phase 2: `/p/[id]` page and modal
+- [x] Phase 3: migration (not applied)
+- [x] Phase 4: `/<username>` page, `/profile` toggles, tests
 
 Pulled `main` at `4d8140f`.
 
@@ -116,3 +116,30 @@ Read-only query on the hosted database against the full list above: **0 accounts
 - Proof that nothing loosened: a script ran the old and new `adminPathAllowed` on 120,000 combinations (owner or not, 4,000 random permission sets, each old path against its new path): 0 differences; `canAccessPath` for the four roles over every old/new personal and role path: 0 differences.
 - Browser run on a local database: signed-out `/` is the landing page and every protected path goes to `/login`; a login lands on `/` with the personal menu; every flattened personal path opens; entering a club opens `/admin/club`, then `/admin/plan`, `/admin/invoices`, `/admin/packages`, `/admin/subscriptions`, `/admin/cash`, `/admin/requests`, `/admin/modules`, `/admin/club/export`, `/admin/checkin`; from a club context the personal paths and `/` send the owner to `/admin/club`.
 - `npx next typegen && npx tsc --noEmit` is clean. eslint has one error that was already on `main` (`components/social/post-composer.tsx`, set-state in an effect) and is not part of this change.
+
+## Phase 2: `/p/[id]` page and modal
+
+- `app/(personal)/p/[id]/page.tsx` (full page, `noindex`) and `app/@modal/(.)p/[id]/page.tsx` (modal), both through `components/social/post-view.tsx`: personal role only, social-banned viewers get not-found, data from the new `getPost` (the feed's hydration code was extracted so feed and permalink share it; `posts_visible` decides). The root layout gained a `modal` slot with `app/@modal/default.tsx`. The post time in the feed is now a link to `/p/<id>`.
+- Browser test on a local database (two friends, a stranger, an author with a hidden post): friend opens the page; clicking the time in the feed opens a dialog over the feed and a reload shows the full page; unknown id, malformed id and a hidden post look identical (same status, title and text); an unrelated account sees the same not-found as for a missing post; the author still sees their own hidden post; signed out goes to `/login`; an owner in a club context cannot open it.
+
+## Phase 3: migration (NOT applied)
+
+`supabase/migrations/20250101000066_public_profiles.sql`: `accounts.public_profile` and `accounts.public_search_ok` (both default false, check that search needs profile), `username_reserved` with the full list (same as `RESERVED_USERNAMES`), `account_is_minor(uuid)`, `profile_by_username(text)` (authenticated only; exact username; self, friends, pending, none; nothing for unknown, reserved, inactive, banned, blocked either way or under-18) and `public_profile_by_username(text)` (anon and authenticated; name, username and search flag only, only when `public_profile` is on and the account is active, not banned and not under 18). Idempotent; the last block raises a notice naming any existing account whose username is now reserved (the hosted check found none).
+
+Test file: `supabase/tests/public_profiles_phase8.sql` (defaults, constraint, reserved insert and rename, anon limits, every miss case, relations, blocks both ways, minors). All 17 SQL suites pass on a fresh database through 066.
+
+To apply (for the owner): `supabase db push --dry-run` (needs `SUPABASE_ACCESS_TOKEN` and the database password); without them, dry-run the file in a rolled-back transaction with `execute_sql`, then `apply_migration` and rename the history version to `20250101000066`. Apply it before the new app version goes live: the code tolerates the missing columns and functions (the profile page shows the switches off, `/<username>` treats every error as not-found, and saving the switches reports an error), but profiles and the switches only work after the migration.
+
+## Phase 4: `/<username>` and the `/profile` switches
+
+- `app/[username]/page.tsx` with `lib/data/public-profile.ts` (cached per request, shared by metadata and page): normalises and validates the name, rejects reserved names, rate-limits by IP with `hit_rate_limit` (120 per minute, fails open), then calls `profile_by_username` for a signed-in personal account that is not social-restricted, or `public_profile_by_username` with an anonymous client for everyone else (signed out, owner, staff, member in a club context). Misses use the shared not-found view, `noindex`, same status.
+- Signed-in view: name, `@username`, the existing friend request action (`sendFriendRequest`), relation text, and for friends and yourself the latest posts through `posts_visible`. Signed-out view: name, `@username` and sign-up buttons; indexable only when "Boleh dicari Google" is on, with its own title and a lowercase canonical; otherwise `noindex`.
+- `/profile` has a "Profil publik" section (two switches, `updatePublicProfile`, audit entry `profile.public`); under-18 member accounts cannot turn it on. A form-reset bug found in testing (the controlled checkbox came back unchecked after saving) is fixed by keying the form on the saved values.
+- Browser test (local database, migration applied): signed-out `/pb0` equals an unknown name while the profile is off; the toggle saved through the UI; public view shows only name and @username (no email, no posts); search off gives `noindex`, search on gives a normal title and no `noindex`; `/PB0` resolves and canonicalises to `/pb0`; a friend sees relation and post but not the hidden post; a stranger gets "Tambah teman" and no posts; own page shows the edit link; signed-in exact lookup works with the public profile off; blocked (either way), inactive and banned accounts are not-found; an owner in a club context sees only the public view, and not-found when it is off; lookups are counted by `hit_rate_limit`; `/login`, `/s`, `/workouts` and `/robots.txt` still resolve to their own routes. `/p` signed out goes to `/login` because it is a protected personal path.
+- Regression after Phase 4: the 64 old URLs still give one 308 each; the signed-out, personal and owner navigation run passes (49 checks); the post page run passes.
+
+## Notes for the owner
+
+- Reserved-name rule: every new top-level segment must be added to `RESERVED_USERNAMES` and `username_reserved` (noted in `CLAUDE.md`).
+- Not-found pages return HTTP 200 (existing behaviour from the root `loading.tsx`); all misses are identical, so profile existence is not revealed by status or text. Timing is not equalised.
+- No avatar exists in the data, so none is shown; unknown, private and blocked profiles cannot be told apart.

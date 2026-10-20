@@ -6,6 +6,14 @@ insert into accounts (email, username, full_name, password_hash) values
   ('qc@t.test', 'quser.c', 'Qc Nama', 'h'), ('qd@t.test', 'quser.d', 'Qd Nama', 'h'),
   ('qe@t.test', 'quser.e', 'Qe Nama', 'h');
 
+select register_organization('Org Uji Profil', 'Klub Uji Profil', (select id from accounts where email = 'qa@t.test'), 'plus', 'monthly', 'swimming');
+insert into accounts (email, username, full_name, password_hash) values ('qm@t.test', 'quser.minor', 'Qm Anak', 'h'), ('qt@t.test', 'quser.adult', 'Qt Dewasa', 'h');
+insert into club_members (club_id, full_name, date_of_birth) select id, 'Qm Anak', (now() at time zone 'Asia/Jakarta')::date - interval '12 years' from clubs where name = 'Klub Uji Profil';
+insert into club_members (club_id, full_name, date_of_birth) select id, 'Qt Dewasa', (now() at time zone 'Asia/Jakarta')::date - interval '30 years' from clubs where name = 'Klub Uji Profil';
+select activate_member_account((select id from club_members where full_name = 'Qm Anak'), (select id from accounts where email = 'qm@t.test'));
+select activate_member_account((select id from club_members where full_name = 'Qt Dewasa'), (select id from accounts where email = 'qt@t.test'));
+update accounts set public_profile = true where email in ('qm@t.test', 'qt@t.test');
+
 create function pg_temp.act(p_email text) returns void language sql security definer as $f$
   select set_config('request.jwt.claims', jsonb_build_object(
     'sub', (select id from accounts where email = p_email), 'role', 'authenticated', 'club_id', '',
@@ -57,6 +65,8 @@ begin
   assert (select count(*) from public_profile_by_username('nobody.here')) = 0, 'unknown: nothing';
   assert (select count(*) from public_profile_by_username('admin')) = 0, 'reserved: nothing';
   assert (select count(*) from public_profile_by_username('')) = 0, 'empty: nothing';
+  assert (select count(*) from public_profile_by_username('quser.minor')) = 0, 'under-18 member account: nothing, even when the flag is on';
+  assert (select count(*) from public_profile_by_username('quser.adult')) = 1, 'adult member account with the flag on is found';
 end $$;
 
 reset role;
@@ -95,6 +105,8 @@ set local role authenticated;
 do $$
 begin
   perform pg_temp.act('qa@t.test');
+  assert (select count(*) from profile_by_username('quser.minor')) = 0, 'under-18 member account: nothing for the signed-in lookup too';
+  assert (select count(*) from profile_by_username('quser.adult')) = 1, 'adult member account is found';
   assert (select count(*) from profile_by_username('quser.d')) = 0, 'inactive: nothing';
   assert (select count(*) from profile_by_username('quser.e')) = 0, 'banned: nothing';
   assert (select count(*) from public_profile_by_username('quser.b')) = 1, 'signed-in callers may also use the public lookup';

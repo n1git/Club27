@@ -61,6 +61,19 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   return { hasMore, posts: await hydratePosts(page, accountId) };
 }
 
+export async function getProfilePosts(accountId: string, username: string, limit = 10): Promise<FeedPost[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data: person } = await supabase.from("social_people").select("id").eq("username", username).maybeSingle();
+  if (!person) return [];
+  const { data } = await supabase
+    .from("posts")
+    .select("id, account_id, kind, body, sport, performed_on, duration_min, distance_m, created_at, hidden_at")
+    .eq("account_id", person.id as string)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data?.length ? hydratePosts(data, accountId) : [];
+}
+
 export async function getPost(accountId: string, id: string): Promise<FeedPost | null> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
   const supabase = await createServerSupabaseClient();

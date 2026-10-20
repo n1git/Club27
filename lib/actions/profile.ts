@@ -6,6 +6,7 @@ import { z } from "zod";
 import { logAudit } from "@/lib/audit";
 import { checkSession, sessionEndedPath } from "@/lib/auth/guard";
 import { createSession, getSession } from "@/lib/auth/session";
+import { isMinorAccount } from "@/lib/auth/social-access";
 import { requireSuperadminAction } from "@/lib/auth/superadmin";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { addressField, nameField, phoneField } from "@/lib/validations/limits";
@@ -241,4 +242,31 @@ export async function updateSuperadminProfile(_prevState: ActionState, formData:
 
   revalidatePath("/superadmin", "layout");
   return { ok: true, message: "Profil disimpan" };
+}
+
+export async function updatePublicProfile(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await activeSession();
+  const supabase = createAdminSupabaseClient();
+  const publicProfile = formData.get("publicProfile") === "on";
+  const publicSearchOk = publicProfile && formData.get("publicSearchOk") === "on";
+  if (publicProfile && (await isMinorAccount(session.account_id))) {
+    return { ok: false, error: "Profil publik hanya untuk pengguna berusia 18 tahun ke atas" };
+  }
+  const { error } = await supabase
+    .from("accounts")
+    .update({ public_profile: publicProfile, public_search_ok: publicSearchOk })
+    .eq("id", session.account_id);
+  if (error) return { ok: false, error: "Gagal menyimpan pengaturan profil publik" };
+  await logAudit({
+    action: "profile.public",
+    targetType: "account",
+    targetId: session.account_id,
+    details: { publicProfile, publicSearchOk },
+    tenantId: session.club_id,
+    organizationId: session.org_id,
+    actorId: session.sub,
+    actorRole: session.app_role,
+  });
+  revalidatePath("/profile");
+  return { ok: true, message: publicProfile ? "Profil publik diaktifkan" : "Profil publik dimatikan" };
 }

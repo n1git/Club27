@@ -16,6 +16,18 @@ create or replace function username_reserved(p_username text) returns boolean as
   );
 $$ language sql immutable set search_path = public;
 
+create or replace function account_is_minor(p_account uuid) returns boolean as $$
+  select exists (
+    select 1
+    from club_profiles p
+    join club_members m on m.profile_id = p.id
+    where p.account_id = p_account
+      and p.role = 'member'
+      and m.date_of_birth is not null
+      and age((now() at time zone 'Asia/Jakarta')::date, m.date_of_birth) < interval '18 years'
+  );
+$$ language sql stable security definer set search_path = public;
+
 create or replace function public_profile_by_username(p_username text)
 returns table (username text, full_name text, public_search_ok boolean) as $$
   select a.username, a.full_name, a.public_search_ok
@@ -24,7 +36,8 @@ returns table (username text, full_name text, public_search_ok boolean) as $$
     and not username_reserved(a.username)
     and a.public_profile
     and a.is_active
-    and a.social_banned_at is null;
+    and a.social_banned_at is null
+    and not account_is_minor(a.id);
 $$ language sql stable security definer set search_path = public;
 
 create or replace function profile_by_username(p_username text)
@@ -46,10 +59,11 @@ returns table (username text, full_name text, relation text) as $$
     and not username_reserved(a.username)
     and a.is_active
     and a.social_banned_at is null
-    and (a.id = current_account_id() or not is_blocked_pair(a.id))
+    and (a.id = current_account_id() or (not is_blocked_pair(a.id) and not account_is_minor(a.id)))
   limit 1;
 $$ language sql stable security definer set search_path = public;
 
+revoke execute on function account_is_minor(uuid) from public, anon, authenticated;
 revoke execute on function public_profile_by_username(text) from public, anon, authenticated;
 revoke execute on function profile_by_username(text) from public, anon, authenticated;
 grant execute on function public_profile_by_username(text) to anon, authenticated;

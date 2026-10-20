@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
-import { updateCoachProfile, updateOrganizationName, updateOwnProfile } from "@/lib/actions/profile";
+import { updateCoachProfile, updateOrganizationName, updateOwnProfile, updatePublicProfile } from "@/lib/actions/profile";
 import { formatJakartaDate } from "@/lib/format";
 import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import type { BillingPeriod } from "@/lib/pricing";
@@ -9,6 +9,7 @@ import type { OrganizationSection, ProfileData } from "@/lib/data/profile";
 import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 import { DetailList } from "./detail-list";
 import { MaskedAmount } from "./masked-amount";
+import { PublicProfileForm } from "./public-profile-form";
 import { CoachProfileForm, OrganizationNameForm, ProfileForm } from "./profile-form";
 
 const BASE_ROLE_LABEL: Record<OrganizationSection["baseRole"], string> = {
@@ -64,6 +65,28 @@ export function ProfileView({ data }: { data: ProfileData }) {
                 fullName={account.fullName}
                 phone={account.phone}
                 address={account.address}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      <section aria-labelledby="profile-public" className="flex flex-col gap-3">
+        <h2 id="profile-public" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Profil publik
+        </h2>
+        <Card>
+          <CardHeader>
+            <CardTitle>Halaman profil Anda</CardTitle>
+            <CardDescription>Mati secara bawaan. Anda bisa mematikannya kapan saja.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="max-w-xl">
+              <PublicProfileForm
+                action={updatePublicProfile}
+                username={account.username}
+                publicProfile={account.publicProfile}
+                publicSearchOk={account.publicSearchOk}
               />
             </div>
           </CardContent>

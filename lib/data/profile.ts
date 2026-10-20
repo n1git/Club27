@@ -48,6 +48,8 @@ export interface ProfileData {
     username: string;
     phone: string | null;
     address: string | null;
+    publicProfile: boolean;
+    publicSearchOk: boolean;
   };
   organizations: OrganizationSection[];
   coaching: CoachSection[];
@@ -174,13 +176,14 @@ export async function getProfileData(accountId: string): Promise<ProfileData | n
     .eq("id", accountId)
     .maybeSingle();
   if (!account) return null;
+  const { data: flags } = await supabase.from("accounts").select("public_profile, public_search_ok").eq("id", accountId).maybeSingle();
   const [organizations, coaching, memberships] = await Promise.all([
     loadOrganizations(accountId),
     loadCoaching(accountId),
     loadMemberships(accountId),
   ]);
   return {
-    account: { email: account.email, fullName: account.full_name, username: account.username, phone: account.phone, address: account.address },
+    account: { email: account.email, fullName: account.full_name, username: account.username, phone: account.phone, address: account.address, publicProfile: Boolean(flags?.public_profile), publicSearchOk: Boolean(flags?.public_search_ok) },
     organizations,
     coaching,
     memberships,
