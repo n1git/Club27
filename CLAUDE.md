@@ -12,10 +12,10 @@ Always use the lean-dev skill.
 ## Catatan tim (per 2026-10-21)
 
 Status
-- Nama produk tampil "27 Club" (`NEXT_PUBLIC_APP_NAME`, default di `lib/config.ts`); semua pengenal teknis memakai `club27`: project Vercel dan Supabase (ref Supabase `gmldacyjdbsdofqqaqry`), package, audience JWT `club27-superadmin`, domain seed `demo.club27.test`, setting Postgres `club27.purge`/`club27.late_attendance`/`club27.audit_suppress`; repo GitHub `n1git/Club27` (URL lama `swimma` dialihkan GitHub).
+- Nama produk tampil "Ruzz" (`NEXT_PUBLIC_APP_NAME`, default di `lib/config.ts`); semua pengenal teknis memakai `club27`: project Vercel dan Supabase (ref Supabase `gmldacyjdbsdofqqaqry`), package, audience JWT `club27-superadmin`, domain seed `demo.club27.test`, setting Postgres `club27.purge`/`club27.late_attendance`/`club27.audit_suppress`; repo GitHub `n1git/Club27` (URL lama `swimma` dialihkan GitHub).
 - Production Vercel: READY. Supabase `club27`: skema migrasi 001-057 diterapkan lewat `apply_migration` dengan versi diganti ke nomor berkas, tapi riwayat migrasi hosted lama tidak lengkap karena sebagian diterapkan manual; uji dulu dengan dry-run di transaksi yang di-rollback (lihat pelajaran di bawah). Data produksi masih data uji. `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual dari dashboard (project butuh legacy HS256 JWT secret).
 - Situs produksi terbuka untuk publik (dicek 2026-10-16: `/` dan `/robots.txt` menjawab 200 tanpa login Vercel). Domain sendiri belum dipasang; saat dipasang, isi `NEXT_PUBLIC_SITE_URL` dan ikuti `docs/DEPLOY.md` bagian domain dan pencarian.
-- Satu paket, "27 Club Plus" (`plus`): Rp 75.000/seat/bulan, minimal 2 seat per pembelian (`subscription_plans.min_seats`), maks 5 klub, trial 30 hari dengan 1 seat; tahunan gratis 2 bulan (`yearly_free_months`, badge "hemat"); semua modul `ready` termasuk (`KAJIAN_PAKET.md`). Anggota dan lokasi tidak dibatasi.
+- Satu paket, "Ruzz Plus" (`plus`): Rp 75.000/seat/bulan, minimal 2 seat per pembelian (`subscription_plans.min_seats`), maks 5 klub, trial 30 hari dengan 1 seat; tahunan gratis 2 bulan (`yearly_free_months`, badge "hemat"); semua modul `ready` termasuk (`KAJIAN_PAKET.md`). Anggota dan lokasi tidak dibatasi.
 
 Sisa risiko keamanan
 - Penguncian akun setelah 5 gagal login bisa dipicu orang lain yang tahu email (kunci 15 menit). Rate limit per IP (`hit_rate_limit`) membatasi skalanya.

@@ -74,11 +74,11 @@ Pages send a Content-Security-Policy with a per-request nonce (`script-src 'nonc
 2. Redirect the `*.vercel.app` production address to the custom domain permanently so only one version stays indexable.
 3. Open `/robots.txt`, `/sitemap.xml` and view the source of `/`: the canonical, `og:url` and sitemap addresses must show the custom domain.
 4. Add the domain in Google Search Console, submit `/sitemap.xml`, and check Core Web Vitals once data appears. The landing page is rendered on every request (per-request CSP nonce and a session check), so the HTML is not cached by the CDN.
-5. Keep `NEXT_PUBLIC_APP_NAME` at "27 Club" (or unset) so titles read correctly.
+5. Keep `NEXT_PUBLIC_APP_NAME` at "Ruzz" (or unset) so titles read correctly.
 
 ## 3. Smoke test
 
-1. Open `/` and confirm the pricing section shows "27 Club Plus" with Rp75.000, minimal 2 seat (needs migrations 014 and 055).
+1. Open `/` and confirm the pricing section shows "Ruzz Plus" with Rp75.000, minimal 2 seat (needs migrations 014 and 055).
 2. Register a club at `/signup`, land on `/admin/onboarding`.
 3. Log out, log in at `/login`, open `/admin`.
 4. Log in at `/superadmin/login` with the seeded superadmin and activate the organization.

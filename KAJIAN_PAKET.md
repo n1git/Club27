@@ -1,4 +1,4 @@
-# Paket Langganan 27 Club
+# Paket Langganan Ruzz
 
 Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah hanya bukti rancangan; nilai sebenarnya ada di tabel `subscription_plans` dan bisa diubah superadmin.
 
@@ -9,9 +9,9 @@ Status: **dibangun** (migrasi `20250101000014_org_billing.sql`). Angka di bawah 
 - Rumus: seat x harga per seat per bulan x bulan (bulanan 1, tahunan 12 - bulan gratis). Dihitung ulang di server lewat `platform_quote` (perpanjangan) dan `seat_quote` (tambah seat prorata); harga dari klien tidak dipakai.
 - Komitmen bulanan atau tahunan. Tahunan = 12 dikurangi bulan gratis (untuk paket Plus: 2, jadi 10 bulan).
 
-## 2. Satu paket: 27 Club Plus
+## 2. Satu paket: Ruzz Plus
 
-| | 27 Club Plus |
+| | Ruzz Plus |
 |---|---|
 | Harga | Rp 75.000 / seat / bulan, minimal 2 seat |
 | Klub | maks 5 (bisa dinaikkan per organisasi oleh superadmin lewat `club_limit_override`) |

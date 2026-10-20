@@ -1,4 +1,4 @@
-# 27 Club: architecture and feature notes
+# Ruzz: architecture and feature notes
 
 ## System overview
 
@@ -42,7 +42,7 @@ loading and caching" below.
 
 Hierarchy: **organization (owner account) → clubs (clubs) → coaches →
 members**. An organization (`organizations`) has one or more owners
-(`organization_users`) and as many clubs as its plan allows (27 Club Plus: 5,
+(`organization_users`) and as many clubs as its plan allows (Ruzz Plus: 5,
 unless a superadmin sets `club_limit_override`; trigger error `SW004`).
 
 Every club is a row in `clubs` with a mandatory `organization_id`. All
@@ -497,7 +497,7 @@ signed-in session is redirected to its home.
   `app/not-found.tsx` and `app/error.tsx` are branded (`status-page.tsx`).
 - Env vars: `NEXT_PUBLIC_SITE_URL` (canonical URL; set it once a custom
   domain is attached, read at build time), `NEXT_PUBLIC_APP_NAME` (keep
-  "27 Club"), `NEXT_PUBLIC_CONTACT_EMAIL` and `NEXT_PUBLIC_CONTACT_WHATSAPP`
+  "Ruzz"), `NEXT_PUBLIC_CONTACT_EMAIL` and `NEXT_PUBLIC_CONTACT_WHATSAPP`
   (digits only). Contact links render only when set.
 - Speed: the landing renders on every request (the CSP nonce makes pages
   dynamic). Making it static needs a CSP rework and is not done; decide after
@@ -511,7 +511,7 @@ signed-in session is redirected to its home.
   `#4D6400` on light and volt on dark, for coloured text, never `text-primary`).
   Source Sans 3 for text, Barlow Condensed 800 italic (`font-display`) for
   headings, metric numbers and the hero. Tinted shadows use `--shadow-ink`.
-  The product name reads "27 Club".
+  The product name reads "Ruzz".
 - Loading: every route group has a `loading.tsx` with skeletons
   (`components/ui/skeleton.tsx`); a delayed spinner and a top progress bar
   (`components/shared/nav-progress.tsx`, `use-delayed-flag.ts`, `useLinkStatus`)
@@ -687,7 +687,7 @@ status from `/superadmin`.
   row is locked, so parallel inserts cannot exceed it). Monthly = 1 month;
   yearly = 12 − `yearly_free_months` (2 for Plus, so 10 months). The effective monthly price is
   the total ÷ 1 or ÷ 12.
-- Seeded values: one plan, "27 Club Plus" (`plus`): Rp 75.000/seat/month, at
+- Seeded values: one plan, "Ruzz Plus" (`plus`): Rp 75.000/seat/month, at
   least 2 seats per purchase (`min_seats`), up to 5 clubs, a 30-day trial of
   1 seat (`trial_days`, `trial_seats`). Members and locations are unlimited
   (the "FUP 1.000 member/club" line is text only, nothing enforces it);

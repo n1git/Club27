@@ -73,3 +73,12 @@ Yellow `#FFD21F` on `#f2f2ee` is only 1.29:1, so on light pages it is a fill (bu
 - Auth (`/login`, `/signup`, `/signup/account`, `/forgot-password`, `/reset-password`, `/invite`, `/superadmin/login`): Reading this as: task-first sign-in and sign-up forms for athletes, club staff and platform admins, with a quiet high-contrast language, leaning toward the app tokens + lockup above the card + no decoration. Dials: variance 3, motion 2, density 4.
 
 Pre-flight per page runs in Phase 4, against the built page.
+
+## Phase 1
+
+Name and copy changed: `lib/config.ts` default `APP_NAME` = "Ruzz"; `.env.example`, `README.md`, `docs/DEPLOY.md`, `docs/ARCHITECTURE.md`, `CLAUDE.md`, `PRODUCT_BLUEPRINT.md`, `KAJIAN_PAKET.md` (also the plan name "Ruzz Plus"); `ruzz` added to `RESERVED_USERNAMES`; one CHANGELOG entry. `lib/validations/auth.ts` keeps `27club...` in the weak-password list on purpose.
+
+Migrations written, NOT applied to hosted (for the owner):
+- `20250101000059_rebrand_ruzz_messages.sql`: `enforce_billing_gate(uuid)` and `enforce_org_club_limit()` with only the "Hubungi admin platform ..." brand word changed to "Ruzz". Bodies copied from `pg_get_functiondef` of a fully migrated local database (the latest definitions, not the ones in 031, 035, 042, 036, 046). Migrations 031, 035 and 042 were not touched; their messages were already replaced by later migrations, except the two above.
+- `20250101000060_rename_plus_plan.sql`: sets `subscription_plans.name` from "27 Club Plus" to "Ruzz Plus" for `plus` (the landing, sign-up and renewal read the name from the table, so without it the old name would still show). Not requested in the task; delete the file if you want to keep the old plan name.
+- Both ran in a rolled-back transaction on a local database (functions replaced, plan renamed, no function left with the old brand).

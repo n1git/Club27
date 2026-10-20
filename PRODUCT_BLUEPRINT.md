@@ -1,10 +1,10 @@
-# 27 Club — Product Blueprint
+# Ruzz — Product Blueprint
 
 Dokumen ini adalah visi produk. Bagian "Status implementasi" di bawah menunjukkan apa yang sudah dibangun per 2026-10-17; rancangan teknis yang berlaku ada di `docs/ARCHITECTURE.md`. Bagian 2 sampai 15 mempertahankan rancangan awal (berorientasi klub renang): nama tabel dan alur di sana adalah gambaran, bukan skema aktual.
 
 ## 1. Tujuan Sistem
 
-Platform multi-klub (SaaS) untuk mengelola operasional klub olahraga: renang, gym, tenis, padel, pilates, yoga, dan olahraga lain yang ditambahkan lewat data. Satu pemilik (organisasi) bisa punya beberapa klub; tiap klub terisolasi di database lewat RLS. Cakupan: pendaftaran member, paket dan langganan, jadwal, absensi, booking fasilitas, check-in gym, penagihan, kas, payroll, kasir, promo, dan portal member. Klub membayar platform lewat langganan per seat (paket 27 Club Plus).
+Platform multi-klub (SaaS) untuk mengelola operasional klub olahraga: renang, gym, tenis, padel, pilates, yoga, dan olahraga lain yang ditambahkan lewat data. Satu pemilik (organisasi) bisa punya beberapa klub; tiap klub terisolasi di database lewat RLS. Cakupan: pendaftaran member, paket dan langganan, jadwal, absensi, booking fasilitas, check-in gym, penagihan, kas, payroll, kasir, promo, dan portal member. Klub membayar platform lewat langganan per seat (paket Ruzz Plus).
 
 Portal:
 * **Admin** (`/admin`) — pemilik, admin, resepsionis, keuangan: operasional, member, jadwal, keuangan, payroll, kasir, pengaturan.
