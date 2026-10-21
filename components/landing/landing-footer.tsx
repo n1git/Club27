@@ -53,7 +53,7 @@ export function LandingFooter() {
   const services: FooterLink[] = [
     { href: "/#gratis", label: "Gratis untuk anggota" },
     { href: "/#gabung", label: "Gabung klub" },
-    { href: "/#klub", label: "Untuk klub" },
+    { href: "/#klub", label: "Buat klub" },
     { href: "/s", label: "Semua olahraga" },
     { href: "/#harga", label: "Harga" },
   ];
