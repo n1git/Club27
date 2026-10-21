@@ -176,10 +176,10 @@ The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan c
 | Claim on the page | Proof |
 |---|---|
 | Rp75.000 / seat / bulan, minimal 2 seat | `subscription_plans.price_per_seat_month`, `min_seats` (055); `platform_quote` clamps to the minimum, `request_renewal` rejects below it (`supabase/tests/seats_phase4.sql`) |
-| Add up to 5 Club*; "Need more club? contact admin" | `subscription_plans.club_limit`; `enforce_subscription_limits` and `club_limit_override` (`SW004`) |
-| Member Unlimited**; "FUP 1.000 member/club" | no member limit in SQL; the FUP is text only |
+| "Sampai 5 klub*"; "Butuh lebih banyak klub? Hubungi admin" | `subscription_plans.club_limit`; `enforce_subscription_limits` and `club_limit_override` (`SW004`) |
+| "Anggota tanpa batas**"; "Kebijakan pemakaian wajar 1.000 anggota per klub" | no member limit in SQL; the FUP is text only |
 | Trial 1 bulan*** | `trial_days` = 30, `trial_seats` = 1 |
-| "Get your coupon code here" | link to `NEXT_PUBLIC_CONTACT_WHATSAPP` or `NEXT_PUBLIC_CONTACT_EMAIL`; hidden (with the `***`) when neither is set; there is no coupon system |
+| "Dapatkan kode kupon di sini" | link to `NEXT_PUBLIC_CONTACT_WHATSAPP` or `NEXT_PUBLIC_CONTACT_EMAIL`; hidden (with the `***`) when neither is set; there is no coupon system |
 | Yearly: gratis 2 bulan (bayar 10 bulan untuk 12) | `subscription_plans.yearly_free_months` = 2 (056); 2 seats yearly = Rp1.500.000 |
 | Estimate "N seat x months = total" | `computeQuote` in `lib/pricing.ts`, same formula as `platform_quote`; the server recomputes at registration and renewal |
 

@@ -13,8 +13,8 @@ export function PlanLines({ plan, className }: { plan: PricingPlan; className?: 
       <li>
         {rupiahCompact(plan.pricePerUserMonth)} / seat / bulan, minimal {plan.minSeats} seat
       </li>
-      <li>{plan.clubLimit ? `Add up to ${plan.clubLimit} Club*` : "Unlimited Club"}</li>
-      <li>Member Unlimited**</li>
+      <li>{plan.clubLimit ? `Sampai ${plan.clubLimit} klub*` : "Klub tanpa batas"}</li>
+      <li>Anggota tanpa batas**</li>
       {plan.trialDays > 0 ? (
         <li>
           Trial {trialLabel(plan.trialDays)}
@@ -29,13 +29,13 @@ export function PlanFootnotes({ plan, className }: { plan: PricingPlan; classNam
   const url = couponUrl();
   return (
     <div className={className}>
-      {plan.clubLimit ? <p>* Need more club? contact admin</p> : null}
-      <p>** FUP 1.000 member/club</p>
+      {plan.clubLimit ? <p>* Butuh lebih banyak klub? Hubungi admin</p> : null}
+      <p>** Kebijakan pemakaian wajar 1.000 anggota per klub</p>
       {url && plan.trialDays > 0 ? (
         <p>
-          *** Get your coupon code{" "}
+          *** Dapatkan kode kupon{" "}
           <a href={url} target={url.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="font-semibold underline underline-offset-2">
-            here
+            di sini
           </a>
         </p>
       ) : null}

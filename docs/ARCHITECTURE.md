@@ -499,8 +499,9 @@ signed-in session is redirected to its home.
   SoftwareApplication with the live offer, and FAQPage (the same questions as
   the visible FAQ). `/s` lists every ready sport (CollectionPage and
   ItemList). The landing grid, `/s`, the footer and the sitemap link
-  them. An unknown code returns HTTP 200 with `noindex` (a side effect
-  of the root `loading.tsx`) and the not-found view.
+  them. An unknown code returns a real HTTP 404 with the not-found view:
+  there is no `loading.tsx` above `s/`, `i/`, `r/` or `[username]` on purpose,
+  because a loading boundary starts streaming and then the status stays 200.
 - SEO: `lib/seo.ts` (`pageMetadata`: title, description, canonical, Open Graph,
   Twitter per page), `app/sitemap.ts` (with `lastModified`), `app/robots.ts`,
   `app/opengraph-image.tsx`, and a JSON-LD graph in `components/landing/json-ld.tsx`
@@ -526,7 +527,7 @@ signed-in session is redirected to its home.
   as the dot in the logo files. Source Sans 3 for text, Archivo 800 upright at
   `wdth` 68 (`font-display`) for page titles, metric numbers and the hero. Tinted shadows use `--shadow-ink`.
   The product name reads "Ruzz".
-- Loading: every route group has a `loading.tsx` with skeletons
+- Loading: every signed-in route group and the form pages (`login`, `signup`, `forgot-password`, `privacy`, `terms`, `change-password`, `profile`, `superadmin`, `(personal)`) have a `loading.tsx`; the root has none and the personal home on `/` suspends inside its own `Suspense`. Segments that can return 404 (`s`, `i`, `r`, `[username]`) must not get one. Signed-in route groups use skeletons
   (`components/ui/skeleton.tsx`); a delayed spinner and a top progress bar
   (`components/shared/nav-progress.tsx`, `use-delayed-flag.ts`, `useLinkStatus`)
   appear only when a navigation is slow.
