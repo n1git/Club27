@@ -11,6 +11,7 @@ import { planMinSeats, seatUsage, type SeatUsage } from "@/lib/data/platform-pri
 import { organizationIdForTenant } from "@/lib/data/roles";
 import { logAudit } from "@/lib/audit";
 import { PLAN_LIMIT_CODES, type ActionState } from "./types";
+import { addressField } from "@/lib/validations/limits";
 
 const seatsField = (min: number) =>
   z.coerce.number({ message: "Jumlah seat tidak valid" }).int("Jumlah seat tidak valid").min(min, `Minimal pembelian ${min} seat`).max(1000, "Jumlah seat terlalu besar");
@@ -139,4 +140,25 @@ export async function previewSeatUsage(): Promise<SeatUsage | null> {
   const session = await requireActionPermission(["staff.manage", "coaches.manage", "roles.manage"]);
   const organizationId = await organizationIdForTenant(session.club_id);
   return organizationId ? seatUsage(organizationId) : null;
+}
+
+const billingProfileSchema = z.object({
+  billingAddress: addressField,
+  billingEmail: z.union([z.literal(""), z.string().trim().email("Email tidak valid").max(200, "Email terlalu panjang")]),
+});
+
+export async function updateBillingProfile(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const { organizationId } = await billingContext();
+  const parsed = billingProfileSchema.safeParse({
+    billingAddress: formData.get("billingAddress") ?? "",
+    billingEmail: formData.get("billingEmail") ?? "",
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+  const { error } = await createAdminSupabaseClient()
+    .from("organizations")
+    .update({ billing_address: parsed.data.billingAddress || null, billing_email: parsed.data.billingEmail || null })
+    .eq("id", organizationId);
+  if (error) return { ok: false, error: "Data penagihan gagal disimpan" };
+  revalidatePath("/admin/plan");
+  return { ok: true, message: "Data penagihan disimpan. Berlaku untuk tagihan berikutnya." };
 }

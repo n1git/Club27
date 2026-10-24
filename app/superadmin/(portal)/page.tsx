@@ -7,7 +7,9 @@ import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/validations
 import { MetricCard } from "@/components/ui/metric-card";
 import { OrganizationControls, type OwnerRow } from "@/components/superadmin/organization-controls";
 import { PlanEditor } from "@/components/superadmin/plan-editor";
+import Link from "next/link";
 import { RenewalConfirmForm } from "@/components/superadmin/renewal-confirm-form";
+import { BillingIssuerForm, type IssuerValues } from "@/components/superadmin/billing-issuer-form";
 import { listPendingRenewals } from "@/lib/billing/renewals";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -57,13 +59,14 @@ export default async function SuperadminDashboardPage() {
   const supabase = createAdminSupabaseClient();
   const today = getJakartaDateString();
 
-  const [{ data: usage }, { data: tenants }, { data: owners }, { data: planRows }, { data: organizations }, renewals] = await Promise.all([
+  const [{ data: usage }, { data: tenants }, { data: owners }, { data: planRows }, { data: organizations }, renewals, { data: issuer }] = await Promise.all([
     supabase.from("platform_organization_usage").select("*"),
     supabase.from("clubs").select("id, name, is_active, created_at, organization_id").order("created_at"),
     supabase.from("organization_users").select("id, organization_id, email, full_name, is_active"),
     supabase.from("subscription_plans").select(`${PLAN_COLUMNS}, is_active`).order("price_per_seat_month"),
     supabase.from("organizations").select("id, created_at").order("created_at", { ascending: false }),
     listPendingRenewals(),
+    supabase.from("billing_issuer").select("name, address, email, website, footer").maybeSingle(),
   ]);
 
   const rows = (usage ?? []) as UsageRow[];
@@ -95,6 +98,7 @@ export default async function SuperadminDashboardPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Invoice</TableHead>
                 <TableHead>Organisasi</TableHead>
                 <TableHead>Paket</TableHead>
                 <TableHead>Pengguna</TableHead>
@@ -106,6 +110,15 @@ export default async function SuperadminDashboardPage() {
             <TableBody>
               {renewals.map((renewal) => (
                 <TableRow key={renewal.id}>
+                  <TableCell>
+                    {renewal.invoiceNumber ? (
+                      <Link href={`/superadmin/billing/invoice/${renewal.id}`} className="font-mono text-xs text-accent-foreground underline underline-offset-4">
+                        {renewal.invoiceNumber}
+                      </Link>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{renewal.organizationName ?? "-"}</TableCell>
                   <TableCell>
                     {renewal.planName ?? renewal.planCode} · {PERIOD_LABEL[renewal.billingPeriod]}
@@ -124,6 +137,16 @@ export default async function SuperadminDashboardPage() {
           <p className="text-sm text-muted-foreground">Tidak ada pengajuan yang menunggu.</p>
         )}
       </section>
+
+      {issuer ? (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold">Penerbit invoice</h2>
+          <p className="max-w-3xl text-sm text-muted-foreground">
+            Tampil di kepala invoice dan kwitansi. Perubahan hanya berlaku untuk tagihan yang terbit setelahnya.
+          </p>
+          <BillingIssuerForm issuer={issuer as IssuerValues} />
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Paket</h2>

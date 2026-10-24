@@ -17,10 +17,16 @@ function notificationHeader(): Record<string, string> {
   return SITE_URL.startsWith("https://") ? { "X-Override-Notification": `${SITE_URL}/api/payments/midtrans` } : {};
 }
 
+export interface SnapItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export interface SnapInput {
   orderId: string;
   amount: number;
-  itemName: string;
+  items: SnapItem[];
   customer: { name: string; email: string };
   finishUrl: string;
 }
@@ -32,8 +38,10 @@ export async function createSnapTransaction(input: SnapInput): Promise<string | 
       headers: { Authorization: authHeader(), "Content-Type": "application/json", Accept: "application/json", ...notificationHeader() },
       body: JSON.stringify({
         transaction_details: { order_id: input.orderId, gross_amount: input.amount },
-        item_details: [{ id: "langganan", name: input.itemName.slice(0, 50), price: input.amount, quantity: 1 }],
+        item_details: input.items.map((item, i) => ({ id: `item-${i + 1}`, name: item.name.slice(0, 50), price: item.price, quantity: item.quantity })),
         customer_details: { first_name: input.customer.name.slice(0, 255), email: input.customer.email },
+        credit_card: { secure: true },
+        expiry: { unit: "hours", duration: 24 },
         callbacks: { finish: input.finishUrl },
       }),
     });
@@ -56,6 +64,39 @@ export interface MidtransStatus {
   fraud_status?: string;
   gross_amount: string;
   status_code: string;
+  payment_type?: string;
+  va_numbers?: { bank?: string; va_number?: string }[];
+  permata_va_number?: string;
+  bank?: string;
+  card_type?: string;
+  masked_card?: string;
+  store?: string;
+  issuer?: string;
+}
+
+const PAYMENT_LABEL: Record<string, string> = {
+  qris: "QRIS",
+  gopay: "GoPay",
+  shopeepay: "ShopeePay",
+  echannel: "Mandiri Bill",
+  akulaku: "Akulaku",
+  kredivo: "Kredivo",
+};
+
+export function paymentMethodLabel(status: MidtransStatus): string | null {
+  const type = status.payment_type;
+  if (!type) return null;
+  if (type === "bank_transfer") {
+    const bank = status.va_numbers?.[0]?.bank ?? (status.permata_va_number ? "permata" : null);
+    return bank ? `Virtual Account ${bank.toUpperCase()}` : "Transfer bank";
+  }
+  if (type === "credit_card") {
+    const last4 = status.masked_card?.replace(/\D/g, "").slice(-4);
+    const brand = status.bank ? status.bank.toUpperCase() : "Kartu";
+    return last4 ? `${brand} •••• ${last4}` : brand;
+  }
+  if (type === "cstore") return status.store ? status.store.charAt(0).toUpperCase() + status.store.slice(1) : "Gerai retail";
+  return PAYMENT_LABEL[type] ?? type.replace(/_/g, " ");
 }
 
 export async function getTransactionStatus(orderId: string): Promise<MidtransStatus | null> {

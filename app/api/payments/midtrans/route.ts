@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getTransactionStatus, isPaid, isValidSignature } from "@/lib/payments/midtrans";
+import { getTransactionStatus, isPaid, isValidSignature, paymentMethodLabel } from "@/lib/payments/midtrans";
 import { confirmRenewal } from "@/lib/billing/renewals";
 import { logAudit } from "@/lib/audit";
 
@@ -31,6 +31,8 @@ export async function POST(request: Request) {
       console.error(`midtrans: confirm failed ${error.code ?? ""}`);
       return NextResponse.json({ error: "confirm failed" }, { status: 500 });
     }
+    const method = paymentMethodLabel(status);
+    if (method) await supabase.from("subscription_renewals").update({ payment_method: method }).eq("id", renewal.id).is("payment_method", null);
     if (renewal.status !== "paid") await logAudit({
       action: "subscription.renewal_confirm",
       targetType: "renewal",

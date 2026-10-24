@@ -8,7 +8,9 @@ import { SubscriptionBanner } from "@/components/subscription/subscription-banne
 import { RenewalForm } from "@/components/subscription/renewal-form";
 import { SeatPurchaseForm } from "@/components/subscription/seat-purchase-form";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getPendingRenewal } from "@/lib/billing/renewals";
+import Link from "next/link";
+import { getBillingProfile, getPendingRenewal, listRenewals, RENEWAL_STATUS_LABEL } from "@/lib/billing/renewals";
+import { BillingProfileForm } from "@/components/subscription/billing-profile-form";
 import { isLockedPhase } from "@/lib/billing/access";
 import { getContact } from "@/lib/site";
 import { isMidtransConfigured } from "@/lib/payments/midtrans";
@@ -44,11 +46,13 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
   const canManage = user.permissions.has("billing.manage");
   const { bayar } = await searchParams;
   const gateway = isMidtransConfigured();
-  const [billing, users, modules, renewal] = await Promise.all([
+  const [billing, users, modules, renewal, history, profile] = await Promise.all([
     getOrganizationBilling(organizationId),
     listInternalUsers(organizationId),
     getModules(),
     getPendingRenewal(organizationId),
+    listRenewals(organizationId),
+    getBillingProfile(organizationId),
   ]);
   if (!billing) return <p className="text-sm text-muted-foreground">Langganan belum tersedia.</p>;
 
@@ -104,6 +108,14 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
                 ? `Tambah ${renewal.seatsAdded} seat (jadi ${renewal.users})`
                 : `${renewal.planName ?? renewal.planCode} · ${PERIOD_LABEL[renewal.billingPeriod]} · ${renewal.users} seat`}{" "}
               · <strong>{formatRupiah(renewal.amount)}</strong>, diajukan {formatJakartaDate(renewal.requestedAt, longDate)}.
+              {renewal.invoiceNumber ? (
+                <>
+                  {" "}
+                  <Link href={`/admin/plan/invoice/${renewal.id}`} className="font-medium text-accent-foreground underline underline-offset-4">
+                    Lihat invoice {renewal.invoiceNumber}
+                  </Link>
+                </>
+              ) : null}
             </span>
             {gateway ? (
               <>
@@ -213,6 +225,63 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
             />
           </section>
         </>
+      ) : null}
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Riwayat tagihan</h2>
+        {history.length ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nomor</TableHead>
+                <TableHead>Tanggal</TableHead>
+                <TableHead>Keterangan</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Dokumen</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {history.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="whitespace-nowrap font-mono text-xs">{row.invoiceNumber ?? "-"}</TableCell>
+                  <TableCell>{formatJakartaDate(row.invoiceDate ?? row.requestedAt)}</TableCell>
+                  <TableCell>{row.items[0]?.description ?? (row.kind === "seats" ? `Tambah ${row.seatsAdded} seat` : PERIOD_LABEL[row.billingPeriod])}</TableCell>
+                  <TableCell className="whitespace-nowrap text-right">{formatRupiah(row.amount)}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    <Badge variant={row.status === "paid" ? "success" : row.status === "pending" ? "warning" : "secondary"}>
+                      {RENEWAL_STATUS_LABEL[row.status]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="space-x-3 whitespace-nowrap">
+                    {row.invoiceNumber ? (
+                      <Link href={`/admin/plan/invoice/${row.id}`} className="text-accent-foreground underline underline-offset-4">
+                        Invoice
+                      </Link>
+                    ) : null}
+                    {row.receiptNumber ? (
+                      <Link href={`/admin/plan/receipt/${row.id}`} className="text-accent-foreground underline underline-offset-4">
+                        Kwitansi
+                      </Link>
+                    ) : null}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <p className="text-sm text-muted-foreground">Belum ada tagihan.</p>
+        )}
+      </section>
+
+      {canManage ? (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold">Data penagihan</h2>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Tampil di kolom &quot;Ditagihkan kepada&quot; pada invoice dan kwitansi berikutnya. Tagihan yang sudah terbit tidak berubah.
+          </p>
+          <BillingProfileForm address={profile.address} email={profile.email} />
+        </section>
       ) : null}
 
       <section className="flex flex-col gap-2">

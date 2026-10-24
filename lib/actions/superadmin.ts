@@ -236,3 +236,37 @@ export async function confirmRenewalPayment(_prevState: ActionState, formData: F
   revalidatePath("/superadmin");
   return { ok: true, message: "Pembayaran dikonfirmasi, langganan aktif" };
 }
+
+const issuerSchema = z.object({
+  name: z.string().trim().min(1, "Nama penerbit wajib diisi").max(200, "Nama terlalu panjang"),
+  address: z.string().trim().min(1, "Alamat wajib diisi").max(500, "Alamat terlalu panjang"),
+  email: z.union([z.literal(""), z.string().trim().email("Email tidak valid").max(200, "Email terlalu panjang")]),
+  website: z.string().trim().max(200, "Website terlalu panjang"),
+  footer: z.string().trim().max(500, "Catatan terlalu panjang"),
+});
+
+export async function updateBillingIssuer(_prevState: ActionState, formData: FormData): Promise<ActionState> {
+  const superadmin = await superadminOrNull();
+  if (!superadmin) return SESSION_ENDED;
+  const parsed = issuerSchema.safeParse({
+    name: formData.get("name") ?? "",
+    address: formData.get("address") ?? "",
+    email: formData.get("email") ?? "",
+    website: formData.get("website") ?? "",
+    footer: formData.get("footer") ?? "",
+  });
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Data tidak valid" };
+  const values = {
+    name: parsed.data.name,
+    address: parsed.data.address,
+    email: parsed.data.email || null,
+    website: parsed.data.website || null,
+    footer: parsed.data.footer || null,
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await createAdminSupabaseClient().from("billing_issuer").update(values).eq("id", true);
+  if (error) return { ok: false, error: "Data penerbit gagal disimpan" };
+  await platformAudit(superadmin, "billing.issuer_update", "billing_issuer", null, null, values);
+  revalidatePath("/superadmin");
+  return { ok: true, message: "Data penerbit disimpan. Berlaku untuk tagihan berikutnya." };
+}

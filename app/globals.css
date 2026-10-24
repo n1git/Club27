@@ -334,3 +334,24 @@ body {
     animation: pulse-soft 1.6s ease-in-out infinite;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .billing-doc,
+  .billing-doc * {
+    visibility: visible;
+  }
+  .billing-doc {
+    position: absolute;
+    inset: 0 auto auto 0;
+    max-width: none;
+    border: 0;
+    padding: 0;
+  }
+}
