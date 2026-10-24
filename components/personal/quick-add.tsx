@@ -7,10 +7,11 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { sendFriendRequest, createPost } from "@/lib/actions/social";
 import { addWorkout } from "@/lib/actions/workouts";
+import { createStory } from "@/lib/actions/stories";
 import type { ActionState } from "@/lib/actions/types";
 import { Button, type ButtonProps } from "@/components/ui/button";
 
-export type QuickKind = "post" | "friend" | "workout";
+export type QuickKind = "post" | "friend" | "workout" | "story";
 export type QuickMode = QuickKind | "chooser";
 export interface QuickSport {
   code: string;
@@ -21,12 +22,14 @@ const ACTIONS: Record<QuickKind, (prev: ActionState, data: FormData) => Promise<
   post: createPost,
   friend: sendFriendRequest,
   workout: addWorkout,
+  story: createStory,
 };
 
 const SUCCESS: Record<QuickKind, string> = {
   post: "Postingan dibagikan",
   friend: "Permintaan pertemanan dikirim",
   workout: "Latihan disimpan",
+  story: "Cerita dibagikan",
 };
 
 const HomeToaster = dynamic(() => import("sonner").then((m) => m.Toaster), { ssr: false });
@@ -74,8 +77,8 @@ export function QuickAddProvider({
   const router = useRouter();
   const pathname = usePathname();
   const [mode, setMode] = useState<QuickMode | null>(null);
-  const [pending, setPending] = useState<ByKind<boolean>>({ post: false, friend: false, workout: false });
-  const [formKeys, setFormKeys] = useState<ByKind<number>>({ post: 0, friend: 0, workout: 0 });
+  const [pending, setPending] = useState<ByKind<boolean>>({ post: false, friend: false, workout: false, story: false });
+  const [formKeys, setFormKeys] = useState<ByKind<number>>({ post: 0, friend: 0, workout: 0, story: 0 });
   const open = useCallback((kind: QuickKind) => setMode(kind === "workout" || canSocial ? kind : "workout"), [canSocial]);
   const openFor = useCallback((pathname: string) => setMode(modeFor(pathname, canSocial)), [canSocial]);
   const submit = useCallback(

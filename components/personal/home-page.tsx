@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getUpcomingEvents } from "@/lib/data/groups";
 import { formatJakartaDateTime } from "@/lib/format";
 import { HomeFeed } from "@/components/personal/home-feed";
+import { HomeStories, StoriesBarSkeleton } from "@/components/personal/home-stories";
 import { FeedSkeleton } from "@/components/social/post-skeleton";
 import { QuickAddTrigger } from "@/components/personal/quick-add";
 import { ContextList } from "@/components/shared/context-list";
@@ -45,6 +46,9 @@ export async function PersonalHomePage({ searchParams }: { searchParams: Promise
       <div className={banned ? "flex flex-col gap-6" : "grid items-start gap-6 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)]"}>
         {banned ? null : (
           <div className="-mx-4 flex min-w-0 flex-col sm:mx-0">
+            <Suspense fallback={<StoriesBarSkeleton />}>
+              <HomeStories accountId={profile.accountId} name={profile.fullName} />
+            </Suspense>
             <Suspense fallback={<FeedSkeleton />}>
               <HomeFeed accountId={profile.accountId} before={before} />
             </Suspense>

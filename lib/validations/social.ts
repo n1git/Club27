@@ -19,3 +19,5 @@ export const reportSchema = z.object({
 });
 
 export const uuidField = z.string().uuid("Data tidak valid");
+
+export const storyCaptionSchema = z.string().trim().max(200, "Teks cerita maksimal 200 karakter");

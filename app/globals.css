@@ -355,3 +355,24 @@ body {
     padding: 0;
   }
 }
+
+@keyframes story-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.story-bar-fill {
+  transform-origin: left;
+  animation: story-progress 5s linear forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-bar-fill {
+    animation: none;
+    transform: none;
+  }
+}

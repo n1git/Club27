@@ -8,7 +8,7 @@ Depends on `personal-bottom-nav` and `bottom-nav-active`: both merged (c42861b, 
 - [x] Phase 1: migration 068, snapshot, hosted apply (data functions are written in the phase that uses them)
 - [x] Phase 2: avatars, top bar, feed post card, comments sheet, carousel, skeletons
 - [x] Phase 3: /notifications, unread badge, background mark-read
-- [ ] Phase 4: stories bar, viewer, create flow, cron route
+- [x] Phase 4: stories bar, viewer, create flow, cron route
 - [ ] Phase 5: chat (inbox, thread, background send, polling, report)
 - [ ] Phase 6: profile grid, THIRD_PARTY.md, responsive and theme checks
 
@@ -54,3 +54,10 @@ Not taken: models, `app/api/*`, auth, uploads, toast provider, desktop navbar, m
 - `/notifications` (sections Baru, Minggu ini, Sebelumnya; reactions on one post grouped at read time; friend requests with Terima and Tolak; post thumbnail; row opens `/p/<id>`, `/g/<id>` or the profile). The page marks everything shown as read after render through `mark_notifications_read(before)` and keeps the "Baru" highlight until the next visit. Heart with unread badge in the top bar (mobile and desktop).
 - Migration `069_reserve_social_routes.sql` (applied to hosted too, 12 hosted accounts, none clashing): `notifications`, `messages`, `stories` are reserved usernames, same list in `lib/username-suggest.ts`; `/notifications` and `/messages` added to `PERSONAL_PATHS`.
 - Browser run (production build, 375 and 1280 px, light and dark): four events produce four rows and badge "4", page groups the two reactions, comment text shown, thumbnail present, Terima accepts, badge clears after the visit, "Baru" gone on revisit.
+
+## Phase 4 result
+
+- Stories bar at the top of home ("Cerita Anda" with plus badge, friends with an active story first, unseen ring = gradient of the Ruzz yellow, seen ring muted), full-screen viewer (segments, 5 s auto-advance, tap left or right, hold to pause, swipe down or X to close, continues to the next person, owner sees the viewer list and can delete with confirmation, reduced motion = no animation and no auto-advance). Create flow is a "Cerita" item in the "+" chooser and the plus badge; it uses the same background submit and toasts as the other quick adds.
+- Cron route `/api/cron/social-cleanup` (daily at 03:00, in `vercel.json`): lists expired files with the same cutoff it later purges with, removes them from storage first, then deletes the rows (also 90-day notifications and 365-day messages). A failed storage removal aborts before the purge so the next run retries.
+- Found while testing: React re-dispatches a nested `<dialog>`'s `close` through the React tree, so a sheet inside another dialog closed its parent; `BottomSheet` and the viewer now only react to their own `close`.
+- Browser run (production build): create two stories, ring unseen, viewer segments, hold pauses, auto-advance, tap left and right, closes after the last story, views recorded, ring muted, swipe down, owner count and viewer list, delete removes the file, reduced motion, expiry hides the story, cron removes the file and the rows.

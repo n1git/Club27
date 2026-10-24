@@ -35,7 +35,9 @@ export function BottomSheet({
     <dialog
       ref={ref}
       aria-label={title}
-      onClose={onClose}
+      onClose={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
       onClick={(e) => {
         if (e.target === ref.current) ref.current?.close();
       }}

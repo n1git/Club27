@@ -23,7 +23,7 @@ export async function shrink(file: File, maxSide: number = MAX_SIDE): Promise<Fi
   return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
 }
 
-export function PhotoPicker({ pending }: { pending: boolean }) {
+export function PhotoPicker({ pending, name = "photos", max = MAX_FILES, submitLabel = "Posting" }: { pending: boolean; name?: string; max?: number; submitLabel?: string }) {
   const input = useRef<HTMLInputElement>(null);
   const [previews, setPreviews] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -39,8 +39,8 @@ export function PhotoPicker({ pending }: { pending: boolean }) {
 
   async function onPick(event: React.ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(event.target.files ?? []);
-    if (picked.length > MAX_FILES) {
-      toast.error("Maksimal 4 foto per postingan");
+    if (picked.length > max) {
+      toast.error(max === 1 ? "Pilih satu foto" : `Maksimal ${max} foto per postingan`);
       setFiles([]);
       return;
     }
@@ -80,13 +80,13 @@ export function PhotoPicker({ pending }: { pending: boolean }) {
       <div className="flex flex-wrap items-center gap-2">
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-1.5 text-sm font-medium focus-within:ring-2 focus-within:ring-ring">
           <ImagePlus aria-hidden className="size-4" />
-          {busy ? "Memproses foto..." : "Tambah foto"}
-          <input ref={input} type="file" name="photos" accept={TYPES.join(",")} multiple className="sr-only" onChange={onPick} disabled={busy} />
+          {busy ? "Memproses foto..." : max === 1 ? "Pilih foto" : "Tambah foto"}
+          <input ref={input} type="file" name={name} accept={TYPES.join(",")} multiple={max > 1} className="sr-only" onChange={onPick} disabled={busy} />
         </label>
-        <span className="text-xs text-muted-foreground">Maks 4 foto, 5 MB per foto. Lokasi dan data kamera dihapus.</span>
+        <span className="text-xs text-muted-foreground">{max > 1 ? `Maks ${max} foto, 5 MB per foto.` : "Maks 5 MB."} Lokasi dan data kamera dihapus.</span>
       </div>
       <Button type="submit" className="w-fit" disabled={busy || pending}>
-        {pending ? "Menambahkan…" : "Posting"}
+        {pending ? "Menambahkan…" : submitLabel}
       </Button>
     </>
   );

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PostForm } from "@/components/social/post-form";
+import { StoryForm } from "@/components/social/story-form";
 import { FriendAddForm } from "@/components/social/friend-add-form";
 import { WorkoutForm } from "@/components/workouts/workout-form";
 import { useQuickAdd, type QuickKind, type QuickMode } from "./quick-add";
@@ -13,10 +14,12 @@ const TITLES: Record<QuickMode, string> = {
   post: "Posting",
   friend: "Tambah teman",
   workout: "Catat latihan",
+  story: "Cerita",
 };
 
 const CHOICES: { kind: QuickKind; label: string; social: boolean }[] = [
   { kind: "post", label: "Posting", social: true },
+  { kind: "story", label: "Cerita", social: true },
   { kind: "friend", label: "Tambah teman", social: true },
   { kind: "workout", label: "Catat latihan", social: false },
 ];
@@ -78,6 +81,9 @@ export function QuickAddSheet() {
             <>
               <div className={panel("post")}>
                 <PostForm key={formKeys.post} onSubmit={(e) => submit("post", e)} pending={pending.post} />
+              </div>
+              <div className={panel("story")}>
+                <StoryForm key={formKeys.story} onSubmit={(e) => submit("story", e)} pending={pending.story} />
               </div>
               <div className={panel("friend")}>
                 <FriendAddForm key={formKeys.friend} onSubmit={(e) => submit("friend", e)} pending={pending.friend} />
