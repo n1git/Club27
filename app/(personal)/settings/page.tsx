@@ -2,7 +2,8 @@ import { requireRole } from "@/lib/auth/guard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DeleteAccountForm } from "@/components/shared/delete-account-form";
@@ -23,6 +24,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Pengaturan" />
+      <Card>
+        <CardHeader>
+          <CardTitle>Akun</CardTitle>
+          <CardDescription>Foto profil, nama, username, kontak, profil publik, organisasi, dan kata sandi.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link href="/settings/account" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Buka pengaturan akun
+          </Link>
+        </CardContent>
+      </Card>
       <MyConsentsCard consents={consents} />
       <Card>
         <CardHeader>

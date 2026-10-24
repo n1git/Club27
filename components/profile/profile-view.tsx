@@ -47,24 +47,40 @@ function organizationItems(org: OrganizationSection) {
   return items;
 }
 
-export function ProfileView({ data, avatar }: { data: ProfileData; avatar?: { url: string | null; social: ProfileSocial; sportLabels: Record<string, string> } | null }) {
+export function ProfileView({
+  data,
+  avatar,
+  view = "all",
+}: {
+  data: ProfileData;
+  avatar?: { url: string | null; social?: ProfileSocial; sportLabels?: Record<string, string> } | null;
+  view?: "all" | "social" | "account";
+}) {
   const { account } = data;
+  if (view === "social" && avatar?.social) {
+    return (
+      <div className="flex max-w-2xl flex-col gap-6">
+        <ProfileHeader
+          name={account.fullName}
+          username={account.username}
+          avatarUrl={avatar.url}
+          counts={{ posts: avatar.social.posts, friends: avatar.social.friends }}
+        >
+          <Link href="/settings/account" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Ubah foto dan data akun
+          </Link>
+          <Link href={`/${account.username}`} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            Lihat sebagai teman
+          </Link>
+        </ProfileHeader>
+        <PostGrid tiles={avatar.social.tiles} sportLabels={avatar.sportLabels ?? {}} />
+        </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-6">
-      {avatar ? (
-        <div className="flex max-w-2xl flex-col gap-6">
-          <ProfileHeader
-            name={account.fullName}
-            username={account.username}
-            avatarUrl={avatar.url}
-            counts={{ posts: avatar.social.posts, friends: avatar.social.friends }}
-          >
-            <Link href={`/${account.username}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-              Lihat halaman profil
-            </Link>
-          </ProfileHeader>
-          <PostGrid tiles={avatar.social.tiles} sportLabels={avatar.sportLabels} />
-        </div>
+      {view === "account" ? (
+        <PageHeader title="Akun" subtitle={account.fullName} breadcrumb={[{ label: "Pengaturan", href: "/settings" }, { label: "Akun" }]} />
       ) : (
         <PageHeader title="Profil Saya" subtitle={account.fullName} breadcrumb={[{ label: "Profil Saya" }]} />
       )}

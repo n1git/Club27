@@ -15,5 +15,5 @@ export async function ProfilePage({ roles }: { roles: AppRole[] }) {
   if (!showAvatar) return <ProfileView data={data} avatar={null} />;
   const [url, social, clubTypes] = await Promise.all([getOwnAvatarUrl(user.accountId), getProfileSocial(data.account.username), getReadyClubTypes()]);
   const sportLabels = Object.fromEntries(clubTypes.map((t) => [t.code, t.name.replace(/^Klub\s+/, "")]));
-  return <ProfileView data={data} avatar={{ url, social, sportLabels }} />;
+  return <ProfileView data={data} avatar={{ url, social, sportLabels }} view="social" />;
 }
