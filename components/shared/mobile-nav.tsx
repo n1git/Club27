@@ -15,7 +15,7 @@ function TabLink({ item, active, className, iconOnly }: { item: NavItem; active:
   const prefetch = useFullPrefetch(item.href);
   return (
     <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} aria-label={iconOnly ? item.label : undefined} className={className}>
-      <span className={iconOnly ? cn("flex h-8 w-14 items-center justify-center rounded-full ui-transition", active && "bg-accent") : undefined}>
+      <span className={iconOnly ? cn("flex size-10 items-center justify-center rounded-xl ui-transition", active && "bg-foreground/10") : undefined}>
         <span className="relative">
           <NavLinkIcon name={item.icon} />
           <NavBadge count={item.badge} className="absolute -right-3 -top-1.5" />
@@ -72,7 +72,7 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
             <>
               {before.map((item) => (
                 <li key={item.href}>
-                  <TabLink item={item} iconOnly className={cn(tabClass, "w-full", isNavActive(pathname, item) && "text-accent-foreground")} active={isNavActive(pathname, item)} />
+                  <TabLink item={item} iconOnly className={cn(tabClass, "w-full", isNavActive(pathname, item) && "text-foreground")} active={isNavActive(pathname, item)} />
                 </li>
               ))}
               <li>
@@ -83,14 +83,14 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
                   onClick={() => quickAdd?.openFor(pathname)}
                   className={cn(tabClass, "w-full")}
                 >
-                  <span className="flex h-9 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
                     <Plus size={20} strokeWidth={2} aria-hidden="true" />
                   </span>
                 </button>
               </li>
               {after.map((item) => (
                 <li key={item.href}>
-                  <TabLink item={item} iconOnly className={cn(tabClass, "w-full", isNavActive(pathname, item) && "text-accent-foreground")} active={isNavActive(pathname, item)} />
+                  <TabLink item={item} iconOnly className={cn(tabClass, "w-full", isNavActive(pathname, item) && "text-foreground")} active={isNavActive(pathname, item)} />
                 </li>
               ))}
             </>
@@ -114,10 +114,10 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
                 sheetRef.current?.showModal();
                 setMenuOpen(true);
               }}
-              className={cn(tabClass, "w-full", personal && menuOpen && "text-accent-foreground")}
+              className={cn(tabClass, "w-full", personal && menuOpen && "text-foreground")}
             >
               {personal ? (
-                <span className={cn("flex h-8 w-14 items-center justify-center rounded-full ui-transition", menuOpen && "bg-accent")}>
+                <span className={cn("flex size-10 items-center justify-center rounded-xl ui-transition", menuOpen && "bg-foreground/10")}>
                   <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
                 </span>
               ) : (
