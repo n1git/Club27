@@ -2,6 +2,7 @@ import { BrandIcon } from "./brand-logo";
 import { LogoutButton } from "./logout-button";
 import { PersonalSwitch } from "./context-list";
 import { MobileNav } from "./mobile-nav";
+import { QuickAddButton } from "@/components/personal/quick-add";
 import { NavGroupsProvider } from "./nav-context";
 import { NavProgressBar, NavProgressProvider } from "./nav-progress";
 import type { NavGroup } from "./nav-types";
@@ -16,6 +17,7 @@ export function AppShell({
   clubName,
   tenantSwitcher,
   personalSwitch,
+  quickAdd,
   children,
 }: {
   navGroups: NavGroup[];
@@ -25,6 +27,7 @@ export function AppShell({
   clubName: string;
   tenantSwitcher?: React.ReactNode;
   personalSwitch?: boolean;
+  quickAdd?: boolean;
   children: React.ReactNode;
 }) {
   const menuGroups: NavGroup[] = [
@@ -49,6 +52,7 @@ export function AppShell({
                 {tenantSwitcher}
               </div>
               <div className="ml-auto flex items-center gap-2 sm:gap-3">
+                {quickAdd ? <QuickAddButton /> : null}
                 <ThemeToggle />
                 {personalSwitch ? <PersonalSwitch /> : null}
                 <LogoutButton />
@@ -59,7 +63,7 @@ export function AppShell({
               {children}
             </main>
           </div>
-          <MobileNav groups={menuGroups} />
+          <MobileNav groups={menuGroups} personal={quickAdd} />
         </div>
       </NavProgressProvider>
     </NavGroupsProvider>

@@ -3,22 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
-import { ChevronRight, Menu, X } from "lucide-react";
+import { ChevronRight, Menu, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLinkIcon } from "./nav-progress";
 import { useFullPrefetch } from "./use-full-prefetch";
 import { NavBadge } from "./nav-link";
 import { isNavActive, type NavGroup, type NavItem } from "./nav-types";
+import { useQuickAdd } from "@/components/personal/quick-add";
 
-function TabLink({ item, active, className }: { item: NavItem; active: boolean; className: string }) {
+function TabLink({ item, active, className, iconOnly }: { item: NavItem; active: boolean; className: string; iconOnly?: boolean }) {
   const prefetch = useFullPrefetch(item.href);
   return (
-    <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} className={className}>
+    <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} aria-label={iconOnly ? item.label : undefined} className={className}>
       <span className="relative">
         <NavLinkIcon name={item.icon} />
         <NavBadge count={item.badge} className="absolute -right-3 -top-1.5" />
       </span>
-      <span className="max-w-full truncate">{item.label}</span>
+      {iconOnly ? null : <span className="max-w-full truncate">{item.label}</span>}
     </Link>
   );
 }
@@ -26,8 +27,9 @@ function TabLink({ item, active, className }: { item: NavItem; active: boolean; 
 const MAX_TABS = 5;
 const MIN_TABS = 3;
 
-export function MobileNav({ groups }: { groups: NavGroup[] }) {
+export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?: boolean }) {
   const pathname = usePathname();
+  const quickAdd = useQuickAdd();
   const sheetRef = useRef<HTMLDialogElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
   const all = groups
@@ -41,7 +43,10 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
     for (const item of all) if (chosen.size < MIN_TABS) chosen.add(item.href);
   }
   const tabs = fits ? all : all.filter((i) => chosen.has(i.href));
-  const columns = tabs.length + 1;
+  const byHref = (href: string) => all.find((i) => i.href === href);
+  const before = personal ? [byHref("/"), byHref("/friends")].filter((i): i is NavItem => Boolean(i)) : [];
+  const after = personal ? [byHref("/workouts")].filter((i): i is NavItem => Boolean(i)) : [];
+  const columns = personal ? before.length + after.length + 2 : tabs.length + 1;
 
   useEffect(() => {
     sheetRef.current?.close();
@@ -60,24 +65,53 @@ export function MobileNav({ groups }: { groups: NavGroup[] }) {
           className="grid"
           style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
         >
-          {tabs.map((item) => {
-            const active = isNavActive(pathname, item);
-            return (
-              <li key={item.href}>
-                <TabLink item={item} className={cn(tabClass, "w-full", active && "text-accent-foreground")} active={active} />
+          {personal ? (
+            <>
+              {before.map((item) => (
+                <li key={item.href}>
+                  <TabLink item={item} iconOnly className={cn(tabClass, "w-full", isNavActive(pathname, item) && "text-accent-foreground")} active={isNavActive(pathname, item)} />
+                </li>
+              ))}
+              <li>
+                <button
+                  type="button"
+                  aria-label="Tambah"
+                  aria-haspopup="dialog"
+                  onClick={() => quickAdd?.openFor(pathname)}
+                  className={cn(tabClass, "w-full")}
+                >
+                  <span className="flex h-9 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Plus size={20} strokeWidth={2} aria-hidden="true" />
+                  </span>
+                </button>
               </li>
-            );
-          })}
+              {after.map((item) => (
+                <li key={item.href}>
+                  <TabLink item={item} iconOnly className={cn(tabClass, "w-full", isNavActive(pathname, item) && "text-accent-foreground")} active={isNavActive(pathname, item)} />
+                </li>
+              ))}
+            </>
+          ) : (
+            tabs.map((item) => {
+              const active = isNavActive(pathname, item);
+              return (
+                <li key={item.href}>
+                  <TabLink item={item} className={cn(tabClass, "w-full", active && "text-accent-foreground")} active={active} />
+                </li>
+              );
+            })
+          )}
           <li>
             <button
               ref={menuRef}
               type="button"
               aria-haspopup="dialog"
+              aria-label={personal ? "Menu" : undefined}
               onClick={() => sheetRef.current?.showModal()}
               className={cn(tabClass, "w-full")}
             >
               <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
-              <span>Menu</span>
+              {personal ? null : <span>Menu</span>}
             </button>
           </li>
         </ul>
