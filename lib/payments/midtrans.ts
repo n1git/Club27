@@ -1,4 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
+import { SITE_URL } from "@/lib/site";
 
 const isProduction = () => process.env.MIDTRANS_IS_PRODUCTION === "true";
 const snapBase = () => (isProduction() ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com");
@@ -10,6 +11,10 @@ export function isMidtransConfigured(): boolean {
 
 function authHeader() {
   return `Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY}:`).toString("base64")}`;
+}
+
+function notificationHeader(): Record<string, string> {
+  return SITE_URL.startsWith("https://") ? { "X-Override-Notification": `${SITE_URL}/api/payments/midtrans` } : {};
 }
 
 export interface SnapInput {
@@ -24,7 +29,7 @@ export async function createSnapTransaction(input: SnapInput): Promise<string | 
   try {
     const res = await fetch(`${snapBase()}/snap/v1/transactions`, {
       method: "POST",
-      headers: { Authorization: authHeader(), "Content-Type": "application/json", Accept: "application/json" },
+      headers: { Authorization: authHeader(), "Content-Type": "application/json", Accept: "application/json", ...notificationHeader() },
       body: JSON.stringify({
         transaction_details: { order_id: input.orderId, gross_amount: input.amount },
         item_details: [{ id: "langganan", name: input.itemName.slice(0, 50), price: input.amount, quantity: 1 }],
