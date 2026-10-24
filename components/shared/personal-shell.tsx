@@ -24,7 +24,6 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
         { href: "/workouts", label: "Latihan", icon: "visits", primary: true },
         { href: "/challenges", label: "Tantangan", icon: "trophy" },
         { href: "/health", label: "Kesehatan", icon: "reports" },
-        { href: "/profile", label: "Profil", icon: "profile" },
         { href: "/join", label: "Gabung klub", icon: "switchClub" },
         { href: "/upgrade", label: "Upgrade", icon: "club" },
         { href: "/settings", label: "Pengaturan", icon: "settings" },
