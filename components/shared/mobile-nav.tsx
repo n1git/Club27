@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronRight, Menu, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NavLinkIcon } from "./nav-progress";
@@ -15,9 +15,11 @@ function TabLink({ item, active, className, iconOnly }: { item: NavItem; active:
   const prefetch = useFullPrefetch(item.href);
   return (
     <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} aria-label={iconOnly ? item.label : undefined} className={className}>
-      <span className="relative">
-        <NavLinkIcon name={item.icon} />
-        <NavBadge count={item.badge} className="absolute -right-3 -top-1.5" />
+      <span className={iconOnly ? cn("flex h-8 w-14 items-center justify-center rounded-full ui-transition", active && "bg-accent") : undefined}>
+        <span className="relative">
+          <NavLinkIcon name={item.icon} />
+          <NavBadge count={item.badge} className="absolute -right-3 -top-1.5" />
+        </span>
       </span>
       {iconOnly ? null : <span className="max-w-full truncate">{item.label}</span>}
     </Link>
@@ -32,6 +34,7 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
   const quickAdd = useQuickAdd();
   const sheetRef = useRef<HTMLDialogElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const all = groups
     .flatMap((g) => g.items)
     .filter((i) => i.icon !== "profile");
@@ -107,10 +110,19 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
               type="button"
               aria-haspopup="dialog"
               aria-label={personal ? "Menu" : undefined}
-              onClick={() => sheetRef.current?.showModal()}
-              className={cn(tabClass, "w-full")}
+              onClick={() => {
+                sheetRef.current?.showModal();
+                setMenuOpen(true);
+              }}
+              className={cn(tabClass, "w-full", personal && menuOpen && "text-accent-foreground")}
             >
-              <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
+              {personal ? (
+                <span className={cn("flex h-8 w-14 items-center justify-center rounded-full ui-transition", menuOpen && "bg-accent")}>
+                  <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
+                </span>
+              ) : (
+                <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
+              )}
               {personal ? null : <span>Menu</span>}
             </button>
           </li>
@@ -120,7 +132,10 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
       <dialog
         ref={sheetRef}
         aria-label="Menu"
-        onClose={() => menuRef.current?.focus()}
+        onClose={() => {
+          setMenuOpen(false);
+          menuRef.current?.focus();
+        }}
         className="menu-sheet m-0 h-dvh max-h-none w-dvw max-w-none bg-background p-0 text-foreground sm:hidden"
       >
         <div className="flex h-full flex-col overflow-y-auto pb-[calc(1rem+env(safe-area-inset-bottom))]">
