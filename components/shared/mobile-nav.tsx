@@ -80,7 +80,7 @@ export function MobileNav({ groups, personal, footer }: { groups: NavGroup[]; pe
                   type="button"
                   aria-label="Tambah"
                   aria-haspopup="dialog"
-                  onClick={() => quickAdd?.openFor(pathname)}
+                  onClick={() => quickAdd?.openFor()}
                   className={cn(tabClass, "w-full")}
                 >
                   <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">

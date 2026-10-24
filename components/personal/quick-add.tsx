@@ -46,7 +46,7 @@ interface QuickAddValue {
   submit: (kind: QuickKind, event: FormEvent<HTMLFormElement>) => void;
   setMode: Dispatch<SetStateAction<QuickMode | null>>;
   open: (kind: QuickKind) => void;
-  openFor: (pathname: string) => void;
+  openFor: () => void;
 }
 
 const QuickAddContext = createContext<QuickAddValue | null>(null);
@@ -55,12 +55,8 @@ export function useQuickAdd() {
   return useContext(QuickAddContext);
 }
 
-function modeFor(pathname: string, canSocial: boolean): QuickMode {
-  if (!canSocial) return "workout";
-  if (pathname === "/") return "post";
-  if (pathname === "/friends" || pathname.startsWith("/friends/")) return "friend";
-  if (pathname === "/workouts" || pathname.startsWith("/workouts/")) return "workout";
-  return "chooser";
+function modeFor(canSocial: boolean): QuickMode {
+  return canSocial ? "chooser" : "workout";
 }
 
 export function QuickAddProvider({
@@ -80,7 +76,7 @@ export function QuickAddProvider({
   const [pending, setPending] = useState<ByKind<boolean>>({ post: false, friend: false, workout: false, story: false });
   const [formKeys, setFormKeys] = useState<ByKind<number>>({ post: 0, friend: 0, workout: 0, story: 0 });
   const open = useCallback((kind: QuickKind) => setMode(kind === "workout" || canSocial ? kind : "workout"), [canSocial]);
-  const openFor = useCallback((pathname: string) => setMode(modeFor(pathname, canSocial)), [canSocial]);
+  const openFor = useCallback(() => setMode(modeFor(canSocial)), [canSocial]);
   const submit = useCallback(
     async (kind: QuickKind, event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -121,10 +117,9 @@ export function QuickAddProvider({
 
 export function QuickAddButton() {
   const quickAdd = useQuickAdd();
-  const pathname = usePathname();
   if (!quickAdd) return null;
   return (
-    <Button type="button" size="icon" aria-label="Tambah" aria-haspopup="dialog" title="Tambah" onClick={() => quickAdd.openFor(pathname)} className="hidden sm:inline-flex">
+    <Button type="button" size="icon" aria-label="Tambah" aria-haspopup="dialog" title="Tambah" onClick={quickAdd.openFor} className="hidden sm:inline-flex">
       <Plus aria-hidden className="size-4" />
     </Button>
   );

@@ -12,7 +12,7 @@
 - Profile (`/<username>` and `/profile`): avatar, post and friend counts and a three-column grid of posts that opens each post. For personal accounts `/profile` is only this social profile; photo, personal data, public profile, organizations and password moved to `/settings/account` (linked from Pengaturan and from the profile).
 - Minor and banned accounts see none of these. Account export and deletion cover the new data; the privacy impact assessment lists the new retention. Migrations 068 to 070.
 
-- Personal accounts on a phone get a five-icon bottom bar (Beranda, Teman, "+", Latihan, Menu; Grup moved into Menu). The "+" depends on the page: post on `/`, add friend on `/friends`, log workout on `/workouts`, a chooser elsewhere; on desktop the same button sits in the header. The three forms open in a sheet and submit in the background (loading toast, then success or error; a failed submit reopens the sheet with the typed values). The inline add cards are gone. Minor and banned accounts only get "Catat latihan". Other roles keep their bar.
+- Personal accounts on a phone get a five-icon bottom bar (Beranda, Teman, "+", Latihan, Menu; Grup moved into Menu). The "+" opens the same chooser on every page (Posting, Cerita, Tambah teman, Catat latihan); on desktop the same button sits in the header. The three forms open in a sheet and submit in the background (loading toast, then success or error; a failed submit reopens the sheet with the typed values). The inline add cards are gone. Minor and banned accounts only get "Catat latihan". Other roles keep their bar.
 
 ## 2026-10-21
 
