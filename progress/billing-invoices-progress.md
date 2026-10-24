@@ -1,6 +1,6 @@
 # billing-invoices
 
-Status: Phases 1-3 built and checked locally; migration 067 is NOT applied to hosted (hosted dry run passed 2026-10-24). The page code is held locally until 067 is applied, because it reads the new columns.
+Status: all phases done; migration 067 applied to hosted 2026-10-24 (version 20250101000067, existing renewal backfilled) and the code is pushed.
 
 Goal: invoice and receipt (kwitansi) for subscription payments (renewal and seat purchase), laid out like the owner's samples (`Invoice-4BJVASVY-0002.pdf`, `Receipt-2382-0891-8129.pdf`, Stripe style), in Indonesian.
 
@@ -27,11 +27,10 @@ Goal: invoice and receipt (kwitansi) for subscription payments (renewal and seat
   - `/admin/plan`: "Riwayat tagihan" (number, date, total, status, Invoice / Kwitansi links) and the billing profile form.
   - `/admin/plan/invoice/<id>` and `/admin/plan/receipt/<id>`: printable A4 pages matching the samples (header, numbers and dates, issuer and Bill to, amount line, item table with Qty, Harga satuan, Jumlah, subtotal and total, receipt adds Riwayat pembayaran), "Bayar" button on unpaid invoices, "Cetak / Simpan PDF" via the browser. Same pages reachable while the subscription is locked (under `/admin/plan`).
   - Superadmin: links to each document from the renewals list and a form for the issuer row.
-- [ ] Phase 4: CLAUDE.md notes and the FAQ "Belum ada" list (drop "kwitansi langganan") with its claim row. Done together with the push after 067 is applied.
+- [x] Phase 4: CLAUDE.md notes and the FAQ "Belum ada" list (drop "kwitansi langganan") with its claim row.
 
 ## Open items for the owner
 
 - Billing contact email for the header (for example billing@getruzz.com; needs a mailbox).
 - If N-1 Labs becomes PKP later, PPN needs a follow-up migration (tax snapshot per document) and the landing price text changes.
 - Email delivery of documents waits for `EMAIL_API_KEY`.
-- Back up the hosted database before applying 067.
