@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { PageSkeleton } from "@/components/ui/page-skeleton";
+import { HomeSkeleton } from "@/components/personal/home-skeleton";
 import { redirect } from "next/navigation";
 import { APP_NAME } from "@/lib/config";
 import { pageMetadata } from "@/lib/seo";
@@ -34,7 +34,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   if (session && session.app_role === "personal") {
     return (
       <PersonalLayout>
-        <Suspense fallback={<PageSkeleton />}>
+        <Suspense fallback={<HomeSkeleton />}>
           <PersonalHomePage searchParams={searchParams} />
         </Suspense>
       </PersonalLayout>

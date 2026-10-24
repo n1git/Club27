@@ -1,1 +1,5 @@
-export { PageLoading as default } from "@/components/ui/page-loading";
+import { DocSkeleton } from "@/components/ui/skeletons";
+
+export default function Loading() {
+  return <DocSkeleton />;
+}
