@@ -17,7 +17,8 @@ import { isMidtransConfigured } from "@/lib/payments/midtrans";
 import { RetryPaymentForm } from "@/components/subscription/retry-payment-form";
 import { buttonVariants } from "@/components/ui/button";
 import { ModuleList } from "@/components/pricing/pricing-picker";
-import { MetricCard } from "@/components/ui/metric-card";
+import { Card, CardContent } from "@/components/ui/card";
+import { TriggerDialog } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -65,6 +66,12 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
   const contact = getContact();
   const longDate = { day: "numeric", month: "long", year: "numeric" } as const;
 
+  const until = subscription.status === "trial" ? subscription.trialEndsAt : subscription.currentPeriodEnd;
+  const untilLabel = subscription.status === "trial" ? "Trial sampai" : billing.phase === "active" ? "Aktif sampai" : "Berakhir";
+  const payLabel = renewal ? `Bayar ${formatRupiah(renewal.amount)}` : "";
+  const summary = (row: NonNullable<typeof renewal>) =>
+    row.items[0]?.description ?? (row.kind === "seats" ? `Tambah ${row.seatsAdded} seat` : `${row.planName ?? row.planCode} · ${PERIOD_LABEL[row.billingPeriod]}`);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -76,17 +83,14 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
         <Alert variant="warning">
           <AlertTitle>Langganan berakhir, data hanya bisa dibaca</AlertTitle>
           <AlertDescription>
-            Semua pengguna masih bisa melihat data, tetapi perubahan ditolak sampai langganan diperpanjang.
+            Perpanjang untuk bisa mengubah data lagi.
             {billing.graceEndsOn ? ` Data disimpan sampai ${formatJakartaDate(billing.graceEndsOn, longDate)}.` : ""}
           </AlertDescription>
         </Alert>
       ) : locked ? (
         <Alert variant="warning">
           <AlertTitle>Akses klub dikunci</AlertTitle>
-          <AlertDescription>
-            Langganan organisasi belum aktif atau sudah berakhir. Semua data tetap tersimpan. Ajukan perpanjangan di
-            bawah; akses klub terbuka kembali setelah pembayaran dikonfirmasi.
-          </AlertDescription>
+          <AlertDescription>Data tetap tersimpan. Perpanjang untuk membuka akses lagi.</AlertDescription>
         </Alert>
       ) : (
         <SubscriptionBanner />
@@ -95,136 +99,103 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
       {bayar === "selesai" && renewal ? (
         <Alert>
           <AlertTitle>Pembayaran sedang diproses</AlertTitle>
-          <AlertDescription>Status langganan diperbarui otomatis setelah pembayaran terkonfirmasi. Muat ulang halaman ini beberapa saat lagi.</AlertDescription>
+          <AlertDescription>Halaman ini diperbarui otomatis setelah pembayaran terkonfirmasi.</AlertDescription>
         </Alert>
       ) : null}
+
+      <Card>
+        <CardContent className="flex flex-col gap-5 pt-6 sm:flex-row sm:items-end sm:justify-between">
+          <dl className="grid gap-x-10 gap-y-3 sm:grid-cols-3">
+            <div>
+              <dt className="text-xs text-muted-foreground">Paket</dt>
+              <dd className="font-semibold">
+                {plan.name} · {PERIOD_LABEL[subscription.billingPeriod]}
+              </dd>
+              {until ? (
+                <dd className="text-sm text-muted-foreground">
+                  {untilLabel} {formatJakartaDate(until, longDate)}
+                </dd>
+              ) : null}
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Seat</dt>
+              <dd className="font-semibold">
+                {billing.seatsUsed} dari {subscription.seats} terpakai
+              </dd>
+              {pendingSeats !== null && subscription.pendingSeatsFrom ? (
+                <dd className="text-sm text-muted-foreground">
+                  Jadi {pendingSeats} mulai {formatJakartaDate(subscription.pendingSeatsFrom, longDate)}
+                </dd>
+              ) : null}
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Biaya</dt>
+              <dd className="font-semibold">
+                {formatRupiah(quote.total)}/{periodUnit}
+              </dd>
+              <dd className="text-sm text-muted-foreground">{billing.clubLimit !== null ? `${billing.clubs} dari ${billing.clubLimit} klub` : `${billing.clubs} klub`}</dd>
+            </div>
+          </dl>
+          {canManage ? (
+            <div className="flex flex-wrap gap-2">
+              <TriggerDialog trigger={<span className={buttonVariants()}>Perpanjang</span>}>
+                <h2 className="mb-1 text-lg font-semibold">Perpanjang langganan</h2>
+                <p className="mb-4 text-sm text-muted-foreground">Berlaku setelah periode sekarang berakhir.</p>
+                <RenewalForm
+                  plans={billing.plans}
+                  planCode={subscription.planCode}
+                  period={subscription.billingPeriod}
+                  seats={Math.max(billedSeats, billing.seatsUsed, 1)}
+                  minSeats={billing.seatsUsed}
+                  maxSeats={billing.phase === "active" ? subscription.seats : null}
+                  gateway={gateway}
+                />
+              </TriggerDialog>
+              {billing.phase === "active" ? (
+                <TriggerDialog trigger={<span className={buttonVariants({ variant: "outline" })}>Tambah seat</span>}>
+                  <h2 className="mb-1 text-lg font-semibold">Tambah seat</h2>
+                  <p className="mb-4 text-sm text-muted-foreground">Dibayar prorata sampai periode sekarang berakhir.</p>
+                  <SeatPurchaseForm seats={subscription.seats} gateway={gateway} />
+                </TriggerDialog>
+              ) : null}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
       {renewal ? (
-        <Alert>
-          <AlertTitle>Menunggu pembayaran</AlertTitle>
-          <AlertDescription className="flex flex-col gap-1">
-            <span>
-              {renewal.kind === "seats"
-                ? `Tambah ${renewal.seatsAdded} seat (jadi ${renewal.users})`
-                : `${renewal.planName ?? renewal.planCode} · ${PERIOD_LABEL[renewal.billingPeriod]} · ${renewal.users} seat`}{" "}
-              · <strong>{formatRupiah(renewal.amount)}</strong>, diajukan {formatJakartaDate(renewal.requestedAt, longDate)}.
+        <Card>
+          <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-muted-foreground">Tagihan belum dibayar{renewal.invoiceNumber ? ` · ${renewal.invoiceNumber}` : ""}</span>
+              <span className="font-semibold">{summary(renewal)}</span>
+              <span className="text-lg font-bold">{formatRupiah(renewal.amount)}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
               {renewal.invoiceNumber ? (
-                <>
-                  {" "}
-                  <Link href={`/admin/plan/invoice/${renewal.id}`} className="font-medium text-accent-foreground underline underline-offset-4">
-                    Lihat invoice {renewal.invoiceNumber}
-                  </Link>
-                </>
+                <Link href={`/admin/plan/invoice/${renewal.id}`} className="text-sm text-accent-foreground underline underline-offset-4">
+                  Lihat invoice
+                </Link>
               ) : null}
-            </span>
-            {gateway ? (
-              <>
-                <span>
-                  Bayar lewat transfer bank, e-wallet, atau QRIS. Langganan aktif otomatis setelah pembayaran berhasil.
-                </span>
-                {renewal.paymentUrl ? (
-                  <a href={renewal.paymentUrl} className={buttonVariants({ size: "sm", className: "mt-2 w-fit" })}>
-                    Bayar sekarang
+              {canManage && gateway ? (
+                renewal.paymentUrl ? (
+                  <a href={renewal.paymentUrl} className={buttonVariants({ className: "w-full sm:w-fit" })}>
+                    {payLabel}
                   </a>
                 ) : (
-                  <RetryPaymentForm />
-                )}
-              </>
-            ) : (
-              <span>
-                Lakukan pembayaran lalu kirim bukti ke admin platform
-                {contact.email ? ` (${contact.email})` : ""}
-                {contact.whatsapp ? `${contact.email ? " atau" : ""} WhatsApp +${contact.whatsapp}` : ""}. Periode baru
-                dimulai setelah periode berjalan habis, atau hari konfirmasi bila sudah lewat.
-              </span>
-            )}
-          </AlertDescription>
-        </Alert>
-      ) : null}
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard title="Paket" value={`${plan.name} · ${PERIOD_LABEL[subscription.billingPeriod]}`} />
-        <MetricCard title="Seat terpakai" value={`${billing.seatsUsed} / ${subscription.seats}`} />
-        <MetricCard
-          title="Klub"
-          value={billing.clubLimit !== null ? `${billing.clubs} / ${billing.clubLimit}` : `${billing.clubs} (tak terbatas)`}
-        />
-        <MetricCard title={`Total per ${periodUnit}`} value={formatRupiah(quote.total)} />
-      </div>
-
-      <p className="max-w-2xl text-sm text-muted-foreground">
-        {quote.users} seat × {formatRupiah(quote.unitPrice)} × {quote.months.toLocaleString("id-ID")} bulan ={" "}
-        {formatRupiah(quote.total)}
-        {subscription.billingPeriod === "yearly" ? `, setara ${formatRupiah(quote.perMonth)}/bulan` : ""}.
-        {subscription.currentPeriodEnd
-          ? ` Periode berjalan sampai ${formatJakartaDate(subscription.currentPeriodEnd, longDate)}.`
-          : ""}
-        {subscription.status === "trial" && subscription.trialEndsAt
-          ? ` Trial sampai ${formatJakartaDate(subscription.trialEndsAt, longDate)}.`
-          : ""}
-        {pendingSeats !== null && subscription.pendingSeatsFrom
-          ? ` Seat turun menjadi ${pendingSeats} mulai ${formatJakartaDate(subscription.pendingSeatsFrom, longDate)}.`
-          : ""}
-      </p>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Pengguna berseat</h2>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nama</TableHead>
-              <TableHead>Peran</TableHead>
-              <TableHead>Klub</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.key}>
-                <TableCell>
-                  <div className="font-medium">{user.name}</div>
-                  <div className="text-xs text-muted-foreground">{user.email}</div>
-                </TableCell>
-                <TableCell>{user.roleLabel}</TableCell>
-                <TableCell>{user.clubName ?? "Semua klub"}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <p className="text-xs text-muted-foreground">
-          Satu orang memakai satu seat di organisasi ini, berapa pun jumlah klubnya. Anggota, pelatih, dan peran gratis tidak memakai seat.
-        </p>
-      </section>
-
-      {canManage ? (
-        <>
-          {billing.phase === "active" ? (
-            <section className="flex flex-col gap-3">
-              <h2 className="text-lg font-semibold">Tambah seat</h2>
-              <p className="max-w-2xl text-sm text-muted-foreground">
-                Seat tambahan berlaku sampai periode berjalan berakhir dan ditagih prorata sesuai sisa hari. Mengurangi seat dilakukan
-                saat perpanjangan: jumlah baru berlaku di periode berikutnya.
-              </p>
-              <SeatPurchaseForm seats={subscription.seats} />
-            </section>
+                  <RetryPaymentForm label={payLabel} />
+                )
+              ) : null}
+            </div>
+          </CardContent>
+          {!gateway ? (
+            <CardContent className="pt-0 text-sm text-muted-foreground">
+              Transfer lalu kirim bukti ke admin platform
+              {contact.email ? ` (${contact.email})` : ""}
+              {contact.whatsapp ? `${contact.email ? " atau" : ""} WhatsApp +${contact.whatsapp}` : ""}.
+            </CardContent>
           ) : null}
-
-          <section className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold">Perpanjang atau ganti paket</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Langganan tidak diperpanjang otomatis. Pilih paket, periode, dan jumlah seat, lalu ajukan; harga dihitung ulang di server.
-              Paket dan periode baru berlaku setelah pembayaran dikonfirmasi.
-              {renewal ? " Pengajuan baru menggantikan pengajuan yang sedang menunggu." : ""}
-            </p>
-            <RenewalForm
-              plans={billing.plans}
-              planCode={renewal?.kind === "renewal" ? renewal.planCode : subscription.planCode}
-              period={renewal?.kind === "renewal" ? renewal.billingPeriod : subscription.billingPeriod}
-              seats={Math.max(renewal?.kind === "renewal" ? renewal.users : billedSeats, billing.seatsUsed, 1)}
-              minSeats={billing.seatsUsed}
-              maxSeats={billing.phase === "active" ? subscription.seats : null}
-            />
-          </section>
-        </>
+        </Card>
       ) : null}
 
       <section className="flex flex-col gap-3">
@@ -234,8 +205,8 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
             <TableHeader>
               <TableRow>
                 <TableHead>Nomor</TableHead>
-                <TableHead>Tanggal</TableHead>
-                <TableHead>Keterangan</TableHead>
+                <TableHead className="hidden sm:table-cell">Tanggal</TableHead>
+                <TableHead className="hidden md:table-cell">Keterangan</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Dokumen</TableHead>
@@ -245,8 +216,8 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
               {history.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell className="whitespace-nowrap font-mono text-xs">{row.invoiceNumber ?? "-"}</TableCell>
-                  <TableCell>{formatJakartaDate(row.invoiceDate ?? row.requestedAt)}</TableCell>
-                  <TableCell>{row.items[0]?.description ?? (row.kind === "seats" ? `Tambah ${row.seatsAdded} seat` : PERIOD_LABEL[row.billingPeriod])}</TableCell>
+                  <TableCell className="hidden sm:table-cell">{formatJakartaDate(row.invoiceDate ?? row.requestedAt)}</TableCell>
+                  <TableCell className="hidden md:table-cell">{summary(row)}</TableCell>
                   <TableCell className="whitespace-nowrap text-right">{formatRupiah(row.amount)}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     <Badge variant={row.status === "paid" ? "success" : row.status === "pending" ? "warning" : "secondary"}>
@@ -274,20 +245,49 @@ export default async function SubscriptionPage({ searchParams }: { searchParams:
         )}
       </section>
 
-      {canManage ? (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Data penagihan</h2>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            Tampil di kolom &quot;Ditagihkan kepada&quot; pada invoice dan kwitansi berikutnya. Tagihan yang sudah terbit tidak berubah.
-          </p>
-          <BillingProfileForm address={profile.address} email={profile.email} />
-        </section>
-      ) : null}
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">Modul</h2>
-        <ModuleList modules={modules} />
-      </section>
+      <div className="flex flex-col divide-y rounded-lg border">
+        <details className="group px-4 py-3">
+          <summary className="cursor-pointer font-medium">Pengguna berseat ({users.length})</summary>
+          <div className="mt-3 flex flex-col gap-2">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama</TableHead>
+                  <TableHead>Peran</TableHead>
+                  <TableHead>Klub</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.key}>
+                    <TableCell>
+                      <div className="font-medium">{user.name}</div>
+                      <div className="text-xs text-muted-foreground">{user.email}</div>
+                    </TableCell>
+                    <TableCell>{user.roleLabel}</TableCell>
+                    <TableCell>{user.clubName ?? "Semua klub"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <p className="text-xs text-muted-foreground">Pelatih, kasir, dan anggota tidak memakai seat.</p>
+          </div>
+        </details>
+        {canManage ? (
+          <details className="px-4 py-3">
+            <summary className="cursor-pointer font-medium">Data penagihan</summary>
+            <div className="mt-3">
+              <BillingProfileForm address={profile.address} email={profile.email} />
+            </div>
+          </details>
+        ) : null}
+        <details className="px-4 py-3">
+          <summary className="cursor-pointer font-medium">Modul termasuk</summary>
+          <div className="mt-3">
+            <ModuleList modules={modules} />
+          </div>
+        </details>
+      </div>
     </div>
   );
 }

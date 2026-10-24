@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { submitRenewal } from "@/lib/actions/subscription";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
-import { PeriodToggle, PlanCard } from "@/components/pricing/pricing-picker";
-import type { BillingPeriod, PlanCode, PricingPlan } from "@/lib/pricing";
+import { PeriodToggle, UsersStepper } from "@/components/pricing/pricing-picker";
+import { computeQuote, formatRupiah, type BillingPeriod, type PlanCode, type PricingPlan } from "@/lib/pricing";
 
 export function RenewalForm({
   plans,
@@ -16,6 +14,7 @@ export function RenewalForm({
   seats,
   minSeats,
   maxSeats,
+  gateway,
 }: {
   plans: PricingPlan[];
   planCode: PlanCode;
@@ -23,52 +22,27 @@ export function RenewalForm({
   seats: number;
   minSeats: number;
   maxSeats: number | null;
+  gateway: boolean;
 }) {
-  const [selectedPlan, setSelectedPlan] = useState<PlanCode>(planCode);
+  const plan = plans.find((p) => p.code === planCode) ?? plans[0];
+  const floor = Math.max(minSeats, plan?.minSeats ?? 1, 1);
   const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>(period);
-  const [selectedSeats, setSelectedSeats] = useState(seats);
-  const floor = Math.max(minSeats, plans.find((p) => p.code === selectedPlan)?.minSeats ?? 1, 1);
+  const [selectedSeats, setSelectedSeats] = useState(Math.min(Math.max(seats, floor), maxSeats ?? 1000));
+  if (!plan) return null;
+  const quote = computeQuote(plan, selectedPeriod, selectedSeats);
+  const total = formatRupiah(quote.total);
 
   return (
-    <ActionForm action={submitRenewal} className="flex flex-col gap-4">
-      <input type="hidden" name="planCode" value={selectedPlan} />
+    <ActionForm action={submitRenewal} className="flex flex-col gap-5">
+      <input type="hidden" name="planCode" value={plan.code} />
       <input type="hidden" name="billingPeriod" value={selectedPeriod} />
-      <div className="flex max-w-xs flex-col gap-1.5">
-        <Label htmlFor="renewal-seats">Jumlah seat</Label>
-        <Input
-          id="renewal-seats"
-          name="seats"
-          type="number"
-          inputMode="numeric"
-          min={floor}
-          max={maxSeats ?? 1000}
-          value={selectedSeats}
-          onChange={(event) => setSelectedSeats(Math.max(Number(event.target.value) || floor, 1))}
-          required
-        />
-        <p className="text-xs text-muted-foreground">
-          Minimal {floor} (pengguna aktif saat ini dan minimal paket).
-          {maxSeats !== null ? ` Menambah seat saat langganan berjalan lewat Tambah seat di bawah.` : ""}
-        </p>
-      </div>
-      <PeriodToggle
-        period={selectedPeriod}
-        onChange={setSelectedPeriod}
-        freeMonths={Math.max(...plans.map((p) => p.yearlyFreeMonths))}
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
-        {plans.map((plan) => (
-          <PlanCard
-            key={plan.code}
-            plan={plan}
-            period={selectedPeriod}
-            users={selectedSeats}
-            selected={plan.code === selectedPlan}
-            onSelect={setSelectedPlan}
-          />
-        ))}
-      </div>
-      <ActionSubmitButton className="w-fit">Ajukan perpanjangan</ActionSubmitButton>
+      <input type="hidden" name="seats" value={quote.users} />
+      <PeriodToggle period={selectedPeriod} onChange={setSelectedPeriod} freeMonths={plan.yearlyFreeMonths} />
+      <UsersStepper id="renewal-seats" users={selectedSeats} onChange={(n) => setSelectedSeats(Math.min(n, maxSeats ?? 1000))} min={floor} />
+      <p className="text-sm">
+        {quote.users} seat × {formatRupiah(quote.unitPrice)} × {quote.months} bulan = <strong>{total}</strong>
+      </p>
+      <ActionSubmitButton className="w-full sm:w-fit">{gateway ? `Bayar ${total}` : `Buat tagihan ${total}`}</ActionSubmitButton>
     </ActionForm>
   );
 }

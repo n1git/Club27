@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireActionPermission, UnauthorizedError } from "@/lib/auth/guard";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
@@ -77,8 +78,8 @@ export async function submitRenewal(_prevState: ActionState, formData: FormData)
   });
   const paymentUrl = await preparePaymentFor(organizationId, session.account_id);
   revalidatePath("/admin/plan");
-  if (paymentUrl) return { ok: true, message: "Pengajuan tercatat. Lanjutkan pembayaran lewat tombol Bayar sekarang." };
-  return { ok: true, message: "Pengajuan tercatat. Langganan aktif setelah pembayaran dikonfirmasi." };
+  if (paymentUrl) redirect(paymentUrl);
+  return { ok: true, message: "Tagihan dibuat. Langganan aktif setelah pembayaran dikonfirmasi." };
 }
 
 export async function submitSeatPurchase(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -101,15 +102,15 @@ export async function submitSeatPurchase(_prevState: ActionState, formData: Form
   });
   const paymentUrl = await preparePaymentFor(organizationId, session.account_id);
   revalidatePath("/admin/plan");
-  if (paymentUrl) return { ok: true, message: "Pengajuan tercatat. Lanjutkan pembayaran lewat tombol Bayar sekarang." };
-  return { ok: true, message: "Pengajuan tercatat. Seat bertambah setelah pembayaran dikonfirmasi." };
+  if (paymentUrl) redirect(paymentUrl);
+  return { ok: true, message: "Tagihan dibuat. Seat bertambah setelah pembayaran dikonfirmasi." };
 }
 
 export async function retryRenewalPayment(_prevState: ActionState): Promise<ActionState> {
   const { organizationId, session } = await billingContext();
   const url = await preparePaymentFor(organizationId, session.account_id);
-  revalidatePath("/admin/plan");
-  return url ? { ok: true, message: "Tautan pembayaran siap." } : { ok: false, error: "Tautan pembayaran belum bisa dibuat. Coba lagi beberapa saat lagi." };
+  if (url) redirect(url);
+  return { ok: false, error: "Pembayaran belum bisa dibuka. Coba lagi beberapa saat lagi." };
 }
 
 export interface SeatPurchasePreview {

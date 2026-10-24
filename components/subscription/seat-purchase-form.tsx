@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatRupiah } from "@/lib/pricing";
 
-export function SeatPurchaseForm({ seats }: { seats: number }) {
+export function SeatPurchaseForm({ seats, gateway }: { seats: number; gateway: boolean }) {
   const [add, setAdd] = useState(1);
   const [preview, setPreview] = useState<SeatPurchasePreview | { error: string } | null>(null);
 
@@ -43,13 +43,12 @@ export function SeatPurchaseForm({ seats }: { seats: number }) {
       {preview && "error" in preview ? (
         <p className="text-sm text-destructive">{preview.error}</p>
       ) : preview ? (
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          {seats} → {preview.seatsAfter} seat. Tagihan prorata untuk {preview.remainingDays} dari {preview.periodDays} hari periode
-          berjalan: <strong>{formatRupiah(preview.amount)}</strong>. Periode tidak berubah; perpanjangan berikutnya memakai jumlah seat baru.
+        <p className="text-sm">
+          {seats} → {preview.seatsAfter} seat, prorata {preview.remainingDays} hari: <strong>{formatRupiah(preview.amount)}</strong>
         </p>
       ) : null}
-      <ActionSubmitButton className="w-fit" disabled={!preview || "error" in preview}>
-        Ajukan tambah seat
+      <ActionSubmitButton className="w-full sm:w-fit" disabled={!preview || "error" in preview}>
+        {preview && !("error" in preview) ? `${gateway ? "Bayar" : "Buat tagihan"} ${formatRupiah(preview.amount)}` : gateway ? "Bayar" : "Buat tagihan"}
       </ActionSubmitButton>
     </ActionForm>
   );
