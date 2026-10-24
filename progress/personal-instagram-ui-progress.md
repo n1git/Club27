@@ -6,7 +6,7 @@ Depends on `personal-bottom-nav` and `bottom-nav-active`: both merged (c42861b, 
 
 - [x] Phase 0: read code, clone reference, plan
 - [x] Phase 1: migration 068, snapshot, hosted apply (data functions are written in the phase that uses them)
-- [ ] Phase 2: avatars, top bar, feed post card, comments sheet, carousel, skeletons
+- [x] Phase 2: avatars, top bar, feed post card, comments sheet, carousel, skeletons
 - [ ] Phase 3: /notifications, unread badge, background mark-read
 - [ ] Phase 4: stories bar, viewer, create flow, cron route
 - [ ] Phase 5: chat (inbox, thread, background send, polling, report)
@@ -41,3 +41,10 @@ Not taken: models, `app/api/*`, auth, uploads, toast provider, desktop navbar, m
 - Before-state snapshot: `progress/personal-instagram-ui-before.sql`.
 - Applied to hosted `club27` as migration `instagram_social` after confirming hosted matched the snapshot (latest hosted version 067, no new tables). Afterwards the md5 of the 25 new function definitions on hosted equals local, security advisors show only the usual "security definer function executable by authenticated" notice for the new RPCs, like every existing RPC.
 - Note: `reports_target_type_check` was dropped and recreated with `message` added (the only non-additive statement, needed for message reports).
+
+## Phase 2 result
+
+- Avatars: `accounts.avatar_path`, upload and remove on `/profile` (personal accounts only, client shrink then `sharp` 512 px webp square, old file removed), `Avatar` component with initials, `Person.avatarUrl` through `peopleMap` (also used by groups now).
+- Top bar on mobile: brand on the left, theme toggle and logout moved into the Menu sheet (new `footer` slot); the heart and message icons are added in phases 3 and 5 through the new `topActions` slot.
+- Feed: edge-to-edge post cards (header with avatar, relative time, options sheet; photo carousel with snap, counter, dots; optimistic heart; comments bottom sheet with optimistic add and delete; two-line caption with "selengkapnya"; workout summary block), `PostCardSkeleton` inside Suspense on home. Home puts the feed first and the dashboard cards after it on mobile, in a right column on desktop.
+- Browser run on a production build (375, 320, 1280 px, light and dark): upload avatar, post with three photos, carousel scroll, like, comment, no horizontal scroll at 320. It caught one regression of mine (a `map(shrink)` passing the index as size), fixed.

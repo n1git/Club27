@@ -10,9 +10,9 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_SIDE = 1600;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-async function shrink(file: File): Promise<File> {
+export async function shrink(file: File, maxSide: number = MAX_SIDE): Promise<File> {
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
   canvas.height = Math.round(bitmap.height * scale);
@@ -56,7 +56,7 @@ export function PhotoPicker({ pending }: { pending: boolean }) {
     }
     setBusy(true);
     try {
-      setFiles(await Promise.all(picked.map(shrink)));
+      setFiles(await Promise.all(picked.map((f) => shrink(f))));
     } catch {
       toast.error("Foto tidak bisa dibaca. Coba foto lain.");
       setFiles([]);

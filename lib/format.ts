@@ -50,3 +50,16 @@ export function formatRupiahCompact(value: number): string {
 export function formatRupiahFull(value: number | string | readonly (number | string)[] | undefined): string {
   return `Rp ${Number(value).toLocaleString("id-ID")}`;
 }
+
+export function formatRelativeShort(value: string | Date, now: number = Date.now()): string {
+  const seconds = Math.max(0, Math.floor((now - new Date(value).getTime()) / 1000));
+  if (seconds < 60) return "baru saja";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} mnt`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} jam`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} hari`;
+  if (days < 35) return `${Math.floor(days / 7)} mgg`;
+  return formatJakartaDate(value, { day: "numeric", month: "short", year: "numeric" });
+}

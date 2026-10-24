@@ -8,6 +8,7 @@ import type { BillingPeriod } from "@/lib/pricing";
 import type { OrganizationSection, ProfileData } from "@/lib/data/profile";
 import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 import { DetailList } from "./detail-list";
+import { AvatarEditor } from "./avatar-editor";
 import { MaskedAmount } from "./masked-amount";
 import { PublicProfileForm } from "./public-profile-form";
 import { CoachProfileForm, OrganizationNameForm, ProfileForm } from "./profile-form";
@@ -41,7 +42,7 @@ function organizationItems(org: OrganizationSection) {
   return items;
 }
 
-export function ProfileView({ data }: { data: ProfileData }) {
+export function ProfileView({ data, avatar }: { data: ProfileData; avatar?: { url: string | null } | null }) {
   const { account } = data;
   return (
     <div className="flex flex-col gap-6">
@@ -51,6 +52,17 @@ export function ProfileView({ data }: { data: ProfileData }) {
         <h2 id="profile-personal" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Info pribadi
         </h2>
+        {avatar ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Foto profil</CardTitle>
+              <CardDescription>Terlihat oleh teman Anda. Lokasi dan data kamera dihapus dari foto.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AvatarEditor name={account.fullName} url={avatar.url} />
+            </CardContent>
+          </Card>
+        ) : null}
         <Card>
           <CardHeader>
             <CardTitle>Data akun</CardTitle>

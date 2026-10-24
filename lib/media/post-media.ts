@@ -27,13 +27,36 @@ export async function validatePhotos(files: File[]): Promise<string | null> {
   return null;
 }
 
-async function encode(file: File) {
-  const { data, info } = await sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 40_000_000 })
-    .rotate()
-    .resize({ width: MAX_SIDE, height: MAX_SIDE, fit: "inside", withoutEnlargement: true })
+export async function encodeImage(file: File, square?: number) {
+  const image = sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 40_000_000 }).rotate();
+  const { data, info } = await (square
+    ? image.resize(square, square, { fit: "cover" })
+    : image.resize({ width: MAX_SIDE, height: MAX_SIDE, fit: "inside", withoutEnlargement: true })
+  )
     .webp({ quality: 80 })
     .toBuffer({ resolveWithObject: true });
   return { data, width: info.width, height: info.height };
+}
+
+export async function uploadImage(path: string, file: File, square?: number) {
+  const image = await encodeImage(file, square);
+  const { error } = await createAdminSupabaseClient().storage.from(POST_MEDIA_BUCKET).upload(path, image.data, { contentType: "image/webp", upsert: false });
+  if (error) throw error;
+  return { width: image.width, height: image.height, bytes: image.data.length };
+}
+
+export async function signPaths(paths: string[]): Promise<Map<string, string>> {
+  const unique = [...new Set(paths.filter(Boolean))];
+  if (!unique.length) return new Map();
+  const { data } = await createAdminSupabaseClient().storage.from(POST_MEDIA_BUCKET).createSignedUrls(unique, SIGNED_SECONDS);
+  return new Map((data ?? []).flatMap((d) => (d.path && d.signedUrl ? [[d.path, d.signedUrl] as const] : [])));
+}
+
+export async function validateImage(file: File | null): Promise<string | null> {
+  if (!file || file.size === 0) return "Pilih foto dulu";
+  if (file.size > POST_MEDIA_MAX_BYTES) return "Ukuran foto maksimal 5 MB";
+  if (!(await detectImage(file))) return "Foto harus berformat JPEG, PNG, atau WebP";
+  return null;
 }
 
 export async function storePostPhotos(accountId: string, postId: string, files: File[]): Promise<boolean> {
@@ -42,7 +65,7 @@ export async function storePostPhotos(accountId: string, postId: string, files: 
   try {
     const rows = [];
     for (const [position, file] of files.entries()) {
-      const image = await encode(file);
+      const image = await encodeImage(file);
       const path = `${accountId}/${postId}/${position}.webp`;
       const { error } = await admin.storage.from(POST_MEDIA_BUCKET).upload(path, image.data, { contentType: "image/webp", upsert: false });
       if (error) throw error;

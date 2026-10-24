@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { Person } from "@/lib/data/social";
+import { peopleMap, type Person } from "@/lib/data/social";
 
 export interface GroupSummary {
   id: string;
@@ -27,15 +27,6 @@ export interface GroupEvent {
   mine: "going" | "maybe" | "declined" | null;
 }
 
-type PersonRow = { id: string; username: string; full_name: string };
-
-async function people(ids: string[]): Promise<Map<string, Person>> {
-  if (!ids.length) return new Map();
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase.from("social_people").select("id, username, full_name").in("id", [...new Set(ids)]);
-  return new Map(((data ?? []) as PersonRow[]).map((p) => [p.id, { id: p.id, username: p.username, fullName: p.full_name }]));
-}
-
 export async function getMyGroups(accountId: string): Promise<GroupSummary[]> {
   const supabase = await createServerSupabaseClient();
   const [{ data: memberships }, { data: groups }] = await Promise.all([
@@ -43,7 +34,7 @@ export async function getMyGroups(accountId: string): Promise<GroupSummary[]> {
     supabase.from("groups").select("id, owner_id, name, description").order("created_at", { ascending: false }).limit(200),
   ]);
   const status = new Map((memberships ?? []).map((m) => [m.group_id as string, m.status as "active" | "invited"]));
-  const owners = await people((groups ?? []).map((g) => g.owner_id as string));
+  const owners = await peopleMap((groups ?? []).map((g) => g.owner_id as string));
   return (groups ?? [])
     .filter((g) => status.has(g.id as string))
     .map((g) => ({
@@ -75,7 +66,7 @@ export async function getGroupDetail(accountId: string, groupId: string, friends
   const { data: rsvps } = eventIds.length
     ? await supabase.from("event_rsvps").select("event_id, account_id, status").in("event_id", eventIds).limit(10000)
     : { data: [] };
-  const names = await people([g.owner_id as string, ...(members ?? []).map((m) => m.account_id as string)]);
+  const names = await peopleMap([g.owner_id as string, ...(members ?? []).map((m) => m.account_id as string)]);
   const mine = (members ?? []).find((m) => m.account_id === accountId);
   const taken = new Set((members ?? []).map((m) => m.account_id as string));
   return {

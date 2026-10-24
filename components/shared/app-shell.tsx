@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { BrandIcon } from "./brand-logo";
 import { LogoutButton } from "./logout-button";
 import { PersonalSwitch } from "./context-list";
@@ -19,6 +20,7 @@ export function AppShell({
   tenantSwitcher,
   personalSwitch,
   quickAdd,
+  topActions,
   children,
 }: {
   navGroups: NavGroup[];
@@ -29,6 +31,7 @@ export function AppShell({
   tenantSwitcher?: React.ReactNode;
   personalSwitch?: boolean;
   quickAdd?: boolean;
+  topActions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const menuGroups: NavGroup[] = [
@@ -47,16 +50,19 @@ export function AppShell({
                 <span className="min-w-0 truncate font-heading text-base font-semibold tracking-tight text-accent-foreground">
                   {clubName}
                 </span>
-                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+                <span className={cn("rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground", quickAdd && "hidden sm:inline-flex")}>
                   {roleLabel}
                 </span>
                 {tenantSwitcher}
               </div>
               <div className="ml-auto flex items-center gap-2 sm:gap-3">
                 {quickAdd ? <QuickAddButton /> : null}
-                <ThemeToggle />
-                {personalSwitch ? <PersonalSwitch /> : null}
-                <LogoutButton />
+                {topActions}
+                <div className={cn("items-center gap-2 sm:gap-3", quickAdd ? "hidden sm:flex" : "flex")}>
+                  <ThemeToggle />
+                  {personalSwitch ? <PersonalSwitch /> : null}
+                  <LogoutButton />
+                </div>
               </div>
               <NavProgressBar />
             </header>
@@ -64,7 +70,24 @@ export function AppShell({
               {children}
             </main>
           </div>
-          <MobileNav groups={menuGroups} personal={quickAdd} />
+          <MobileNav
+            groups={menuGroups}
+            personal={quickAdd}
+            footer={
+              quickAdd ? (
+                <ul className="divide-y divide-border overflow-hidden rounded-[var(--radius-frame)] border border-border bg-card shadow-sm">
+                  <li className="flex min-h-12 items-center justify-between gap-3 px-4 text-sm font-medium">
+                    Tema
+                    <ThemeToggle />
+                  </li>
+                  <li className="flex min-h-12 items-center justify-between gap-3 px-4 text-sm font-medium">
+                    Keluar dari akun
+                    <LogoutButton />
+                  </li>
+                </ul>
+              ) : null
+            }
+          />
           {quickAdd ? <QuickAddSheet /> : null}
         </div>
       </NavProgressProvider>

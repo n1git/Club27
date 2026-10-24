@@ -7,9 +7,17 @@ import { TriggerDialog } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-export function ReportDialog({ targetType, targetId }: { targetType: "post" | "comment" | "account" | "group" | "event"; targetId: string }) {
+export function ReportDialog({
+  targetType,
+  targetId,
+  trigger,
+}: {
+  targetType: "post" | "comment" | "account" | "group" | "event" | "message";
+  targetId: string;
+  trigger?: React.ReactNode;
+}) {
   return (
-    <TriggerDialog trigger={<span className="cursor-pointer text-xs text-muted-foreground underline-offset-4 hover:underline">Laporkan</span>}>
+    <TriggerDialog trigger={trigger ?? <span className="cursor-pointer text-xs text-muted-foreground underline-offset-4 hover:underline">Laporkan</span>}>
       <h2 className="mb-4 text-lg font-semibold">Laporkan</h2>
       <ActionForm action={reportContent} className="flex flex-col gap-3">
         <input type="hidden" name="targetType" value={targetType} />

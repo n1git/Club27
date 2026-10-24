@@ -29,7 +29,7 @@ function TabLink({ item, active, className, iconOnly }: { item: NavItem; active:
 const MAX_TABS = 5;
 const MIN_TABS = 3;
 
-export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?: boolean }) {
+export function MobileNav({ groups, personal, footer }: { groups: NavGroup[]; personal?: boolean; footer?: React.ReactNode }) {
   const pathname = usePathname();
   const quickAdd = useQuickAdd();
   const sheetRef = useRef<HTMLDialogElement>(null);
@@ -197,6 +197,7 @@ export function MobileNav({ groups, personal }: { groups: NavGroup[]; personal?:
                 </section>
               );
             })}
+            {footer}
           </div>
         </div>
       </dialog>

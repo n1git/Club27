@@ -1,10 +1,11 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { signPhotos, type PostPhoto } from "@/lib/media/post-media";
+import { signPaths, signPhotos, type PostPhoto } from "@/lib/media/post-media";
 
 export interface Person {
   id: string;
   username: string;
   fullName: string;
+  avatarUrl: string | null;
 }
 
 export interface FeedComment {
@@ -36,13 +37,15 @@ export interface FeedPost {
 
 export const FEED_PAGE = 20;
 
-type PersonRow = { id: string; username: string; full_name: string };
+type PersonRow = { id: string; username: string; full_name: string; avatar_path: string | null };
 
-async function peopleMap(ids: string[]): Promise<Map<string, Person>> {
+export async function peopleMap(ids: string[]): Promise<Map<string, Person>> {
   if (!ids.length) return new Map();
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase.from("social_people").select("id, username, full_name").in("id", [...new Set(ids)]);
-  return new Map(((data ?? []) as PersonRow[]).map((p) => [p.id, { id: p.id, username: p.username, fullName: p.full_name }]));
+  const { data } = await supabase.from("social_people").select("id, username, full_name, avatar_path").in("id", [...new Set(ids)]);
+  const rows = (data ?? []) as PersonRow[];
+  const urls = await signPaths(rows.flatMap((p) => (p.avatar_path ? [p.avatar_path] : [])));
+  return new Map(rows.map((p) => [p.id, { id: p.id, username: p.username, fullName: p.full_name, avatarUrl: p.avatar_path ? (urls.get(p.avatar_path) ?? null) : null }]));
 }
 
 export async function getFeed(accountId: string, before?: string): Promise<{ posts: FeedPost[]; hasMore: boolean }> {
@@ -171,4 +174,11 @@ export async function getSocialBadges(accountId: string): Promise<{ friends: num
     supabase.from("group_members").select("group_id", { count: "exact", head: true }).eq("account_id", accountId).eq("status", "invited"),
   ]);
   return { friends: friends.count ?? 0, groups: groups.count ?? 0 };
+}
+
+export async function getOwnAvatarUrl(accountId: string): Promise<string | null> {
+  const supabase = await createServerSupabaseClient();
+  const { data } = await supabase.from("social_people").select("avatar_path").eq("id", accountId).maybeSingle();
+  const path = data?.avatar_path as string | null | undefined;
+  return path ? ((await signPaths([path])).get(path) ?? null) : null;
 }
