@@ -124,14 +124,23 @@ export function RegisterClubForm({
                 period={period}
                 users={users}
                 onUsersChange={setUsers}
-                selected={p.code === plan.code}
-                onSelect={setPlanCode}
+                selected={plans.length > 1 && p.code === plan.code}
+                onSelect={plans.length > 1 ? setPlanCode : undefined}
+                action={
+                  plans.length === 1 ? (
+                    <Button type="button" className="w-full" onClick={() => setStep(2)}>
+                      Lanjut
+                    </Button>
+                  ) : undefined
+                }
               />
             ))}
           </div>
-          <Button type="button" className="w-fit" onClick={() => setStep(2)}>
-            Lanjut
-          </Button>
+          {plans.length > 1 ? (
+            <Button type="button" className="w-fit" onClick={() => setStep(2)}>
+              Lanjut
+            </Button>
+          ) : null}
         </div>
       ) : (
         <form
