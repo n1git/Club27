@@ -1,18 +1,18 @@
 # Perlu perhatian (fitur sosial dan akun pribadi)
 
-Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai selesai dengan `[x]`.
+Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai selesai dengan `[x]`. Terakhir dicek terhadap kode dan hosted: 2026-10-24.
 
 ## Sebelum fitur dibuka untuk umum
 
-- [ ] `/privacy` dan `/terms` masih draf. Tinjauan ahli hukum wajib karena situs menyimpan data anggota klub, dan sekarang juga profil, postingan, teman, dan lokasi acara.
+- [ ] `/privacy` dan `/terms` sudah terbit (pengelola N-1Labs) tetapi belum ditinjau ahli hukum. Tinjauan tetap disarankan karena situs menyimpan data anggota klub, profil, postingan, teman, foto, catatan kesehatan, dan lokasi acara.
 - [ ] Tugaskan satu orang yang membuka `/superadmin/reports` tiap hari. Layar dan semua tombol aksinya sudah diuji lewat browser (login TOTP lokal). Notifikasi email laporan baru aktif bila `REPORT_NOTIFY_EMAIL` diisi bersama `EMAIL_API_KEY`; isinya hanya tipe laporan dan tautan, tanpa konten.
 - [x] Menonaktifkan penulis dari laporan: akun biasa dinonaktifkan penuh; pemilik atau staf klub hanya kehilangan fitur sosial (`accounts.social_banned_at`), akses klubnya tetap jalan. Penegakannya di aplikasi (aksi dan halaman sosial), bukan di RLS database.
 - [ ] Mengaktifkan kembali hanya bisa dari daftar "Terakhir ditinjau" (20 terakhir); setelah itu hanya lewat SQL.
-- [ ] Moderasi lanjutan belum ada: tidak ada penyembunyian konten otomatis dan tidak ada banding.
-- [ ] Vercel Authentication masih aktif, situs belum publik.
+- [ ] Belum ada banding moderasi. Penyembunyian otomatis sudah ada: postingan dengan 3 laporan terbuka disembunyikan (migrasi 064) sampai semua laporannya diabaikan.
+- [x] Situs sudah publik di `https://getruzz.com` (dicek 2026-10-24).
 - [ ] `EMAIL_API_KEY` belum diisi, sehingga email undangan dan reset sandi tidak terkirim (tautannya ditampilkan di layar). Isi juga `REPORT_NOTIFY_EMAIL` (alamat yang menerima notifikasi laporan baru).
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` harus diisi manual di Vercel. Tanpanya pendaftaran dan login gagal.
-- [ ] `npm run seed:superadmin` belum dijalankan (belum ada superadmin).
+- [x] `SUPABASE_SERVICE_ROLE_KEY` dan `SUPABASE_JWT_SECRET` sudah ada di Vercel (Production dan Preview, dicek 2026-10-24).
+- [ ] Superadmin sudah ada (1 akun di hosted, dicek 2026-10-24), tetapi belum ada kode pemulihan TOTP yang tersimpan. Buat dan simpan kode pemulihan di pengelola kata sandi.
 
 ## Keputusan produk yang masih terbuka
 
@@ -20,7 +20,7 @@ Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai sel
 - [ ] Alias email (`nama+1@gmail.com`) dianggap email berbeda karena tidak ada verifikasi email.
 - [ ] Feed publik: perlu migrasi yang melonggarkan `posts.visibility`, kebijakan `posts_visible`, dan moderasi (fase scale up).
 - [x] Kode klub = `clubs.slug` (misalnya `klub-e-14a3b5`). Admin dengan izin `club.settings` sekarang bisa menggantinya di `/admin/join-requests`. Siapa pun yang tahu kodenya tetap bisa mengirim permintaan gabung (maksimal 200 tertunda per klub, 5 per akun). Kode klub juga tampil di URL atau log lain yang memakai slug.
-- [ ] Pemohon gabung klub tidak diberi tahu saat disetujui atau ditolak. Statusnya tampil di `/home/join-club`, dan klub baru muncul di Beranda.
+- [ ] Pemohon gabung klub tidak diberi tahu saat disetujui atau ditolak. Statusnya tampil di `/join`, dan klub baru muncul di Beranda.
 - [ ] Gabung klub hanya untuk usia 18+. Anak didaftarkan oleh klub (tanpa peran orang tua).
 - [ ] Pelatih tidak melihat antrean gabung klub (hanya yang punya izin `members.create`).
 - [ ] Grup: hanya pemilik yang bisa mengundang, hanya teman yang bisa diundang. Tidak ada postingan di dalam grup. Event hanya ada di dalam grup.
@@ -36,7 +36,7 @@ Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai sel
 ## Teknis
 
 - [ ] Tidak ada rollback otomatis untuk migrasi 045 sampai 052 (pulihkan dari cadangan).
-- [ ] Belum direname: `instructor_id`, `subscription_renewals.users`, `audit_log.at`, `profiles.owner_id`.
+- [ ] Belum direname: `instructor_id`, `subscription_renewals.users`, `audit_log.at`, `club_profiles.owner_id`.
 - [ ] Gambar promo di storage tidak ikut diekspor dan tidak ikut dihapus saat purge organisasi.
 - [ ] Hapus akun pribadi ditolak bila akun masih terhubung ke klub (anggota, staf) atau organisasi. Anggota klub harus dihapus atau dianonimkan oleh klubnya dulu; pemilik harus menghapus organisasinya (masa pemulihan 30 hari) lebih dulu. Akun pribadi murni langsung terhapus permanen beserta data sosialnya.
 - [ ] Ekspor data akun tidak memuat data klub tempat Anda menjadi anggota (dikelola klub).
@@ -45,4 +45,4 @@ Daftar ini dikumpulkan dari fase 1 sampai 5 dan diperbarui tiap fase. Tandai sel
 - [ ] Data sosial yang dibaca layar hanya dibatasi halaman dan batas baris tetap (20 postingan per halaman, 200 grup, 5.000 reaksi). Belum ada pencarian atau indeks tambahan untuk skala besar.
 - [x] CSP sudah membatasi script (nonce dan `strict-dynamic` di `proxy.ts`); catatan tim lama yang menyebut sebaliknya sudah tidak berlaku.
 - [ ] Belum dikerjakan (opsional): pintasan "Buka klub terakhir" untuk pemilik klub di Beranda.
-- [ ] Ambil cadangan database hosted sebelum migrasi berikutnya (saya tidak bisa mengambilnya dari sini).
+- [ ] Ambil cadangan database hosted sebelum migrasi berikutnya (067, invoice dan kwitansi); saya tidak bisa mengambilnya dari sini.
