@@ -132,7 +132,7 @@ export function Faq({ plans }: { plans: PricingPlan[] }) {
             ? `${trialPlans.map((p) => `Paket ${p.name} bisa dicoba gratis ${trialLabel(p.trialDays)}`).join("; ")}. Setelah trial berakhir tanpa pembayaran, data tetap tersimpan dan bisa dibaca, tetapi perubahan ditolak sampai pemilik memperpanjang.`
             : "Saat ini tidak ada masa trial. Paket aktif setelah pembayaran diterima."}{" "}
           Langganan tidak ditagih otomatis; perpanjang dan bayar sebelum periode berakhir. Belum ada: feed publik, chat, notifikasi kudos dan komentar, aplikasi mobile,
-          pembayaran online untuk tagihan anggota, dan kwitansi langganan.
+          dan pembayaran online untuk tagihan anggota.
           <ContactLine />
         </>
       ),

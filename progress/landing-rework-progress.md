@@ -230,4 +230,4 @@ The pricing section, `/sports/<code>` pages, sign-up and renewal show one plan c
 | Batas klub, harga per seat, gratis tahunan, minimal seat, trial | `subscription_plans` via `plans` prop (`clubLimit`, `pricePerUserMonth`, `yearlyFreeMonths`, `minSeats`, `trialDays`); sentences hidden when empty |
 | Semua fitur bisnis tanpa paket tambahan | single plan `plus`, all `ready` modules per `club_type_modules` (`KAJIAN_PAKET.md`) |
 | Tidak ditagih otomatis | renewals only through `request_renewal`/`request_seat_purchase`; no recurring charge in Midtrans Snap flow |
-| Belum ada: feed publik, chat, notifikasi kudos/komentar, aplikasi mobile, pembayaran online tagihan anggota, kwitansi langganan | no such tables or routes; invoices paid manually; no receipt numbering |
+| Belum ada: feed publik, chat, notifikasi kudos/komentar, aplikasi mobile, pembayaran online tagihan anggota | no such tables or routes; member invoices are paid manually. Subscription invoices and receipts exist since migration 067 (`subscription_renewals.invoice_number`, `receipt_number`) |
