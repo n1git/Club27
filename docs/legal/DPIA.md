@@ -40,6 +40,16 @@ Dinilai: 2026-10-20, versi persetujuan `2026-10-20` (`lib/consent.ts`). Tinjau u
 | Pengendalian | encode ulang ke webp maks 1600 px dengan `sharp` (EXIF dan lokasi terbuang); maks 4 foto, 5 MB, jpeg/png/webp; postingan disembunyikan otomatis pada 3 laporan terbuka; anak tidak bisa mengunggah; hapus akun menghapus objek storage |
 | Sisa risiko | foto orang lain tanpa izin; tidak ada deteksi konten otomatis |
 
+## 4. Foto profil, notifikasi, cerita, dan pesan langsung
+
+| Data | Tujuan | Akses | Masa simpan | Pengendalian |
+|---|---|---|---|---|
+| Foto profil (`accounts.avatar_path`, bucket privat `post-media`) | menampilkan akun ke teman | teman yang lolos `social_people`; URL bertanda tangan | sampai diganti, dihapus, atau akun dihapus | encode ulang ke webp 512 px persegi (EXIF terbuang); maks 5 MB; anak tidak bisa mengunggah |
+| Notifikasi (`notifications`) | memberi tahu reaksi, komentar, permintaan dan penerimaan pertemanan, undangan grup | hanya penerima (RLS); tulis hanya lewat trigger `security definer`; tidak ke diri sendiri, tidak lintas blokir, tidak ke akun anak atau akun yang dibatasi | 90 hari (`purge_social_expired`, cron harian) | pembersihan otomatis saat blokir dan saat reaksi atau permintaan dibatalkan |
+| Cerita (`stories`, `story_views`, foto di bucket privat) | berbagi foto singkat dengan teman | penulis dan teman (`can_see_story`), tidak lintas blokir; daftar pelihat hanya untuk penulis | 24 jam; lewat itu tidak terlihat oleh siapa pun dan cron menghapus baris dan file | maks 10 cerita aktif; hanya foto; anak tidak bisa membuat atau melihat |
+| Pesan langsung (`dm_threads`, `dm_messages`, foto di bucket privat) | percakapan 1 lawan 1 antar teman | hanya dua peserta (RLS); kirim hanya lewat `send_message` yang memeriksa pertemanan, blokir, dan pembatasan akun | 365 hari, lalu dihapus cron; hapus akun menghapus semua pesan dan file percakapannya | pesan bisa ditarik (isi dan foto dihapus); percakapan menjadi baca-saja saat pertemanan berakhir atau ada blokir; pesan bisa dilaporkan; batas 1.000 pesan per hari |
+| Sisa risiko | isi pesan tidak dienkripsi ujung ke ujung dan dapat dibaca superadmin lewat laporan; pesan yang sudah dibaca penerima tetap bisa disalin atau ditangkap layar; cadangan penyedia menyimpan salinan sampai masa retensi cadangan berakhir | | | |
+
 ## Penyedia dan transfer ke luar negeri
 
 Supabase (Jepang), Vercel (Amerika Serikat), Resend (Amerika Serikat), Cloudflare Turnstile (Amerika Serikat), Midtrans (Indonesia). Daftar yang ditampilkan ke pengguna ada di `lib/consent.ts`. Penyedia baru wajib ditambahkan di sana dan menaikkan `CONSENT_VERSION`.

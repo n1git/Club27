@@ -2,6 +2,14 @@
 
 ## 2026-10-24
 
+- Personal accounts get an Instagram-style experience, mobile first. Profile photo (upload and remove in `/profile`, initials when empty) shows in the feed, stories, notifications, messages and profile. The top bar has the brand, a heart for notifications and a paper plane for messages, each with an unread badge; theme and logout moved into the Menu sheet on mobile.
+- Feed: stories bar on top ("Cerita Anda", rings that turn muted once seen, full-screen viewer with tap, hold, swipe down and 5-second auto-advance), then edge-to-edge post cards with a swipeable photo carousel, a heart that updates at once, a comments sheet, a two-line caption and an options sheet (delete, report, block).
+- `/notifications`: reactions, comments, friend requests (with Terima and Tolak), accepted requests and group invites, grouped by Baru, Minggu ini and Sebelumnya, kept 90 days.
+- Stories: a photo with an optional caption, visible to friends for 24 hours, with a viewer list and delete for the author. A daily job removes expired files.
+- Direct messages between friends at `/messages`: text and one photo per message, sent in the background with a retry that never duplicates, a "Dilihat" mark, unsend, report, live refresh every 4 seconds while a conversation is open. A conversation becomes read-only when the friendship ends. Messages are kept 365 days.
+- Profile (`/<username>` and `/profile`): avatar, post and friend counts and a three-column grid of posts that opens each post.
+- Minor and banned accounts see none of these. Account export and deletion cover the new data; the privacy impact assessment lists the new retention. Migrations 068 to 070.
+
 - Personal accounts on a phone get a five-icon bottom bar (Beranda, Teman, "+", Latihan, Menu; Grup moved into Menu). The "+" depends on the page: post on `/`, add friend on `/friends`, log workout on `/workouts`, a chooser elsewhere; on desktop the same button sits in the header. The three forms open in a sheet and submit in the background (loading toast, then success or error; a failed submit reopens the sheet with the typed values). The inline add cards are gone. Minor and banned accounts only get "Catat latihan". Other roles keep their bar.
 
 ## 2026-10-21

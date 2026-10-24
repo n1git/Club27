@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { sendFriendRequest } from "@/lib/actions/social";
 import { getReadyClubTypes } from "@/lib/club-type";
 import { lookupProfile, type ProfileRelation } from "@/lib/data/public-profile";
-import { getProfilePosts } from "@/lib/data/social";
+import { getProfileSocial } from "@/lib/data/social";
 import { pageMetadata } from "@/lib/seo";
 import { APP_NAME } from "@/lib/config";
 import { ActionForm } from "@/components/shared/action-form";
@@ -14,9 +14,9 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader, SkipLink } from "@/components/landing/landing-header";
 import { ctaClass } from "@/components/landing/cta";
 import { Wrap } from "@/components/landing/wrap";
-import { PostCard } from "@/components/social/post-card";
+import { PostGrid } from "@/components/social/post-grid";
+import { ProfileHeader } from "@/components/social/profile-header";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 
 const MISS: Metadata = { title: "Halaman tidak ditemukan", robots: { index: false } };
 
@@ -71,55 +71,44 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   }
 
   const showPosts = profile.relation === "friends" || profile.relation === "self";
-  const [posts, clubTypes] = showPosts
-    ? await Promise.all([getProfilePosts(profile.viewerId, profile.username), getReadyClubTypes()])
-    : [[], []];
+  const [social, clubTypes] = showPosts ? await Promise.all([getProfileSocial(profile.username), getReadyClubTypes()]) : [null, []];
   const sportLabels = Object.fromEntries(clubTypes.map((t) => [t.code, t.name.replace(/^Klub\s+/, "")]));
 
   return (
     <PersonalLayout>
       <div className="flex max-w-2xl flex-col gap-6">
-        <header className="flex flex-col gap-1">
-          <h1 className="font-display text-4xl uppercase leading-none sm:text-5xl">{profile.fullName}</h1>
-          <p className="text-muted-foreground">@{profile.username}</p>
-        </header>
-        {profile.relation === "none" ? (
-          <ActionForm action={sendFriendRequest} className="flex">
-            <input type="hidden" name="username" value={profile.username} />
-            <ActionSubmitButton>Tambah teman</ActionSubmitButton>
-          </ActionForm>
-        ) : profile.relation === "self" ? (
-          <Link href="/profile" className="text-sm font-semibold underline underline-offset-4">
-            Ubah profil
-          </Link>
-        ) : (
-          <div className="flex flex-wrap items-center gap-3">
-            {profile.relation === "friends" ? (
-              <Link href={`/messages/${profile.username}`} className={buttonVariants({ size: "sm" })}>
-                Kirim pesan
-              </Link>
-            ) : null}
-          <p className="text-sm text-muted-foreground">
-            {RELATION_TEXT[profile.relation]}.{" "}
-            <Link href="/friends" className="font-semibold text-foreground underline underline-offset-4">
-              Kelola teman
+        <ProfileHeader
+          name={profile.fullName}
+          username={profile.username}
+          avatarUrl={social?.person?.avatarUrl ?? null}
+          counts={social && social.person ? { posts: social.posts, friends: social.friends } : null}
+        >
+          {profile.relation === "none" ? (
+            <ActionForm action={sendFriendRequest} className="flex">
+              <input type="hidden" name="username" value={profile.username} />
+              <ActionSubmitButton>Tambah teman</ActionSubmitButton>
+            </ActionForm>
+          ) : profile.relation === "self" ? (
+            <Link href="/profile" className={buttonVariants({ variant: "outline", size: "sm" })}>
+              Ubah profil
             </Link>
-          </p>
-          </div>
-        )}
-        {showPosts ? (
-          posts.length ? (
-            <div className="flex flex-col gap-4">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} sportLabels={sportLabels} />
-              ))}
-            </div>
           ) : (
-            <Card>
-              <CardContent className="pt-5 text-sm text-muted-foreground">Belum ada postingan.</CardContent>
-            </Card>
-          )
-        ) : null}
+            <>
+              {profile.relation === "friends" ? (
+                <Link href={`/messages/${profile.username}`} className={buttonVariants({ size: "sm" })}>
+                  Kirim pesan
+                </Link>
+              ) : null}
+              <p className="text-sm text-muted-foreground">
+                {RELATION_TEXT[profile.relation]}.{" "}
+                <Link href="/friends" className="font-semibold text-foreground underline underline-offset-4">
+                  Kelola teman
+                </Link>
+              </p>
+            </>
+          )}
+        </ProfileHeader>
+        {social ? <PostGrid tiles={social.tiles} sportLabels={sportLabels} /> : null}
       </div>
     </PersonalLayout>
   );

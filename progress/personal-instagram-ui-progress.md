@@ -10,7 +10,7 @@ Depends on `personal-bottom-nav` and `bottom-nav-active`: both merged (c42861b, 
 - [x] Phase 3: /notifications, unread badge, background mark-read
 - [x] Phase 4: stories bar, viewer, create flow, cron route
 - [x] Phase 5: chat (inbox, thread, background send, polling, report)
-- [ ] Phase 6: profile grid, THIRD_PARTY.md, responsive and theme checks
+- [x] Phase 6: profile grid, THIRD_PARTY.md, responsive and theme checks
 
 ## Plan
 
@@ -68,3 +68,15 @@ Not taken: models, `app/api/*`, auth, uploads, toast provider, desktop navbar, m
 - Paper-plane icon with unread thread count next to the heart. "Kirim pesan" on `/<username>` and in `/friends` rows. Read-only thread (no longer friends) is hidden from the inbox and has no composer. Message reports are accepted and shown on the superadmin reports page (type Pesan, remove deletes the message and its photo file).
 - Account deletion also removes the photo files of every thread the account belonged to; the account export has `cerita`, `cerita_dilihat`, `notifikasi` and `pesan`.
 - Browser run (production build): profile button, empty state, send, badge, inbox, "Dilihat", message arriving within seconds, photo message under the `dm/` prefix, failed send then retry exactly once, unsend, report, stranger and banned account get nothing, 320 px, read-only after unfriend.
+
+## Phase 6 result
+
+- Profile header and 3-column grid on `/<username>` (friends and self) and on `/profile` for personal accounts: avatar, name, counts (RPC `profile_counts`, migration 070, same visibility as the posts: self and friends only), photo tiles with a multi-photo mark, summary tiles for text and workout posts, tap opens the post modal. Public (signed-out) profile unchanged. The old recent-posts list on `/<username>` is gone.
+- Hosted: migrations `068`, `069` and `070` applied to `club27` (069 only extends the reserved usernames, checked against the 12 hosted accounts; 070 adds one function).
+- `docs/THIRD_PARTY.md`, the DPIA table (24 hours stories, 90 days notifications, 365 days messages) and the changelog are written.
+- Final browser run on one production build: avatar, feed and comments (375, 320, 1280 px, light and dark), notifications, stories (including reduced motion and the cron), chat, profile grid, all passing; `tsc` clean, lint has no errors.
+
+## Not tested in a browser
+
+- A minor account (under 18): it shares the code path of the banned account (`socialRestriction`, `social_allowed()` in every new policy and RPC); the SQL checks cover the banned case and the policy function treats minors the same way.
+- The hosted database was only checked for the schema (function hash equal to local, advisors), not through the app.

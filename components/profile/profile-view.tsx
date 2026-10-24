@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { ChangePasswordForm } from "@/components/shared/change-password-form";
 import { updateCoachProfile, updateOrganizationName, updateOwnProfile, updatePublicProfile } from "@/lib/actions/profile";
@@ -6,6 +7,10 @@ import { formatJakartaDate } from "@/lib/format";
 import { formatRupiah, PERIOD_LABEL } from "@/lib/pricing";
 import type { BillingPeriod } from "@/lib/pricing";
 import type { OrganizationSection, ProfileData } from "@/lib/data/profile";
+import type { ProfileSocial } from "@/lib/data/social";
+import { PostGrid } from "@/components/social/post-grid";
+import { ProfileHeader } from "@/components/social/profile-header";
+import { buttonVariants } from "@/components/ui/button";
 import { STATUS_LABEL, type PlatformSubscriptionStatus } from "@/lib/platform-status";
 import { DetailList } from "./detail-list";
 import { AvatarEditor } from "./avatar-editor";
@@ -42,11 +47,27 @@ function organizationItems(org: OrganizationSection) {
   return items;
 }
 
-export function ProfileView({ data, avatar }: { data: ProfileData; avatar?: { url: string | null } | null }) {
+export function ProfileView({ data, avatar }: { data: ProfileData; avatar?: { url: string | null; social: ProfileSocial; sportLabels: Record<string, string> } | null }) {
   const { account } = data;
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Profil Saya" subtitle={account.fullName} breadcrumb={[{ label: "Profil Saya" }]} />
+      {avatar ? (
+        <div className="flex max-w-2xl flex-col gap-6">
+          <ProfileHeader
+            name={account.fullName}
+            username={account.username}
+            avatarUrl={avatar.url}
+            counts={{ posts: avatar.social.posts, friends: avatar.social.friends }}
+          >
+            <Link href={`/${account.username}`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+              Lihat halaman profil
+            </Link>
+          </ProfileHeader>
+          <PostGrid tiles={avatar.social.tiles} sportLabels={avatar.sportLabels} />
+        </div>
+      ) : (
+        <PageHeader title="Profil Saya" subtitle={account.fullName} breadcrumb={[{ label: "Profil Saya" }]} />
+      )}
 
       <section aria-labelledby="profile-personal" className="flex flex-col gap-3">
         <h2 id="profile-personal" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">

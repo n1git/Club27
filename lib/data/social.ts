@@ -64,19 +64,6 @@ export async function getFeed(accountId: string, before?: string): Promise<{ pos
   return { hasMore, posts: await hydratePosts(page, accountId) };
 }
 
-export async function getProfilePosts(accountId: string, username: string, limit = 10): Promise<FeedPost[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data: person } = await supabase.from("social_people").select("id").eq("username", username).maybeSingle();
-  if (!person) return [];
-  const { data } = await supabase
-    .from("posts")
-    .select("id, account_id, kind, body, sport, performed_on, duration_min, distance_m, created_at, hidden_at")
-    .eq("account_id", person.id as string)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  return data?.length ? hydratePosts(data, accountId) : [];
-}
-
 export async function getPost(accountId: string, id: string): Promise<FeedPost | null> {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
   const supabase = await createServerSupabaseClient();
@@ -181,4 +168,65 @@ export async function getOwnAvatarUrl(accountId: string): Promise<string | null>
   const { data } = await supabase.from("social_people").select("avatar_path").eq("id", accountId).maybeSingle();
   const path = data?.avatar_path as string | null | undefined;
   return path ? ((await signPaths([path])).get(path) ?? null) : null;
+}
+
+export interface ProfileTile {
+  id: string;
+  kind: "text" | "workout";
+  body: string | null;
+  sport: string | null;
+  durationMin: number | null;
+  distanceM: number | null;
+  photoUrl: string | null;
+  photoCount: number;
+}
+
+export interface ProfileSocial {
+  person: Person | null;
+  posts: number;
+  friends: number;
+  tiles: ProfileTile[];
+}
+
+const TILE_LIMIT = 60;
+
+export async function getProfileSocial(username: string): Promise<ProfileSocial> {
+  const supabase = await createServerSupabaseClient();
+  const [{ data: counts }, { data: person }] = await Promise.all([
+    supabase.rpc("profile_counts", { p_username: username }),
+    supabase.from("social_people").select("id").eq("username", username).maybeSingle(),
+  ]);
+  const count = ((counts ?? []) as { posts: number; friends: number }[])[0];
+  if (!person || !count) return { person: null, posts: 0, friends: 0, tiles: [] };
+  const [people, { data: rows }] = await Promise.all([
+    peopleMap([person.id as string]),
+    supabase
+      .from("posts")
+      .select("id, kind, body, sport, duration_min, distance_m")
+      .eq("account_id", person.id as string)
+      .order("created_at", { ascending: false })
+      .limit(TILE_LIMIT),
+  ]);
+  const posts = rows ?? [];
+  const ids = posts.map((p) => p.id as string);
+  const { data: media } = ids.length ? await supabase.from("post_media").select("post_id, path, position").in("post_id", ids).limit(400) : { data: [] };
+  const urls = await signPaths((media ?? []).filter((m) => m.position === 0).map((m) => m.path as string));
+  const first = new Map((media ?? []).filter((m) => m.position === 0).map((m) => [m.post_id as string, urls.get(m.path as string) ?? null]));
+  const photoCount = new Map<string, number>();
+  for (const m of media ?? []) photoCount.set(m.post_id as string, (photoCount.get(m.post_id as string) ?? 0) + 1);
+  return {
+    person: people.get(person.id as string) ?? null,
+    posts: count.posts,
+    friends: count.friends,
+    tiles: posts.map((p) => ({
+      id: p.id as string,
+      kind: p.kind as "text" | "workout",
+      body: p.body as string | null,
+      sport: p.sport as string | null,
+      durationMin: p.duration_min as number | null,
+      distanceM: p.distance_m as number | null,
+      photoUrl: first.get(p.id as string) ?? null,
+      photoCount: photoCount.get(p.id as string) ?? 0,
+    })),
+  };
 }
