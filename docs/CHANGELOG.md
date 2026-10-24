@@ -2,6 +2,7 @@
 
 ## 2026-10-24
 
+- Page loading is now a skeleton of the page (title, three tiles, a list) with the Ruzz mark breathing at the top instead of the stopwatch spinner; every skeleton has a soft sheen that stops under reduced motion. The small ring in the navigation stays.
 - `/workouts` relaid out: a week card (progress ring toward the weekly goal, minutes, distance, streak, four-week bars, goal form folded inside), badges and personal records as swipeable cards, and the history as a list grouped by week and month; tap an entry for its details, share and delete in a sheet. The tables are gone. Desktop puts the history on the left and the summary on the right.
 - Personal accounts get an Instagram-style experience, mobile first. Profile photo (upload and remove in `/profile`, initials when empty) shows in the feed, stories, notifications, messages and profile. The top bar has the brand, a heart for notifications and a paper plane for messages, each with an unread badge; theme and logout moved into the Menu sheet on mobile.
 - Feed: stories bar on top ("Cerita Anda", rings that turn muted once seen, full-screen viewer with tap, hold, swipe down and 5-second auto-advance), then edge-to-edge post cards with a swipeable photo carousel, a heart that updates at once, a comments sheet, a two-line caption and an options sheet (delete, report, block).

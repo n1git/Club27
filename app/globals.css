@@ -255,35 +255,6 @@ body {
   }
 }
 
-@keyframes loader-arc {
-  0% {
-    stroke-dasharray: 6 440;
-    transform: rotate(-90deg);
-  }
-  60% {
-    stroke-dasharray: 300 440;
-    transform: rotate(90deg);
-  }
-  100% {
-    stroke-dasharray: 6 440;
-    transform: rotate(270deg);
-  }
-}
-
-@keyframes loader-tick {
-  0% {
-    opacity: 0;
-  }
-  2%,
-  60% {
-    opacity: 1;
-  }
-  72%,
-  100% {
-    opacity: 0;
-  }
-}
-
 @keyframes appear-late {
   to {
     opacity: 1;
@@ -298,15 +269,23 @@ body {
   animation: nav-progress 1.1s var(--ease-ui) infinite;
 }
 
-.loader-arc {
-  stroke-dasharray: 130 440;
-  transform-origin: 100px 100px;
-  animation: loader-arc 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+.logo-breathe {
+  animation: pulse-soft 1.8s ease-in-out infinite;
 }
 
-.loader-tick-lit {
-  opacity: 0;
-  animation: loader-tick 2.4s linear infinite;
+.skeleton-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--foreground) 9%, transparent), transparent);
+  animation: skeleton-sheen 1.6s var(--ease-ui) infinite;
+}
+
+@keyframes skeleton-sheen {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .page-spinner {
@@ -315,13 +294,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loader-arc {
-    stroke-dasharray: 300 440;
-    transform: rotate(-90deg);
-    animation: pulse-soft 1.6s ease-in-out infinite;
-  }
-
-  .loader-tick-lit {
+  .logo-breathe,
+  .skeleton-sheen::after {
     animation: none;
   }
 

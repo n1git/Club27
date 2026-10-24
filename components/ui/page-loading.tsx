@@ -1,9 +1,9 @@
-import { PageSpinner } from "@/components/ui/spinner";
+import { PageSkeleton } from "@/components/ui/page-skeleton";
 
 export function PageLoading() {
   return (
     <div className="flex min-h-screen flex-col">
-      <PageSpinner />
+      <PageSkeleton />
     </div>
   );
 }
