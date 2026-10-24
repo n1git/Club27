@@ -5,7 +5,7 @@ Depends on `personal-bottom-nav` and `bottom-nav-active`: both merged (c42861b, 
 ## Phases
 
 - [x] Phase 0: read code, clone reference, plan
-- [ ] Phase 1: migration 068, types and data functions, snapshot, hosted apply
+- [x] Phase 1: migration 068, snapshot, hosted apply (data functions are written in the phase that uses them)
 - [ ] Phase 2: avatars, top bar, feed post card, comments sheet, carousel, skeletons
 - [ ] Phase 3: /notifications, unread badge, background mark-read
 - [ ] Phase 4: stories bar, viewer, create flow, cron route
@@ -34,3 +34,10 @@ Layout and markup ideas only, rewritten in Ruzz tokens, nothing pasted:
 - `Components/Comment.tsx`: comment row and sheet structure.
 - `app/(main)/messages/**`: inbox row and bubble layout.
 Not taken: models, `app/api/*`, auth, uploads, toast provider, desktop navbar, message model, reels.
+
+## Phase 1 result
+
+- Migration `20250101000068_instagram_social.sql` written and applied to a fresh local database (001 to 068, no errors). A 45-check SQL script (kept outside the repo) passed: notification triggers (request, accept, reaction toggle and dedupe, comment, never to self, nothing across a block, cleared on block), RLS (strangers and banned accounts read nothing, no client insert), stories (tray, seen, author-only views, 10 active limit, foreign path rejected, expiry, purge), messages (send, client-id dedupe, unread, read receipt, unsend, non-friend and banned cannot send, read-only after unfriend).
+- Before-state snapshot: `progress/personal-instagram-ui-before.sql`.
+- Applied to hosted `club27` as migration `instagram_social` after confirming hosted matched the snapshot (latest hosted version 067, no new tables). Afterwards the md5 of the 25 new function definitions on hosted equals local, security advisors show only the usual "security definer function executable by authenticated" notice for the new RPCs, like every existing RPC.
+- Note: `reports_target_type_check` was dropped and recreated with `message` added (the only non-additive statement, needed for message reports).
