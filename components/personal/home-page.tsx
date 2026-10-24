@@ -9,7 +9,7 @@ import { getUpcomingEvents } from "@/lib/data/groups";
 import { formatJakartaDateTime } from "@/lib/format";
 import { getReadyClubTypes } from "@/lib/club-type";
 import { PostCard } from "@/components/social/post-card";
-import { PostComposer } from "@/components/social/post-composer";
+import { QuickAddTrigger } from "@/components/personal/quick-add";
 import { ContextList } from "@/components/shared/context-list";
 import { PendingDeletions } from "@/components/shared/pending-deletions";
 import { buttonVariants } from "@/components/ui/button";
@@ -53,9 +53,9 @@ export async function PersonalHomePage({ searchParams }: { searchParams: Promise
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/workouts" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            <QuickAddTrigger kind="workout" variant="outline" size="sm">
               Catat latihan
-            </Link>
+            </QuickAddTrigger>
           </CardContent>
         </Card>
         <Card>
@@ -108,11 +108,6 @@ export async function PersonalHomePage({ searchParams }: { searchParams: Promise
       {banned ? null : (
       <section className="flex max-w-2xl flex-col gap-4">
         <h2 className="text-sm font-semibold text-muted-foreground">Feed teman</h2>
-        <Card>
-          <CardContent className="pt-5">
-            <PostComposer />
-          </CardContent>
-        </Card>
         {feed.posts.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Belum ada postingan. <Link href="/friends" className="font-medium text-accent-foreground underline-offset-4 hover:underline">Tambah teman</Link> untuk melihat aktivitas mereka.

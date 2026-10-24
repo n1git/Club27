@@ -4,10 +4,14 @@ import { APP_NAME } from "@/lib/config";
 import { PERSONAL_HOME } from "@/lib/auth/roles";
 import { socialRestriction } from "@/lib/auth/social-access";
 import { getSocialBadges } from "@/lib/data/social";
+import { getReadyClubTypes } from "@/lib/club-type";
+import { getJakartaDateString } from "@/lib/format";
+import { QuickAddProvider } from "@/components/personal/quick-add";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export async function PersonalShell({ user, children }: { user: { fullName: string; accountId: string }; children: React.ReactNode }) {
-  const [restriction, badges] = await Promise.all([socialRestriction(user.accountId), getSocialBadges(user.accountId)]);
+  const [restriction, badges, clubTypes] = await Promise.all([socialRestriction(user.accountId), getSocialBadges(user.accountId), getReadyClubTypes()]);
+  const sports = clubTypes.map((t) => ({ code: t.code, label: t.name.replace(/^Klub\s+/, "") }));
   const allGroups: NavGroup[] = [
     {
       items: [
@@ -27,12 +31,14 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
   const hidden = new Set(restriction === "minor" ? ["/friends", "/groups", "/challenges", "/health"] : restriction ? ["/friends", "/groups", "/challenges"] : []);
   const navGroups = allGroups.map((g) => ({ ...g, items: g.items.filter((i) => !hidden.has(i.href)) }));
   return (
+    <QuickAddProvider canSocial={restriction === null} sports={sports} today={getJakartaDateString()}>
     <AppShell
       navGroups={navGroups}
       fullName={user.fullName}
       profileHref="/profile"
       roleLabel="Akun"
       clubName={APP_NAME}
+      quickAdd
     >
       {restriction === "banned" ? (
         <Alert variant="destructive" className="mb-4">
@@ -45,5 +51,6 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
       ) : null}
       {children}
     </AppShell>
+    </QuickAddProvider>
   );
 }

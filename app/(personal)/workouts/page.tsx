@@ -11,7 +11,6 @@ import { formatJakartaDate } from "@/lib/format";
 import { ActionForm } from "@/components/shared/action-form";
 import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { GoalForm } from "@/components/workouts/goal-form";
-import { WorkoutForm } from "@/components/workouts/workout-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/ui/metric-card";
 import { PageHeader } from "@/components/ui/page-header";
@@ -128,15 +127,6 @@ export default async function WorkoutPage() {
         </CardHeader>
         <CardContent>
           <GoalForm current={data.weeklyGoal} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Catat latihan</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <WorkoutForm sports={sports} today={data.today} />
         </CardContent>
       </Card>
 

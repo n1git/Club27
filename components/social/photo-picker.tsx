@@ -3,12 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ImagePlus, X } from "lucide-react";
-import { createPost } from "@/lib/actions/social";
-import { ActionForm, useActionFormState } from "@/components/shared/action-form";
-import { ActionSubmitButton } from "@/components/shared/action-submit-button";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 const MAX_FILES = 4;
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -28,16 +23,12 @@ async function shrink(file: File): Promise<File> {
   return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
 }
 
-function PhotoPicker() {
-  const state = useActionFormState();
+export function PhotoPicker({ pending }: { pending: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   const [previews, setPreviews] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
-  useEffect(() => {
-    if (state.ok) setPreviews([]);
-  }, [state]);
 
   function setFiles(files: File[]) {
     const transfer = new DataTransfer();
@@ -94,21 +85,9 @@ function PhotoPicker() {
         </label>
         <span className="text-xs text-muted-foreground">Maks 4 foto, 5 MB per foto. Lokasi dan data kamera dihapus.</span>
       </div>
-      <ActionSubmitButton className="w-fit" disabled={busy}>
-        Posting
-      </ActionSubmitButton>
+      <Button type="submit" className="w-fit" disabled={busy || pending}>
+        {pending ? "Menambahkan…" : "Posting"}
+      </Button>
     </>
-  );
-}
-
-export function PostComposer() {
-  return (
-    <ActionForm action={createPost} className="flex flex-col gap-2">
-      <Label htmlFor="post-body" className="sr-only">
-        Postingan
-      </Label>
-      <Textarea id="post-body" name="body" required maxLength={2000} rows={3} placeholder="Bagikan sesuatu ke teman Anda" />
-      <PhotoPicker />
-    </ActionForm>
   );
 }

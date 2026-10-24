@@ -1,16 +1,14 @@
 "use client";
 
-import { addWorkout } from "@/lib/actions/workouts";
-import { ActionForm } from "@/components/shared/action-form";
-import { ActionSubmitButton } from "@/components/shared/action-submit-button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
-export function WorkoutForm({ sports, today }: { sports: { code: string; label: string }[]; today: string }) {
+export function WorkoutForm({ sports, today, onSubmit, pending }: { sports: { code: string; label: string }[]; today: string; onSubmit: React.FormEventHandler<HTMLFormElement>; pending: boolean }) {
   return (
-    <ActionForm action={addWorkout} className="grid max-w-2xl gap-4 sm:grid-cols-2">
+    <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="w-sport">Olahraga</Label>
         <Select id="w-sport" name="sport" defaultValue={sports[0]?.code} required>
@@ -37,7 +35,9 @@ export function WorkoutForm({ sports, today }: { sports: { code: string; label: 
         <Label htmlFor="w-notes">Catatan (opsional)</Label>
         <Textarea id="w-notes" name="notes" maxLength={2000} rows={3} />
       </div>
-      <ActionSubmitButton className="w-fit">Simpan latihan</ActionSubmitButton>
-    </ActionForm>
+      <Button type="submit" className="w-fit" disabled={pending}>
+        {pending ? "Menambahkan…" : "Simpan latihan"}
+      </Button>
+    </form>
   );
 }

@@ -3,6 +3,7 @@ import { LogoutButton } from "./logout-button";
 import { PersonalSwitch } from "./context-list";
 import { MobileNav } from "./mobile-nav";
 import { QuickAddButton } from "@/components/personal/quick-add";
+import { QuickAddSheet } from "@/components/personal/quick-add-sheet";
 import { NavGroupsProvider } from "./nav-context";
 import { NavProgressBar, NavProgressProvider } from "./nav-progress";
 import type { NavGroup } from "./nav-types";
@@ -64,6 +65,7 @@ export function AppShell({
             </main>
           </div>
           <MobileNav groups={menuGroups} personal={quickAdd} />
+          {quickAdd ? <QuickAddSheet /> : null}
         </div>
       </NavProgressProvider>
     </NavGroupsProvider>

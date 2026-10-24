@@ -4,7 +4,6 @@ import { isSocialBanned } from "@/lib/auth/social-access";
 import { getFriendLists, type Person } from "@/lib/data/social";
 import { blockAccount, removeFriend, respondFriend, unblockAccount } from "@/lib/actions/social";
 import { ActionButton } from "@/components/shared/action-button";
-import { FriendAddForm } from "@/components/social/friend-add-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -40,11 +39,6 @@ export default async function FriendsPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader title="Teman" subtitle="Postingan Anda hanya terlihat oleh teman. Tambah teman dengan username yang persis sama." />
-      <Card>
-        <CardContent className="pt-5">
-          <FriendAddForm />
-        </CardContent>
-      </Card>
       <div className="grid items-start gap-4 lg:grid-cols-2">
         <Section title="Permintaan masuk" count={lists.incoming.length} empty="Tidak ada permintaan.">
           {lists.incoming.map((r) => (

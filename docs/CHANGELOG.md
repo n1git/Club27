@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-24
+
+- Personal accounts on a phone get a five-icon bottom bar (Beranda, Teman, "+", Latihan, Menu; Grup moved into Menu). The "+" depends on the page: post on `/`, add friend on `/friends`, log workout on `/workouts`, a chooser elsewhere; on desktop the same button sits in the header. The three forms open in a sheet and submit in the background (loading toast, then success or error; a failed submit reopens the sheet with the typed values). The inline add cards are gone. Minor and banned accounts only get "Catat latihan". Other roles keep their bar.
+
 ## 2026-10-21
 
 - Pages that do not exist now return a real HTTP 404 (`/<username>` misses, unknown sports at `/s/<code>`, unknown addresses), identical for every kind of miss. The plan card and its footnotes are in Indonesian ("Sampai 5 klub*", "Anggota tanpa batas**", "Kebijakan pemakaian wajar 1.000 anggota per klub").
