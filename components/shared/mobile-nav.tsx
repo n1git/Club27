@@ -16,7 +16,7 @@ function TabLink({ item, active, className, iconOnly }: { item: NavItem; active:
   return (
     <Link href={item.href} prefetch={prefetch} aria-current={active ? "page" : undefined} aria-label={iconOnly ? item.label : undefined} className={className}>
       <span className={iconOnly ? cn("flex size-10 items-center justify-center rounded-xl ui-transition", active && "bg-foreground/10") : undefined}>
-        <span className="relative">
+        <span className="relative h-5">
           <NavLinkIcon name={item.icon} />
           <NavBadge count={item.badge} className="absolute -right-3 -top-1.5" />
         </span>
