@@ -42,7 +42,7 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
       roleLabel="Akun"
       clubName={APP_NAME}
       quickAdd
-      topActions={unread ? <TopBarActions notifications={unread.notifications} /> : null}
+      topActions={unread ? <TopBarActions notifications={unread.notifications} messages={unread.messages} /> : null}
     >
       {restriction === "banned" ? (
         <Alert variant="destructive" className="mb-4">

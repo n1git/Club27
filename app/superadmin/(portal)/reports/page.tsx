@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 
-const TYPE = { post: "Postingan", comment: "Komentar", account: "Akun", group: "Grup", event: "Event" } as const;
+const TYPE = { post: "Postingan", comment: "Komentar", account: "Akun", group: "Grup", event: "Event", message: "Pesan" } as const;
 const STATUS = { open: "Terbuka", dismissed: "Diabaikan", removed: "Konten dihapus", suspended: "Akun dinonaktifkan" } as const;
 
 export default async function ReportsPage() {
@@ -15,7 +15,7 @@ export default async function ReportsPage() {
   const [open, resolved] = await Promise.all([getReports("open"), getReports("resolved")]);
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Laporan" subtitle="Laporan pengguna atas postingan, komentar, grup, event, dan akun." />
+      <PageHeader title="Laporan" subtitle="Laporan pengguna atas postingan, komentar, pesan, grup, event, dan akun." />
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Terbuka ({open.length})</h2>
         {open.length === 0 ? <p className="text-sm text-muted-foreground">Tidak ada laporan terbuka.</p> : null}

@@ -7,7 +7,7 @@ import { isKeyRateLimited, RATE_LIMIT_ERROR } from "@/lib/auth/rate-limit";
 import { verifyReauth } from "@/lib/auth/reauth";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/audit";
-import { removeAccountPhotos } from "@/lib/media/post-media";
+import { removeAccountPhotos, removePhotoPaths } from "@/lib/media/post-media";
 import { type ActionState } from "./types";
 
 export async function deleteOwnAccount(_prevState: ActionState, formData: FormData): Promise<ActionState> {
@@ -29,9 +29,16 @@ export async function deleteOwnAccount(_prevState: ActionState, formData: FormDa
     };
   }
 
+  const { data: threads } = await supabase.from("dm_threads").select("id").or(`account_a.eq.${session.account_id},account_b.eq.${session.account_id}`);
+  const threadIds = (threads ?? []).map((t) => t.id as string);
+  const { data: photos } = threadIds.length
+    ? await supabase.from("dm_messages").select("photo_path").in("thread_id", threadIds).not("photo_path", "is", null)
+    : { data: [] };
+  const photoPaths = (photos ?? []).map((p) => p.photo_path as string);
   const { error } = await supabase.from("accounts").delete().eq("id", session.account_id);
   if (error) return { ok: false, error: "Akun tidak bisa dihapus. Hubungi admin platform." };
   await removeAccountPhotos(session.account_id);
+  for (let i = 0; i < photoPaths.length; i += 100) await removePhotoPaths(photoPaths.slice(i, i + 100));
   await supabase
     .from("consents")
     .update({ revoked_at: new Date().toISOString(), guardian_name: null })

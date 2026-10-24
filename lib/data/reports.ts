@@ -1,6 +1,6 @@
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
-export type ReportTargetType = "post" | "comment" | "account" | "group" | "event";
+export type ReportTargetType = "post" | "comment" | "account" | "group" | "event" | "message";
 
 export interface ReportRow {
   id: string;
@@ -25,19 +25,20 @@ export async function getReports(status: "open" | "resolved"): Promise<ReportRow
   const ids = (type: ReportTargetType) => reports.filter((r) => r.target_type === type).map((r) => r.target_id as string);
   const load = async (table: string, columns: string, list: string[]) =>
     list.length ? ((await supabase.from(table).select(columns).in("id", list)).data ?? []) as unknown as Record<string, unknown>[] : [];
-  const [posts, comments, groups, events] = await Promise.all([
+  const [posts, comments, groups, events, messages] = await Promise.all([
     load("posts", "id, account_id, kind, body, sport", ids("post")),
     load("post_comments", "id, account_id, body", ids("comment")),
     load("groups", "id, owner_id, name, description", ids("group")),
     load("events", "id, created_by, title", ids("event")),
+    load("dm_messages", "id, sender_id, body, photo_path, deleted_at", ids("message")),
   ]);
   const byId = (rows: Record<string, unknown>[]) => new Map(rows.map((r) => [r.id as string, r]));
-  const maps = { post: byId(posts), comment: byId(comments), group: byId(groups), event: byId(events) };
+  const maps = { post: byId(posts), comment: byId(comments), group: byId(groups), event: byId(events), message: byId(messages) };
   const authorOf = (type: ReportTargetType, id: string): string | null => {
     if (type === "account") return id;
     const row = maps[type].get(id);
     if (!row) return null;
-    return (row.account_id ?? row.owner_id ?? row.created_by) as string;
+    return (row.account_id ?? row.owner_id ?? row.created_by ?? row.sender_id) as string;
   };
   const accountIds = [...new Set([...reports.map((r) => r.reporter_id as string), ...reports.map((r) => authorOf(r.target_type as ReportTargetType, r.target_id as string)).filter((v): v is string => Boolean(v))])];
   const accounts = accountIds.length
@@ -56,6 +57,7 @@ export async function getReports(status: "open" | "resolved"): Promise<ReportRow
     if (type === "comment" && row) preview = String(row.body);
     if (type === "group" && row) preview = `${row.name}${row.description ? `: ${row.description}` : ""}`;
     if (type === "event" && row) preview = String(row.title);
+    if (type === "message" && row) preview = row.deleted_at ? "(pesan ditarik)" : `${row.photo_path ? "[foto] " : ""}${row.body ?? ""}`.trim();
     if (type === "account") preview = label(author);
     return {
       id: r.id as string,

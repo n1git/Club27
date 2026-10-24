@@ -13,7 +13,7 @@ export const commentSchema = z.object({
 });
 
 export const reportSchema = z.object({
-  targetType: z.enum(["post", "comment", "account", "group", "event"]),
+  targetType: z.enum(["post", "comment", "account", "group", "event", "message"]),
   targetId: z.string().uuid("Data tidak valid"),
   reason: z.string().trim().min(5, "Alasan minimal 5 karakter").max(500, "Alasan maksimal 500 karakter"),
 });
@@ -21,3 +21,9 @@ export const reportSchema = z.object({
 export const uuidField = z.string().uuid("Data tidak valid");
 
 export const storyCaptionSchema = z.string().trim().max(200, "Teks cerita maksimal 200 karakter");
+
+export const messageSchema = z.object({
+  toId: z.string().uuid("Data tidak valid"),
+  clientId: z.string().uuid("Data tidak valid"),
+  body: z.string().trim().max(2000, "Pesan maksimal 2.000 karakter"),
+});

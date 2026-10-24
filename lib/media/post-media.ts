@@ -113,3 +113,8 @@ export async function removeAccountPhotos(accountId: string) {
   }
   for (let i = 0; i < paths.size; i += 100) await removePhotoPaths([...paths].slice(i, i + 100));
 }
+
+export async function messagePhotoPaths(messageId: string): Promise<string[]> {
+  const { data } = await createAdminSupabaseClient().from("dm_messages").select("photo_path").eq("id", messageId).not("photo_path", "is", null);
+  return (data ?? []).map((r) => r.photo_path as string);
+}

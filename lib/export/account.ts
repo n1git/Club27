@@ -7,11 +7,11 @@ type Row = Record<string, unknown>;
 
 const PAGE = 1000;
 
-async function fetchAll(table: string, select: string, column: string, value: string): Promise<Row[]> {
+async function fetchAll(table: string, select: string, column: string, value: string, orderBy = "created_at"): Promise<Row[]> {
   const supabase = createAdminSupabaseClient();
   const rows: Row[] = [];
   for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase.from(table).select(select).eq(column, value).order("created_at", { ascending: true }).range(from, from + PAGE - 1);
+    const { data, error } = await supabase.from(table).select(select).eq(column, value).order(orderBy, { ascending: true }).range(from, from + PAGE - 1);
     if (error) throw new Error(`export failed for ${table}`);
     rows.push(...((data ?? []) as unknown as Row[]));
     if (!data || data.length < PAGE) break;
@@ -26,11 +26,37 @@ function flat(rows: Row[], relation: string, field: string, as: string): Row[] {
   });
 }
 
+async function messageRows(accountId: string): Promise<Row[]> {
+  const supabase = createAdminSupabaseClient();
+  const threads = [
+    ...(await fetchAll("dm_threads", "id, account_a, account_b", "account_a", accountId)),
+    ...(await fetchAll("dm_threads", "id, account_a, account_b", "account_b", accountId)),
+  ];
+  const otherIds = threads.map((t) => (t.account_a === accountId ? t.account_b : t.account_a) as string);
+  const { data: others } = otherIds.length ? await supabase.from("accounts").select("id, username").in("id", otherIds) : { data: [] };
+  const username = new Map((others ?? []).map((o) => [o.id as string, o.username as string]));
+  const rows: Row[] = [];
+  for (const thread of threads) {
+    const other = username.get((thread.account_a === accountId ? thread.account_b : thread.account_a) as string) ?? "";
+    const { data, error } = await supabase
+      .from("dm_messages")
+      .select("id, sender_id, body, photo_path, created_at, read_at, deleted_at")
+      .eq("thread_id", thread.id as string)
+      .order("created_at", { ascending: true })
+      .limit(10000);
+    if (error) throw new Error("export failed for dm_messages");
+    for (const m of data ?? []) {
+      rows.push({ id: m.id, percakapan_dengan: other, arah: m.sender_id === accountId ? "dikirim" : "diterima", pesan: m.body ?? "", ada_foto: m.photo_path ? "ya" : "tidak", created_at: m.created_at, read_at: m.read_at, deleted_at: m.deleted_at });
+    }
+  }
+  return rows;
+}
+
 export async function buildAccountExport(accountId: string): Promise<{ filename: string; zip: Buffer }> {
   const supabase = createAdminSupabaseClient();
   const { data: account } = await supabase
     .from("accounts")
-    .select("id, email, username, full_name, phone, address, created_at, last_login_at")
+    .select("id, email, username, full_name, phone, address, avatar_path, created_at, last_login_at")
     .eq("id", accountId)
     .maybeSingle();
   if (!account) throw new Error("account not found");
@@ -66,6 +92,10 @@ export async function buildAccountExport(accountId: string): Promise<{ filename:
   add("rsvp_event", flat(await fetchAll("event_rsvps", "event_id, status, updated_at, e:events(title)", "account_id", accountId).catch(() => []), "e", "title", "judul_event"));
   add("keanggotaan_klub", flat(await fetchAll("club_profiles", "id, role, is_active, created_at, c:clubs(name)", "account_id", accountId), "c", "name", "klub"));
   add("permintaan_gabung", flat(await fetchAll("club_join_requests", "id, status, full_name, date_of_birth, phone, message, created_at, decided_at, c:clubs(name)", "account_id", accountId), "c", "name", "klub"));
+  add("cerita", await fetchAll("stories", "id, caption, width, height, created_at, expires_at", "account_id", accountId));
+  add("cerita_dilihat", await fetchAll("story_views", "story_id, viewed_at", "viewer_id", accountId, "viewed_at"));
+  add("notifikasi", flat(await fetchAll("notifications", "type, read_at, created_at, other:accounts!notifications_actor_id_fkey(username)", "recipient_id", accountId), "other", "username", "username_lain"));
+  add("pesan", await messageRows(accountId));
   add("laporan_dikirim", await fetchAll("reports", "id, target_type, target_id, reason, created_at", "reporter_id", accountId));
   const { data: consents } = await supabase.from("consents").select("kind, version, accepted_at, revoked_at").eq("subject_type", "account").eq("subject_id", accountId);
   add("persetujuan", (consents ?? []) as Row[]);

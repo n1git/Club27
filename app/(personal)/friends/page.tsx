@@ -3,7 +3,9 @@ import { requireValidSession } from "@/lib/auth/guard";
 import { isSocialBanned } from "@/lib/auth/social-access";
 import { getFriendLists, type Person } from "@/lib/data/social";
 import { blockAccount, removeFriend, respondFriend, unblockAccount } from "@/lib/actions/social";
+import Link from "next/link";
 import { ActionButton } from "@/components/shared/action-button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 
@@ -58,6 +60,9 @@ export default async function FriendsPage() {
         <Section title="Teman" count={lists.friends.length} empty="Belum ada teman.">
           {lists.friends.map((r) => (
             <PersonLine key={r.friendshipId} person={r.person}>
+              <Link href={`/messages/${r.person.username}`} className={buttonVariants({ variant: "default", size: "sm" })}>
+                Kirim pesan
+              </Link>
               <ActionButton action={removeFriend} fields={{ accountId: r.person.id }} label="Hapus" confirmMessage={`Hapus ${r.person.fullName} dari teman?`} />
               <ActionButton
                 action={blockAccount}

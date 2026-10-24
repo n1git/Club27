@@ -9,7 +9,7 @@ Depends on `personal-bottom-nav` and `bottom-nav-active`: both merged (c42861b, 
 - [x] Phase 2: avatars, top bar, feed post card, comments sheet, carousel, skeletons
 - [x] Phase 3: /notifications, unread badge, background mark-read
 - [x] Phase 4: stories bar, viewer, create flow, cron route
-- [ ] Phase 5: chat (inbox, thread, background send, polling, report)
+- [x] Phase 5: chat (inbox, thread, background send, polling, report)
 - [ ] Phase 6: profile grid, THIRD_PARTY.md, responsive and theme checks
 
 ## Plan
@@ -61,3 +61,10 @@ Not taken: models, `app/api/*`, auth, uploads, toast provider, desktop navbar, m
 - Cron route `/api/cron/social-cleanup` (daily at 03:00, in `vercel.json`): lists expired files with the same cutoff it later purges with, removes them from storage first, then deletes the rows (also 90-day notifications and 365-day messages). A failed storage removal aborts before the purge so the next run retries.
 - Found while testing: React re-dispatches a nested `<dialog>`'s `close` through the React tree, so a sheet inside another dialog closed its parent; `BottomSheet` and the viewer now only react to their own `close`.
 - Browser run (production build): create two stories, ring unseen, viewer segments, hold pauses, auto-advance, tap left and right, closes after the last story, views recorded, ring muted, swipe down, owner count and viewer list, delete removes the file, reduced motion, expiry hides the story, cron removes the file and the rows.
+
+## Phase 5 result
+
+- `/messages` inbox (avatar, preview, relative time, unread dot, refresh on focus) and `/messages/<username>` thread (two-sided bubbles, day separators, "Dilihat", photo button, background send with an at-once bubble then confirmed, "Gagal terkirim" with Coba lagi that reuses the client id so a retry never duplicates, tap a bubble for Tarik pesan or Laporkan pesan). The mobile thread is a full-screen layer over the bottom bar. Polling is a 4 s GET to `/api/dm` only while the tab is visible (plus on focus); Supabase Realtime was not used because the custom JWT claims are read by RLS through `current_account_id()`, which Realtime would not evaluate the same way.
+- Paper-plane icon with unread thread count next to the heart. "Kirim pesan" on `/<username>` and in `/friends` rows. Read-only thread (no longer friends) is hidden from the inbox and has no composer. Message reports are accepted and shown on the superadmin reports page (type Pesan, remove deletes the message and its photo file).
+- Account deletion also removes the photo files of every thread the account belonged to; the account export has `cerita`, `cerita_dilihat`, `notifikasi` and `pesan`.
+- Browser run (production build): profile button, empty state, send, badge, inbox, "Dilihat", message arriving within seconds, photo message under the `dm/` prefix, failed send then retry exactly once, unsend, report, stranger and banned account get nothing, 320 px, read-only after unfriend.

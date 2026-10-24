@@ -15,6 +15,7 @@ import { LandingHeader, SkipLink } from "@/components/landing/landing-header";
 import { ctaClass } from "@/components/landing/cta";
 import { Wrap } from "@/components/landing/wrap";
 import { PostCard } from "@/components/social/post-card";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const MISS: Metadata = { title: "Halaman tidak ditemukan", robots: { index: false } };
@@ -92,12 +93,19 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
             Ubah profil
           </Link>
         ) : (
+          <div className="flex flex-wrap items-center gap-3">
+            {profile.relation === "friends" ? (
+              <Link href={`/messages/${profile.username}`} className={buttonVariants({ size: "sm" })}>
+                Kirim pesan
+              </Link>
+            ) : null}
           <p className="text-sm text-muted-foreground">
             {RELATION_TEXT[profile.relation]}.{" "}
             <Link href="/friends" className="font-semibold text-foreground underline underline-offset-4">
               Kelola teman
             </Link>
           </p>
+          </div>
         )}
         {showPosts ? (
           posts.length ? (

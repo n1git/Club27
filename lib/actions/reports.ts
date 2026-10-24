@@ -7,10 +7,10 @@ import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { revokeAccountSessions } from "@/lib/accounts/account";
 import { logAudit } from "@/lib/audit";
 import { type ActionState } from "./types";
-import { postPhotoPaths, removePhotoPaths } from "@/lib/media/post-media";
+import { messagePhotoPaths, postPhotoPaths, removePhotoPaths } from "@/lib/media/post-media";
 
-const TABLES = { post: "posts", comment: "post_comments", group: "groups", event: "events" } as const;
-const AUTHOR = { post: "account_id", comment: "account_id", group: "owner_id", event: "created_by" } as const;
+const TABLES = { post: "posts", comment: "post_comments", group: "groups", event: "events", message: "dm_messages" } as const;
+const AUTHOR = { post: "account_id", comment: "account_id", group: "owner_id", event: "created_by", message: "sender_id" } as const;
 
 const resolveSchema = z.object({ reportId: z.string().uuid(), action: z.enum(["dismiss", "remove", "suspend"]) });
 const reactivateSchema = z.object({ accountId: z.string().uuid() });
@@ -40,7 +40,7 @@ export async function resolveReport(_prevState: ActionState, formData: FormData)
   let socialOnly = false;
   if (parsed.data.action === "remove") {
     if (type === "account") return { ok: false, error: "Akun tidak bisa dihapus dari sini. Pilih nonaktifkan." };
-    const paths = type === "post" ? await postPhotoPaths(targetId) : [];
+    const paths = type === "post" ? await postPhotoPaths(targetId) : type === "message" ? await messagePhotoPaths(targetId) : [];
     const { error } = await supabase.from(TABLES[type]).delete().eq("id", targetId);
     if (error) return { ok: false, error: "Gagal menghapus konten" };
     await removePhotoPaths(paths);
