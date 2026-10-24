@@ -6,7 +6,7 @@ export const RESERVED_USERNAMES = new Set([
   "www", "app", "help", "support", "root", "system", "ruzz", "club27",
   "about", "blog", "contact", "docs", "explore", "pricing", "search", "status", "static", "public", "assets",
   "me", "new", "edit", "delete", "official", "staff", "team", "info", "mail", "email", "webmaster", "postmaster",
-  "null", "undefined",
+  "null", "undefined", "notifications", "messages", "stories",
 ]);
 export const USERNAME_PATTERN = /^[a-z][a-z0-9._]{2,29}$/;
 

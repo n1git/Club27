@@ -4,6 +4,8 @@ import { APP_NAME } from "@/lib/config";
 import { PERSONAL_HOME } from "@/lib/auth/roles";
 import { socialRestriction } from "@/lib/auth/social-access";
 import { getSocialBadges } from "@/lib/data/social";
+import { getUnreadCounts } from "@/lib/data/notifications";
+import { TopBarActions } from "@/components/personal/top-bar-actions";
 import { getReadyClubTypes } from "@/lib/club-type";
 import { getJakartaDateString } from "@/lib/format";
 import { QuickAddProvider } from "@/components/personal/quick-add";
@@ -11,6 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export async function PersonalShell({ user, children }: { user: { fullName: string; accountId: string }; children: React.ReactNode }) {
   const [restriction, badges, clubTypes] = await Promise.all([socialRestriction(user.accountId), getSocialBadges(user.accountId), getReadyClubTypes()]);
+  const unread = restriction === null ? await getUnreadCounts() : null;
   const sports = clubTypes.map((t) => ({ code: t.code, label: t.name.replace(/^Klub\s+/, "") }));
   const allGroups: NavGroup[] = [
     {
@@ -39,6 +42,7 @@ export async function PersonalShell({ user, children }: { user: { fullName: stri
       roleLabel="Akun"
       clubName={APP_NAME}
       quickAdd
+      topActions={unread ? <TopBarActions notifications={unread.notifications} /> : null}
     >
       {restriction === "banned" ? (
         <Alert variant="destructive" className="mb-4">

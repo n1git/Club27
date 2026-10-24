@@ -7,7 +7,7 @@ Depends on `personal-bottom-nav` and `bottom-nav-active`: both merged (c42861b, 
 - [x] Phase 0: read code, clone reference, plan
 - [x] Phase 1: migration 068, snapshot, hosted apply (data functions are written in the phase that uses them)
 - [x] Phase 2: avatars, top bar, feed post card, comments sheet, carousel, skeletons
-- [ ] Phase 3: /notifications, unread badge, background mark-read
+- [x] Phase 3: /notifications, unread badge, background mark-read
 - [ ] Phase 4: stories bar, viewer, create flow, cron route
 - [ ] Phase 5: chat (inbox, thread, background send, polling, report)
 - [ ] Phase 6: profile grid, THIRD_PARTY.md, responsive and theme checks
@@ -48,3 +48,9 @@ Not taken: models, `app/api/*`, auth, uploads, toast provider, desktop navbar, m
 - Top bar on mobile: brand on the left, theme toggle and logout moved into the Menu sheet (new `footer` slot); the heart and message icons are added in phases 3 and 5 through the new `topActions` slot.
 - Feed: edge-to-edge post cards (header with avatar, relative time, options sheet; photo carousel with snap, counter, dots; optimistic heart; comments bottom sheet with optimistic add and delete; two-line caption with "selengkapnya"; workout summary block), `PostCardSkeleton` inside Suspense on home. Home puts the feed first and the dashboard cards after it on mobile, in a right column on desktop.
 - Browser run on a production build (375, 320, 1280 px, light and dark): upload avatar, post with three photos, carousel scroll, like, comment, no horizontal scroll at 320. It caught one regression of mine (a `map(shrink)` passing the index as size), fixed.
+
+## Phase 3 result
+
+- `/notifications` (sections Baru, Minggu ini, Sebelumnya; reactions on one post grouped at read time; friend requests with Terima and Tolak; post thumbnail; row opens `/p/<id>`, `/g/<id>` or the profile). The page marks everything shown as read after render through `mark_notifications_read(before)` and keeps the "Baru" highlight until the next visit. Heart with unread badge in the top bar (mobile and desktop).
+- Migration `069_reserve_social_routes.sql` (applied to hosted too, 12 hosted accounts, none clashing): `notifications`, `messages`, `stories` are reserved usernames, same list in `lib/username-suggest.ts`; `/notifications` and `/messages` added to `PERSONAL_PATHS`.
+- Browser run (production build, 375 and 1280 px, light and dark): four events produce four rows and badge "4", page groups the two reactions, comment text shown, thumbnail present, Terima accepts, badge clears after the visit, "Baru" gone on revisit.

@@ -6,7 +6,7 @@ export const OWNER_HOME = "/admin/club";
 
 export const PERSONAL_HOME = "/";
 
-export const PERSONAL_PATHS = ["/workouts", "/friends", "/groups", "/challenges", "/health", "/settings", "/upgrade", "/join", "/g", "/c", "/p"];
+export const PERSONAL_PATHS = ["/workouts", "/friends", "/groups", "/challenges", "/health", "/settings", "/upgrade", "/join", "/g", "/c", "/p", "/notifications", "/messages"];
 
 export function roleHome(role: AppRole, staffHome = "/admin"): string {
   switch (role) {
